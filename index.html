@@ -254,7 +254,7 @@
        - 정적 사이트이므로 설정은 이 브라우저(localStorage)에 저장됩니다.
          모든 사용자에게 적용하려면 관리자 패널의 설정을 복사해 아래 LOCK_DEFAULT 를 교체 후 재배포하세요. */
     var PW_KEY = 'shd_dash_lock_v1';
-    var LOCK_DEFAULT = {"admin":"1234","tabs":{"facility":"1234","hppk":"1234","safety":"1234","express":"1234","esg":"1234","encoding":"1234"}};
+    var LOCK_DEFAULT = {"admin":"0505","tabs":{"facility":"","hppk":"","safety":"","express":"0000","esg":"","encoding":""}};
     var LABELS = { facility:'시설관리 유지보수', hppk:'HPPK 입출고·미수금', safety:'안전보건관리', express:'국제특송(UPS외)', esg:'ESG 심층 보고서', encoding:'인코딩 관리' };
     function loadLock(){
       try{ var s=localStorage.getItem(PW_KEY); if(s){ var o=JSON.parse(s);
