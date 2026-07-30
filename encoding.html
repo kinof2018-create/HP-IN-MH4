@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>인코딩 데이터 관리 · 김남주바이오</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --v-700:#4C1D95; --v-600:#5B21B6; --v-500:#6D28D9; --v-400:#7C3AED; --v-300:#A78BFA; --v-100:#EDE9FE;
+  --blue:#2563EB; --blue-bg:#E0ECFF; --amber:#B45309; --amber-bg:#FEF3C7; --green:#059669; --green-bg:#D1FAE5;
+  --bg-base:#F5F3FB; --bg-elev:#FFFFFF; --bg-subtle:#F2EEFB;
+  --ink:#1E1B2E; --ink-2:#3A3550; --ink-3:#6B6580;
+  --line:#E7E2F3; --line-strong:#D6CEEA;
+  --warn-bg:#FEF9E7; --warn-line:#F5D97A; --warn-fg:#B7791F; --danger:#DC2626;
+  --radius:12px; --radius-sm:8px; --radius-full:9999px;
+  --sh-sm:0 1px 2px rgba(60,40,120,0.06); --sh-md:0 6px 18px rgba(76,29,149,0.08); --sh-card:0 14px 30px rgba(76,29,149,0.14);
+  --font:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{font-family:var(--font);background:var(--bg-base);color:var(--ink);-webkit-font-smoothing:antialiased;font-size:14px;}
+
+/* 헤더 */
+.hd{display:flex;align-items:center;gap:14px;padding:16px 24px;color:#fff;
+  background:linear-gradient(120deg,var(--v-700) 0%,var(--v-500) 55%,var(--v-400) 130%);box-shadow:0 6px 22px rgba(60,20,120,0.35);}
+.hd .mk{width:46px;height:46px;border-radius:12px;flex:none;display:grid;place-items:center;font-size:22px;
+  background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.26);}
+.hd h1{margin:0;font-size:1.25rem;font-weight:800;letter-spacing:-0.01em;}
+.hd .sub{margin-top:3px;font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.82);display:flex;align-items:center;gap:6px;}
+.hd .clock{margin-left:auto;text-align:right;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);
+  border-radius:10px;padding:9px 15px;}
+.hd .clock .d{font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.85);}
+.hd .clock .t{font-size:1.05rem;font-weight:800;letter-spacing:0.02em;margin-top:2px;}
+
+/* 레이아웃 */
+.body{display:flex;align-items:flex-start;gap:18px;padding:18px 24px 40px;}
+.side{width:240px;flex:none;display:flex;flex-direction:column;gap:14px;}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;gap:16px;}
+
+/* 사이드바 카드 */
+.scard{background:var(--bg-elev);border:1px solid var(--line);border-radius:var(--radius);padding:14px 15px;box-shadow:var(--sh-sm);}
+.scard h3{margin:0 0 11px;font-size:0.8rem;font-weight:800;color:var(--v-600);display:flex;align-items:center;gap:7px;}
+.srow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:0.78rem;}
+.srow + .srow{border-top:1px dashed var(--line);}
+.srow .k{color:var(--ink-3);font-weight:600;}
+.srow .v{font-weight:800;color:var(--ink);}
+.srow .v.hl{color:var(--v-500);} .srow .v.warn{color:var(--warn-fg);} .srow .v.mut{color:var(--ink-3);font-weight:700;}
+.tt-row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:0.78rem;}
+.tt-row + .tt-row{border-top:1px dashed var(--line);}
+.tt-row .nm{font-weight:700;} .tt-row .cnt{margin-left:auto;font-weight:800;}
+.tp-row{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:0.76rem;}
+.tp-row + .tp-row{border-top:1px dashed var(--line);}
+.tp-row .code{font-weight:700;color:var(--ink-2);font-variant-numeric:tabular-nums;}
+.tp-row .cnt{margin-left:auto;font-weight:800;color:var(--v-500);}
+
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}
+.kpi{background:var(--bg-elev);border:1px solid var(--line);border-radius:var(--radius);padding:16px 17px;box-shadow:var(--sh-md);
+  position:relative;overflow:hidden;}
+.kpi::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--v-400);}
+.kpi.c-blue::before{background:var(--blue);} .kpi.c-teal::before{background:#0EA5A0;}
+.kpi.c-amber::before{background:#E0A32E;} .kpi.c-red::before{background:var(--danger);}
+.kpi .top{display:flex;align-items:center;justify-content:space-between;}
+.kpi .lbl{font-size:0.72rem;font-weight:700;color:var(--ink-3);}
+.kpi .ic{font-size:1.05rem;opacity:.85;}
+.kpi .val{margin-top:9px;font-size:1.85rem;font-weight:900;letter-spacing:-0.02em;line-height:1;font-variant-numeric:tabular-nums;}
+.kpi .val small{font-size:0.8rem;font-weight:700;color:var(--ink-3);margin-left:3px;}
+.kpi.c-red .val{color:var(--danger);}
+
+/* 필터바 */
+.filter{background:var(--bg-elev);border:1px solid var(--line);border-radius:var(--radius);padding:13px 16px;box-shadow:var(--sh-sm);
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.filter .fl{display:flex;align-items:center;gap:7px;font-size:0.76rem;font-weight:700;color:var(--ink-3);}
+.filter input[type=date],.filter input[type=text],.filter select{
+  border:1px solid var(--line-strong);border-radius:var(--radius-sm);padding:8px 11px;font:600 0.78rem/1 var(--font);
+  color:var(--ink);background:#fff;}
+.filter input[type=text]{min-width:230px;}
+.filter input:focus,.filter select:focus{outline:none;border-color:var(--v-400);}
+.filter .sep{color:var(--ink-3);}
+.btn{border:0;border-radius:var(--radius-sm);padding:8px 15px;font:800 0.78rem/1 var(--font);cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+.btn-go{background:var(--v-500);color:#fff;} .btn-go:hover{background:var(--v-400);}
+.btn-ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line-strong);} .btn-ghost:hover{border-color:var(--v-300);}
+.btn-quick{background:var(--v-100);color:var(--v-600);} .btn-quick:hover{background:#E0D8F8;}
+.btn-quick.on{background:var(--v-600);color:#fff;}
+.filter .spacer{margin-left:auto;}
+.pin{font-size:0.74rem;font-weight:800;color:var(--v-500);display:inline-flex;align-items:center;gap:6px;cursor:pointer;
+  background:none;border:0;}
+
+/* 뷰 탭 */
+.vtabs{display:flex;gap:9px;flex-wrap:wrap;}
+.vtab{border:1px solid var(--line-strong);background:#fff;color:var(--ink-2);border-radius:var(--radius-sm);
+  padding:10px 16px;font:800 0.8rem/1 var(--font);cursor:pointer;display:inline-flex;align-items:center;gap:7px;box-shadow:var(--sh-sm);}
+.vtab:hover{border-color:var(--v-300);}
+.vtab.on{background:var(--v-500);color:#fff;border-color:var(--v-500);box-shadow:var(--sh-md);}
+
+/* 패널 */
+.panel{background:var(--bg-elev);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--sh-md);}
+.panel h2{margin:0 0 3px;font-size:0.98rem;font-weight:800;display:flex;align-items:center;gap:8px;}
+.panel .desc{margin:0 0 14px;font-size:0.74rem;font-weight:600;color:var(--ink-3);}
+.legend-inline{display:flex;gap:16px;flex-wrap:wrap;font-size:0.72rem;font-weight:700;color:var(--ink-3);margin:2px 0 12px;}
+.legend-inline i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px;}
+
+/* 테이블 */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius-sm);}
+table{width:100%;border-collapse:collapse;font-size:0.74rem;white-space:nowrap;background:var(--bg-elev);min-width:900px;}
+thead th{position:sticky;top:0;background:var(--v-100);color:var(--v-700);font-weight:800;text-align:left;padding:10px 12px;
+  border-bottom:2px solid var(--line-strong);font-size:0.72rem;}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--line);color:var(--ink-2);}
+tbody tr:hover{background:var(--bg-subtle);}
+td.num{text-align:right;font-variant-numeric:tabular-nums;}
+tr.dup{background:var(--warn-bg);} tr.dup:hover{background:#FCF3D6;}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:0.7rem;color:var(--ink-2);
+  background:var(--bg-subtle);padding:2px 6px;border-radius:5px;}
+.badge{padding:3px 9px;border-radius:var(--radius-full);font:800 0.68rem/1.4 var(--font);display:inline-block;white-space:nowrap;}
+.b-saetl{background:var(--blue-bg);color:var(--blue);}
+.b-linear{background:var(--amber-bg);color:var(--amber);}
+.b-hapji{background:var(--green-bg);color:var(--green);}
+.b-etc{background:#EEE;color:#555;}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:-1px;}
+.dot-y{background:#F2C744;} .dot-b{background:#5B8DEF;}
+.warn-note{margin:0 0 12px;background:#FDEBEC;border:1px solid #F5C2C6;color:#B42318;border-radius:var(--radius-sm);
+  padding:10px 14px;font-size:0.76rem;font-weight:700;display:flex;align-items:center;gap:8px;}
+.ok-note{margin:16px 0 4px;background:var(--green-bg);border:1px solid #A7E3C8;color:#087443;border-radius:var(--radius-sm);
+  padding:14px;font-size:0.85rem;font-weight:800;text-align:center;}
+.crit-head{display:flex;align-items:center;gap:9px;margin:2px 0 12px;padding:10px 14px;border-radius:var(--radius-sm);font-weight:800;font-size:0.82rem;}
+.crit-head.y{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-fg);}
+.crit-head.b{background:#EAF0FE;border:1px solid #C3D4F7;color:#2C56B0;}
+.crit-head .cc{margin-left:auto;background:#fff;border-radius:var(--radius-full);padding:3px 11px;font-size:0.72rem;}
+
+/* 품목별 카드 */
+.prodblock{border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;background:var(--bg-elev);box-shadow:var(--sh-sm);}
+.prodblock .ph{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+.prodblock .ph .pc{font-weight:900;color:var(--v-600);font-size:0.86rem;}
+.prodblock .ph .pn{font-weight:700;color:var(--ink-2);font-size:0.82rem;}
+.prodblock .ph .cnt{margin-left:auto;font-size:0.7rem;font-weight:800;color:var(--ink-3);background:var(--bg-subtle);padding:3px 10px;border-radius:var(--radius-full);}
+
+/* 차트 */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.chart-box{position:relative;height:300px;}
+.chart-fallback{display:none;padding:20px;text-align:center;color:var(--ink-3);font-size:0.78rem;background:var(--bg-subtle);border-radius:var(--radius-sm);}
+
+@media (max-width:1100px){ .kpis{grid-template-columns:repeat(3,1fr);} .chart-grid{grid-template-columns:1fr;} }
+@media (max-width:820px){ .body{flex-direction:column;} .side{width:100%;flex-direction:row;flex-wrap:wrap;} .side .scard{flex:1;min-width:200px;} .kpis{grid-template-columns:repeat(2,1fr);} }
+</style>
+</head>
+<body>
+<header class="hd">
+  <div class="mk">🧬</div>
+  <div>
+    <h1>김남주바이오 · 인코딩 데이터 관리</h1>
+    <div class="sub">📁 각 품목별 코드 및 인코딩 발주 데이터 · 통합 조회/분석</div>
+  </div>
+  <div class="clock"><div class="d" id="clkD">-</div><div class="t" id="clkT">--:--:--</div></div>
+</header>
+
+<div class="body">
+  <!-- 사이드바 -->
+  <aside class="side">
+    <div class="scard">
+      <h3>📋 전체 현황</h3>
+      <div class="srow"><span class="k">총 발주 건수</span><span class="v hl" id="sTotal">-</span></div>
+      <div class="srow"><span class="k">총 발주 수량</span><span class="v" id="sQty">-</span></div>
+      <div class="srow"><span class="k">품목 수</span><span class="v" id="sItems">-</span></div>
+      <div class="srow"><span class="k">최근 발주일</span><span class="v" id="sRecent">-</span></div>
+      <div class="srow"><span class="k">⚠ 중복 경고</span><span class="v warn" id="sDup">-</span></div>
+    </div>
+    <div class="scard">
+      <h3>📅 기간별 건수</h3>
+      <div class="srow"><span class="k">최근 1개월</span><span class="v mut" id="p1">-</span></div>
+      <div class="srow"><span class="k">최근 3개월</span><span class="v mut" id="p3">-</span></div>
+      <div class="srow"><span class="k">최근 6개월</span><span class="v mut" id="p6">-</span></div>
+      <div class="srow"><span class="k">전체 누적</span><span class="v hl" id="pAll">-</span></div>
+    </div>
+    <div class="scard">
+      <h3>🏷️ TAG TYPE별</h3>
+      <div id="sTagType"></div>
+    </div>
+    <div class="scard">
+      <h3>📈 상위 품목</h3>
+      <div id="sTopItems"></div>
+    </div>
+  </aside>
+
+  <!-- 메인 -->
+  <div class="main">
+    <div class="kpis">
+      <div class="kpi"><div class="top"><span class="lbl">총 발주 건수</span><span class="ic">📋</span></div><div class="val" id="kCount">-</div><small style="color:var(--ink-3);font-weight:700">건</small></div>
+      <div class="kpi c-teal"><div class="top"><span class="lbl">총 발주 수량</span><span class="ic">📦</span></div><div class="val" id="kQty">-</div><small style="color:var(--ink-3);font-weight:700">개</small></div>
+      <div class="kpi c-blue"><div class="top"><span class="lbl">품목 수</span><span class="ic">🧪</span></div><div class="val" id="kItems">-</div><small style="color:var(--ink-3);font-weight:700">종</small></div>
+      <div class="kpi c-amber"><div class="top"><span class="lbl">TAG TYPE</span><span class="ic">🏷️</span></div><div class="val" id="kTypes">-</div><small style="color:var(--ink-3);font-weight:700">유형</small></div>
+      <div class="kpi c-red"><div class="top"><span class="lbl">중복 경고</span><span class="ic">⚠️</span></div><div class="val" id="kDup">-</div><small style="color:var(--ink-3);font-weight:700">건</small></div>
+    </div>
+
+    <div class="filter">
+      <span class="fl">📅 기간</span>
+      <input type="date" id="fFrom"><span class="sep">~</span><input type="date" id="fTo">
+      <span class="fl">🔎 품목검색</span>
+      <input type="text" id="fQ" placeholder="인코딩파일명 / 본제품명 / 제품코드 검색">
+      <span class="fl">🏷️ TAG</span>
+      <select id="fTag"><option value="">전체</option></select>
+      <button class="btn btn-go" id="btnGo">🔍 조회</button>
+      <button class="btn btn-ghost" id="btnReset">↺ 초기화</button>
+      <button class="btn btn-quick" id="btnQ3" data-m="3">3개월</button>
+      <button class="btn btn-quick" id="btnQ6" data-m="6">6개월</button>
+      <span class="spacer"></span>
+      <button class="pin" id="btnAll">📌 전체 기간 (<span id="pinCnt">-</span>건)</button>
+    </div>
+
+    <div class="vtabs">
+      <button class="vtab on" data-v="list">📄 전체 내역</button>
+      <button class="vtab" data-v="prod">🖊️ 품목별 현황</button>
+      <button class="vtab" data-v="tag">🏷️ TAG 분석</button>
+      <button class="vtab" data-v="dup">⚠️ 중복 검증</button>
+      <button class="vtab" data-v="chart">📊 차트</button>
+    </div>
+
+    <div id="view"></div>
+  </div>
+</div>
+
+<script>
+const ENC_DATA = [{"no": 1, "date": "2024-12-17", "qty": 1500, "seq": 1, "tagType": "새틀(소형)", "fileName": "통90_241217_1500", "code": "PB003141", "encName": "통90", "prodName": "통270정", "tagStart": "303619B4B013E36480000001 ~", "tagEnd": "~ 007D0", "d1": "2024-12-17", "r1": "0001 ~ 05F6", "extra": "", "d2": "2025-03-13", "r2": "076C", "d3": "2025-04-07", "r3": "079E", "d4": "2025-09-08", "r4": "07C3", "expiry": "27.01.01", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 2, "date": "2024-12-17", "qty": 500, "seq": 1, "tagType": "새틀(소형)", "fileName": "통30 제품_241217_500", "code": "PB003152", "encName": "제품_통분말30", "prodName": "", "tagStart": "303619B4B01457A4800005DD ~", "tagEnd": "~ 009C4", "d1": "2024-12-17", "r1": "05DD ~ 07DA", "extra": "", "d2": "2025-01-17", "r2": "07F8 ~ 0801", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "26.12.16", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 3, "date": "2024-12-17", "qty": 1000, "seq": 1, "tagType": "새틀(소형)", "fileName": "통30 속상자_241217_1000", "code": "PB003152-1", "encName": "속상자_통분말30", "prodName": "통60분말정", "tagStart": "303619B4B01457A480000001 ~", "tagEnd": "~ 005DC", "d1": "2024-12-17", "r1": "0001 ~ 03F2", "extra": "", "d2": "2025-01-17", "r2": "0410 ~ 0419", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "26.12.16", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 4, "date": "2025-01-07", "qty": 3000, "seq": 1, "tagType": "새틀(소형)", "fileName": "자임혈분말90_250107_PB001132", "code": "PB001132", "encName": "자임혈분말90", "prodName": "", "tagStart": "303619B4B014036480001069", "tagEnd": "~ 01E14", "d1": "2025-01-16", "r1": "1069 ~ 1C3E", "extra": "", "d2": "2025-04-07", "r2": "1C84", "d3": "2025-04-21", "r3": "1CE8", "d4": "", "r4": "", "expiry": "27.01.22", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 5, "date": "2025-01-07", "qty": 1000, "seq": 1, "tagType": "새틀(소형)", "fileName": "청락토분말30_250107_PB2122", "code": "PB002122", "encName": "청락토분말30", "prodName": "", "tagStart": "303619B4B0143EA4800006A5", "tagEnd": "~ 00C80", "d1": "2025-01-16", "r1": "06A5 ~ 0AAA", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "26.07.21", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 6, "date": "2025-01-20", "qty": 3000, "seq": 1, "tagType": "새틀(소형)", "fileName": "달60_250120_PB005131", "code": "PB005131", "encName": "달60", "prodName": "달360", "tagStart": "303619B4B013DBE480000C81", "tagEnd": "~ 001A2C", "d1": "2025-01-24", "r1": "0C81 ~ 1856", "extra": "", "d2": "2025-09-25", "r2": "189C ~ 18AD", "d3": "2025-10-13", "r3": "1995 ~ 199A", "d4": "", "r4": "", "expiry": "27.02.11", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 7, "date": "2025-01-22", "qty": 6000, "seq": 1, "tagType": "새틀(소형)", "fileName": "원삼칠30_250122_", "code": "PB004122", "encName": "원칠삼30", "prodName": "", "tagStart": "303619B4B0142224800030E4", "tagEnd": "~ 004A47", "d1": "2025-01-24", "r1": "30E4 ~ 488F", "extra": "", "d2": "2025-06-09", "r2": "48BA ~ 48CA", "d3": "2025-09-04", "r3": "498A", "d4": "2025-09-08", "r4": "4998", "expiry": "27.02.12", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 8, "date": "2025-02-20", "qty": 2000, "seq": 2, "tagType": "새틀(소형)", "fileName": "속상자 통분말30_250220_2000", "code": "PB003152-1", "encName": "속상자_통분말30", "prodName": "통60분말정", "tagStart": "303619B4B01457A4800009C5", "tagEnd": "~ 001388", "d1": "2025-02-25", "r1": "09C5 ~ 11DO", "extra": "", "d2": "2025-09-04", "r2": "1200 ~ 1204", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "27.03.09", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 9, "date": "2025-03-13", "qty": 5000, "seq": 2, "tagType": "새틀(소형)", "fileName": "자임혈분말90_250313_PB001132", "code": "PB001132", "encName": "자임혈분말90", "prodName": "", "tagStart": "303619B4B014036480001E15", "tagEnd": "~ 003390", "d1": "2025-03-14", "r1": "1E15 ~ 31D8", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "27.03.31", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 10, "date": "2025-03-17", "qty": 3000, "seq": 1, "tagType": "새틀(소형)", "fileName": "자임혈900_250317_PB001111", "code": "PB001111", "encName": "자임혈900", "prodName": "", "tagStart": "303619B4B013CD6480002653", "tagEnd": "~ 00326E", "d1": "2025-03-18", "r1": "2653 ~ 326E", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "3100", "deliverDate": "", "attach": "", "note": "라벨발주"}, {"no": 12, "date": "2025-04-01", "qty": 4000, "seq": 1, "tagType": "새틀(소형)", "fileName": "청락토300_250401_PB002113", "code": "PB002113", "encName": "청락토300", "prodName": "", "tagStart": "303619AA900A3EE480003EF9", "tagEnd": "~ 004EFC", "d1": "2025-04-03", "r1": "3EFB ~ 4EFC", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": "라벨발주"}, {"no": 13, "date": "2025-04-02", "qty": 500, "seq": 1, "tagType": "새틀(소형)", "fileName": "자임혈분말90(단독)_250402_PB001132-1", "code": "PB001132-1", "encName": "자임형분말90(단독)", "prodName": "", "tagStart": "303619B4B0146A64800037DD", "tagEnd": "~ 003A34", "d1": "2025-04-04", "r1": "37DE ~ 3A33", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": "라벨발주"}, {"no": 14, "date": "2025-04-01", "qty": 6000, "seq": 1, "tagType": "리니어(대형)", "fileName": "원삼칠환15_250401_6000_PB004145", "code": "PB004145", "encName": "원삼칠환15", "prodName": "", "tagStart": "303619AB5C2AFA2480000001", "tagEnd": "~ 001964", "d1": "2025-04-15", "r1": "0003 ~ 17AC", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "27.04.06", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 15, "date": "2025-04-01", "qty": 3000, "seq": 1, "tagType": "새틀(소형)", "fileName": "풋사과윤스킨업30_250401_3000_PB009122", "code": "PB009122", "encName": "풋사과윤스킨업30", "prodName": "", "tagStart": "303619B4B014676480000001", "tagEnd": "~ 000DAC", "d1": "2025-04-04", "r1": "0001 ~ 0BF4", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "27.04.15", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 16, "date": "2025-04-07", "qty": 5160, "seq": 2, "tagType": "새틀(소형)", "fileName": "원삼칠30_250407_5160_PB004122", "code": "PB004122", "encName": "원삼칠30", "prodName": "", "tagStart": "303619B4B0142224800063AC", "tagEnd": "~ 0079C7", "d1": "2025-04-10", "r1": "①63AC ~ 780F", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "27.04.20", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 17, "date": "2025-05-27", "qty": 2250, "seq": 2, "tagType": "새틀(소형)", "fileName": "통90_250527_2250_PB003141", "code": "PB003141", "encName": "통90", "prodName": "통270정", "tagStart": "303619B4B013E364800007D1", "tagEnd": "~ 00128E", "d1": "2025-05-27", "r1": "07D1 ~ 0906", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "27.06.08", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 18, "date": "2025-06-13", "qty": 0, "seq": 3, "tagType": "새틀(소형)", "fileName": "원삼칠30_250613_340_PB004122", "code": "PB004122", "encName": "원삼칠30", "prodName": "", "tagStart": "303619B4B0142224800079C8", "tagEnd": "~ 007B1B", "d1": "2025-06-16", "r1": "③79C8 ~ 7ADF", "extra": "", "d2": "2025-07-14", "r2": "②782D ~ 7908/                       ④7AE0 ~ 7B1B", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "27.04.20", "deliverQty": "", "deliverDate": "", "attach": "", "note": "추가발주분                     (27.4.20)"}, {"no": 19, "date": "2025-07-09", "qty": 400, "seq": 1, "tagType": "합지라벨(위탁)", "fileName": "자임혈1000_250709_400_PB001011", "code": "PB001011", "encName": "자임혈1000", "prodName": "", "tagStart": "303619B4B013A16480000321", "tagEnd": "~ 00514", "d1": "2025-07-15", "r1": "0321 ~ 04BC", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 20, "date": "2025-07-14", "qty": 400, "seq": 1, "tagType": "합지라벨(위탁)", "fileName": "통 1200_250714_400_PB003011", "code": "PB003011", "encName": "통1200", "prodName": "", "tagStart": "303619B4B013E3A480000001", "tagEnd": "~ 001F4", "d1": "2025-07-15", "r1": "0001 ~ 019C", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 21, "date": "2025-07-16", "qty": 1000, "seq": 2, "tagType": "새틀(소형)", "fileName": "청락토분말30_250716_1000_PB002122", "code": "PB002122", "encName": "청락토분말30", "prodName": "", "tagStart": "303619B4B0143EA480000C81", "tagEnd": "~ 01194", "d1": "2025-07-16", "r1": "0C81 ~ 109A", "extra": "", "d2": "2025-09-04", "r2": "10E8", "d3": "2025-12-02", "r3": "1130", "d4": "", "r4": "", "expiry": "27.01.20", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 22, "date": "2025-09-25", "qty": 750, "seq": 2, "tagType": "합지라벨(위탁)", "fileName": "자임혈1000_250925_750_PB001011", "code": "PB001011", "encName": "자임혈1000", "prodName": "", "tagStart": "303619B4B013A16480000515", "tagEnd": "~ 008FC", "d1": "2025-09-30", "r1": "0515 ~ 0817", "extra": "", "d2": "2025-10-29", "r2": "0883 ~ 08E6", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 23, "date": "2025-10-13", "qty": 2000, "seq": 3, "tagType": "새틀(소형)", "fileName": "속상자 통분말30_251013_2000_PB003152-1", "code": "PB003152-1", "encName": "속상자_통분말30", "prodName": "통60분말정", "tagStart": "303619B4B01457A480001389", "tagEnd": "~ 01D4C", "d1": "2025-10-20", "r1": "1389 ~ 1B94", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "27.10.22", "deliverQty": "", "deliverDate": "", "attach": "", "note": "자체작업"}, {"no": 24, "date": "2025-10-21", "qty": 4500, "seq": 2, "tagType": "새틀(소형)", "fileName": "달60_251021_4500_PB005131", "code": "PB005131", "encName": "달60", "prodName": "달360", "tagStart": "303619B4B013DBE480001A2D", "tagEnd": "~ 02DB4", "d1": "2025-10-28", "r1": "1A2D ~ 2BFC", "extra": "", "d2": "2025-11-11", "r2": "2C66 ~ 2C26", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 25, "date": "2025-10-24", "qty": 4000, "seq": 2, "tagType": "새틀(소형)", "fileName": "청락토300_251024_4000_PB002113", "code": "PB002113", "encName": "청락토300", "prodName": "", "tagStart": "303619AA900A3EE480004EFD", "tagEnd": "~ 05F64", "d1": "2025-10-28", "r1": "4EFD ~ 5ED8", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": "라벨발주"}, {"no": 26, "date": "2025-10-24", "qty": 5000, "seq": 3, "tagType": "새틀(소형)", "fileName": "속상자 자임혈분말90_251024_5000_PB001132", "code": "PB001132", "encName": "자임혈분말90", "prodName": "", "tagStart": "303619B4B0140364800035B7", "tagEnd": "~ 04B32", "d1": "2025-10-28", "r1": "497A ~ 35B7", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 27, "date": "2025-10-28", "qty": 1700, "seq": 1, "tagType": "새틀(소형)", "fileName": "달180_251028_1500_PB005121", "code": "PB005121", "encName": "달180", "prodName": "", "tagStart": "303619B4B0139D2480001131", "tagEnd": "~ 017D4", "d1": "2025-11-04", "r1": "1131 ~ 1770", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": "라벨발주"}, {"no": 24, "date": "2025-10-28", "qty": 2440, "seq": 1, "tagType": "새틀(소형)", "fileName": "통450_251028_3000_PB003111", "code": "PB003111", "encName": "통450", "prodName": "", "tagStart": "303619B4B013E32480002581", "tagEnd": "~ 03200", "d1": "2025-11-04", "r1": "2581 ~ 3070", "extra": "", "d2": "2025-11-20", "r2": "3200 ~ 319D", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": "라벨발주"}, {"no": 25, "date": "2025-12-01", "qty": 1000, "seq": 3, "tagType": "새틀(소형)", "fileName": "청락토분말30_251127_1000_PB002122", "code": "PB002122", "encName": "청락토분말30", "prodName": "", "tagStart": "303619B4B0143EA480001771", "tagEnd": "~ 01BBC", "d1": "2025-12-02", "r1": "1B76 ~1770", "extra": "1771 ~ 1775", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 26, "date": "2025-12-01", "qty": 500, "seq": 2, "tagType": "합지라벨(위탁)", "fileName": "통1200_251127_500_PB003011", "code": "PB003011", "encName": "통1200", "prodName": "", "tagStart": "303619B4B013E3A4800001F5", "tagEnd": "~ 004B0", "d1": "2025-12-02", "r1": "0406 ~ 01FA", "extra": "01F9 ~ 01F5", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 27, "date": "2025-12-24", "qty": 10000, "seq": 1, "tagType": "새틀(소형)", "fileName": "아이담루미업30_251127_10000_PB010113", "code": "PB010113", "encName": "아이담루미업30", "prodName": "", "tagStart": "30361989640ACFE480000001", "tagEnd": "~ 02AF8", "d1": "2025-12-29", "r1": "0001 ~ 275F", "extra": "2760 ~ 2757", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 28, "date": "2026-01-29", "qty": 657, "seq": 1, "tagType": "합지라벨(위탁)", "fileName": "통1000_260129_657_PB003021", "code": "PB003021", "encName": "통1000", "prodName": "", "tagStart": "303619215860BAA480000001", "tagEnd": "~ 00320", "d1": "2026-02-11", "r1": "0015 ~ 02BC", "extra": "0001 ~ 0014", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 29, "date": "2026-03-10", "qty": 6000, "seq": 2, "tagType": "리니어(대형)", "fileName": "원삼칠환15_260303_6000_PB004145", "code": "PB004145", "encName": "원삼칠환15", "prodName": "", "tagStart": "303619AB5C2AFA2480001965", "tagEnd": "~ 032C8", "d1": "2026-03-20", "r1": "1965 ~ 3124", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 30, "date": "2026-03-10", "qty": 1000, "seq": 3, "tagType": "합지라벨(위탁)", "fileName": "자임혈1000_260310_1000_PB001011", "code": "PB001011", "encName": "자임혈1000", "prodName": "", "tagStart": "303619B4B013A164800008FD", "tagEnd": "~ 008FD", "d1": "2026-03-30", "r1": "08FD ~ 0D08", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 31, "date": "2026-03-25", "qty": 6000, "seq": 3, "tagType": "새틀(소형)", "fileName": "달60_260325_6000_PB005131", "code": "PB005131", "encName": "달60", "prodName": "달360(단상자내 부착)", "tagStart": "303619B4B013DBE480002DB5", "tagEnd": "~ 045EC", "d1": "2026-03-27", "r1": "2DB5 ~ 4574", "extra": "", "d2": "2026-04-22", "r2": "458F ~ 45CO", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 32, "date": "2026-03-25", "qty": 1500, "seq": 2, "tagType": "새틀(소형)", "fileName": "달180_260325_1500_PB005121", "code": "PB005121", "encName": "달180", "prodName": "", "tagStart": "303619B4B0139D24800017D5", "tagEnd": "~ 01E14", "d1": "2026-03-26", "r1": "17D5 ~ 1DD8", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": ""}, {"no": 33, "date": "2026-04-22", "qty": 3100, "seq": 3, "tagType": "새틀(소형)", "fileName": "청락토300_260422_3100_PB002113", "code": "PB002113", "encName": "청락토300", "prodName": "", "tagStart": "303619AA900A3EE480005F65", "tagEnd": "~ 06C48", "d1": "2026-04-24", "r1": "5F66 ~ 6BE4", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": "라벨발주"}, {"no": 34, "date": "2026-04-30", "qty": 1100, "seq": 1, "tagType": "새틀(소형)", "fileName": "강본60_260430_1100_PB006131-1", "code": "PB006131-1", "encName": "강본60", "prodName": "", "tagStart": "303619B4B0144AE480002531", "tagEnd": "~ 029E0", "d1": "2026-05-07", "r1": "2531 ~ 29A4", "extra": "2531 ~ 2558", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": "라벨발주"}, {"no": 35, "date": "2026-04-30", "qty": 1100, "seq": 1, "tagType": "새틀(소형)", "fileName": "강본300_260430_1100_PB006111", "code": "PB006111", "encName": "강본300", "prodName": "", "tagStart": "303619B4B0143A6480000F48", "tagEnd": "~ 013F6", "d1": "2026-05-07", "r1": "0F47 ~ 13BA", "extra": "0F47 ~ OF6E", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": "라벨발주"}, {"no": 36, "date": "2026-05-12", "qty": 1100, "seq": 2, "tagType": "리니어(대형)", "fileName": "", "code": "PB006131-1", "encName": "강본60", "prodName": "", "tagStart": "303619B4B0144AE480002531", "tagEnd": "~ 029E0", "d1": "", "r1": "", "extra": "", "d2": "", "r2": "", "d3": "", "r3": "", "d4": "", "r4": "", "expiry": "", "deliverQty": "", "deliverDate": "", "attach": "", "note": "리니어발주(재발주)"}];
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nf = n => (Number(n)||0).toLocaleString('ko-KR');
+const TT = s => String(s||'').replace(/\s+/g,'');   // TAG TYPE 정규화(공백제거)
+function badge(t){
+  const k=TT(t);
+  if(k.includes('새틀')) return '<span class="badge b-saetl">새틀(소형)</span>';
+  if(k.includes('리니어')) return '<span class="badge b-linear">리니어(대형)</span>';
+  if(k.includes('합지')) return '<span class="badge b-hapji">합지라벨(위탁)</span>';
+  return '<span class="badge b-etc">'+esc(t||'-')+'</span>';
+}
+function tagLabel(t){const k=TT(t);if(k.includes('새틀'))return '새틀(소형)';if(k.includes('리니어'))return '리니어(대형)';if(k.includes('합지'))return '합지라벨(위탁)';return t||'기타';}
+function pdate(s){ if(!s) return null; const m=String(s).match(/(\d{4})-(\d{2})-(\d{2})/); return m?new Date(+m[1],+m[2]-1,+m[3]):null; }
+
+/* ── 중복/불일치 검증 로직 ── */
+// 방식2: (제품코드 + 발주순서) 2회 이상 → 발주순서 중복
+function seqDupGroups(rows){
+  const m={};
+  rows.forEach(r=>{ const k=r.code+'||'+String(r.seq); (m[k]=m[k]||[]).push(r); });
+  return Object.values(m).filter(g=>g.length>1);
+}
+// 방식1: (제품코드 + 인코딩파일명) 그룹 내 TAG ID(시작) 7~17번째 자리 비교 → 다수와 다른 값 경고
+function hexKey(tagStart){
+  let s=String(tagStart||'').split('~')[0].replace(/[^0-9A-Za-z]/g,'');
+  if(s.length<17) return '';
+  return s.slice(6,17).toUpperCase();   // 7~17번째(1-based) = index 6..16
+}
+function tagMismatchRows(rows){
+  const groups={};
+  rows.forEach(r=>{ const key=hexKey(r.tagStart); if(!key) return; const gk=r.code+'||'+r.encName; (groups[gk]=groups[gk]||[]).push({r,key}); });
+  const flagged=[];
+  Object.values(groups).forEach(g=>{
+    if(g.length<2) return;
+    const cnt={}; g.forEach(x=>cnt[x.key]=(cnt[x.key]||0)+1);
+    const keys=Object.keys(cnt); if(keys.length<2) return;
+    const major=keys.sort((a,b)=>cnt[b]-cnt[a])[0];
+    g.forEach(x=>{ if(x.key!==major) flagged.push({...x.r, _mismKey:x.key, _major:major}); });
+  });
+  return flagged;
+}
+
+/* ── 상태 ── */
+let VIEW='list';
+let charts={};
+const dupSet = new Set();   // 발주순서 중복 행 표시용 (no 기준)
+const misSet = new Set();
+function recomputeFlags(rows){
+  dupSet.clear(); misSet.clear();
+  seqDupGroups(rows).forEach(g=>g.forEach(r=>dupSet.add(r._id)));
+  tagMismatchRows(rows).forEach(r=>misSet.add(r._id));
+}
+// 고유 id 부여
+ENC_DATA.forEach((r,i)=>{ r._id=i; });
+
+/* ── 필터 ── */
+function getFiltered(){
+  const from=pdate($('fFrom').value), to=pdate($('fTo').value);
+  const q=($('fQ').value||'').trim().toLowerCase(), tag=$('fTag').value;
+  return ENC_DATA.filter(r=>{
+    const d=pdate(r.date);
+    if(from && d && d<from) return false;
+    if(to && d && d>to) return false;
+    if(tag && tagLabel(r.tagType)!==tag) return false;
+    if(q){ const hay=(r.encName+' '+r.prodName+' '+r.code+' '+r.fileName).toLowerCase(); if(!hay.includes(q)) return false; }
+    return true;
+  });
+}
+
+/* ── 사이드바(전체 데이터 기준 개요) ── */
+function renderSidebar(){
+  const all=ENC_DATA;
+  $('sTotal').textContent=nf(all.length)+'건';
+  $('sQty').textContent=nf(all.reduce((s,r)=>s+ (Number(r.qty)||0),0));
+  $('sItems').textContent=new Set(all.map(r=>r.code).filter(Boolean)).size+'종';
+  const dates=all.map(r=>r.date).filter(Boolean).sort();
+  $('sRecent').textContent=dates.length?dates[dates.length-1]:'-';
+  $('sDup').textContent=seqDupGroups(all).length+'건';
+  $('pinCnt').textContent=all.length;
+  // 기간별
+  const now=new Date(); const ago=m=>{const d=new Date(now);d.setMonth(d.getMonth()-m);return d;};
+  const cnt=(m)=>all.filter(r=>{const d=pdate(r.date);return d&&d>=ago(m)&&d<=now;}).length;
+  $('p1').textContent=cnt(1)+'건'; $('p3').textContent=cnt(3)+'건'; $('p6').textContent=cnt(6)+'건'; $('pAll').textContent=all.length+'건';
+  // TAG TYPE별
+  const tmap={};
+  all.forEach(r=>{const l=tagLabel(r.tagType); tmap[l]=(tmap[l]||0)+1;});
+  const order=['새틀(소형)','리니어(대형)','합지라벨(위탁)'];
+  $('sTagType').innerHTML=order.filter(l=>tmap[l]).map(l=>`<div class="tt-row">${badge(l)}<span class="cnt">${tmap[l]}건</span></div>`).join('')
+    + Object.keys(tmap).filter(l=>!order.includes(l)).map(l=>`<div class="tt-row"><span class="nm">${esc(l)}</span><span class="cnt">${tmap[l]}건</span></div>`).join('');
+  // 상위 품목(제품코드 발주건수)
+  const cmap={}; all.forEach(r=>{ if(r.code) cmap[r.code]=(cmap[r.code]||0)+1; });
+  const top=Object.entries(cmap).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  $('sTopItems').innerHTML=top.map(([c,n])=>`<div class="tp-row"><span class="code">${esc(c)}</span><span class="cnt">${n}건</span></div>`).join('');
+  // TAG select 옵션
+  const sel=$('fTag'); if(sel.options.length<=1){ order.filter(l=>tmap[l]).forEach(l=>{const o=document.createElement('option');o.value=l;o.textContent=l;sel.appendChild(o);}); }
+}
+
+/* ── KPI ── */
+function renderKPI(rows){
+  $('kCount').textContent=nf(rows.length);
+  $('kQty').textContent=nf(rows.reduce((s,r)=>s+(Number(r.qty)||0),0));
+  $('kItems').textContent=new Set(rows.map(r=>r.code).filter(Boolean)).size;
+  $('kTypes').textContent=new Set(rows.map(r=>tagLabel(r.tagType))).size;
+  $('kDup').textContent=seqDupGroups(rows).length;
+}
+
+/* ── 뷰: 전체 내역 ── */
+function viewList(rows){
+  const sorted=[...rows].sort((a,b)=>(pdate(a.date)?.getTime()||0)-(pdate(b.date)?.getTime()||0));
+  const body=sorted.map((r,i)=>{
+    const flags=(dupSet.has(r._id)?'<span class="dot dot-y" title="발주순서 중복"></span>':'')+(misSet.has(r._id)?'<span class="dot dot-b" title="TAG ID 7~17자리 불일치"></span>':'');
+    return `<tr class="${dupSet.has(r._id)?'dup':''}">
+      <td>${i+1}</td><td>${esc(r.date)}</td><td class="num">${nf(r.qty)}</td>
+      <td>${flags}${esc(String(r.seq))}</td><td>${badge(r.tagType)}</td>
+      <td><span class="mono">${esc(r.code)}</span></td><td>${esc(r.encName)||'-'}</td><td>${esc(r.prodName)||'-'}</td>
+      <td><span class="mono">${esc(r.tagStart.replace(/~\s*$/,'').trim())||'-'}</span></td>
+      <td><span class="mono">${esc(r.tagEnd.replace(/^\s*~/,'').trim())||'-'}</span></td>
+      <td>${esc(r.d1)||'-'}</td><td>${esc(r.r1)||'-'}</td>
+      <td>${esc(r.d2)||'-'}</td><td>${esc(r.r2)||'-'}</td>
+      <td>${esc(r.r3)||'-'}</td><td>${esc(r.r4)||'-'}</td>
+      <td>${esc(r.expiry)||'-'}</td><td>${esc(r.note)||'-'}</td>
+    </tr>`;
+  }).join('');
+  $('view').innerHTML=`<div class="panel">
+    <h2>📄 전체 인코딩 발주 내역</h2>
+    <div class="legend-inline"><span><span class="dot dot-y"></span>발주순서 중복</span><span><span class="dot dot-b"></span>TAG ID 7~17자리 불일치(동일 제품·인코딩)</span><span style="margin-left:auto;color:var(--v-500);font-weight:800">${rows.length}건 표시</span></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>No</th><th>발주일</th><th>발주수량</th><th>발주순서</th><th>TAG TYPE</th><th>제품코드</th><th>인코딩파일명</th><th>본제품명</th><th>TAG ID(시작)</th><th>끝번호</th><th>1차 날짜</th><th>1차 범위</th><th>2차 날짜</th><th>2차 범위</th><th>3차</th><th>4차</th><th>소비기한</th><th>비고</th></tr></thead>
+      <tbody>${body||'<tr><td colspan="18" style="text-align:center;padding:30px;color:var(--ink-3)">표시할 데이터가 없습니다.</td></tr>'}</tbody>
+    </table></div></div>`;
+}
+
+/* ── 뷰: 품목별 현황 ── */
+function viewProd(rows){
+  const groups={};
+  rows.forEach(r=>{ (groups[r.code]=groups[r.code]||[]).push(r); });
+  const codes=Object.keys(groups).sort((a,b)=>groups[b].length-groups[a].length || a.localeCompare(b));
+  let html='';
+  codes.forEach(code=>{
+    const g=groups[code].slice().sort((a,b)=>(pdate(a.date)?.getTime()||0)-(pdate(b.date)?.getTime()||0));
+    const pname=g[0].encName||g[0].prodName||'';
+    const dup=seqDupGroups(g).length>0;
+    const rowsH=g.map(r=>`<tr class="${dupSet.has(r._id)?'dup':''}">
+        <td>${r._id+1}</td><td>${esc(r.date)}</td><td class="num">${nf(r.qty)}</td>
+        <td>${dupSet.has(r._id)?'<span class="dot dot-y"></span>':''}${esc(String(r.seq))}</td>
+        <td>${badge(r.tagType)}</td><td><span class="mono">${esc(r.tagStart.replace(/~\s*$/,'').trim())||'-'}</span></td>
+        <td><span class="mono">${esc(r.tagEnd.replace(/^\s*~/,'').trim())||'-'}</span></td>
+        <td>${esc(r.r1)||'-'}</td><td>${esc(r.expiry)||'-'}</td></tr>`).join('');
+    html+=`<div class="prodblock">
+      <div class="ph"><span class="pc">${esc(code)}</span><span class="pn">${esc(pname)}</span>${dup?'<span style="color:var(--warn-fg);font-weight:800;font-size:0.74rem">⚠ 발주순서 중복</span>':''}<span class="cnt">${g.length}건</span></div>
+      ${dup?'<div class="warn-note">⚠ 발주순서 중복: 동일 순서가 2회 이상 발주되었습니다.</div>':''}
+      <div class="tbl-wrap"><table style="min-width:760px">
+        <thead><tr><th>No</th><th>발주일</th><th>수량</th><th>발주순서</th><th>TAG TYPE</th><th>TAG ID 시작</th><th>끝번호</th><th>1차 범위</th><th>소비기한</th></tr></thead>
+        <tbody>${rowsH}</tbody></table></div></div>`;
+  });
+  $('view').innerHTML=`<div class="panel"><h2>🖊️ 품목별 발주 현황</h2><p class="desc">제품코드별로 묶어 발주 이력과 중복 여부를 확인합니다 · 총 ${codes.length}개 품목</p>${html||'<p style="color:var(--ink-3)">데이터가 없습니다.</p>'}</div>`;
+}
+
+/* ── 뷰: TAG 분석 ── */
+function viewTag(rows){
+  const order=['새틀(소형)','리니어(대형)','합지라벨(위탁)'];
+  const m={};
+  rows.forEach(r=>{ const l=tagLabel(r.tagType); (m[l]=m[l]||[]).push(r); });
+  const labels=order.filter(l=>m[l]).concat(Object.keys(m).filter(l=>!order.includes(l)));
+  const body=labels.map(l=>{
+    const g=m[l]; const qty=g.reduce((s,r)=>s+(Number(r.qty)||0),0);
+    const items=new Set(g.map(r=>r.code)).size;
+    const recent=g.map(r=>r.date).filter(Boolean).sort().slice(-1)[0]||'-';
+    const enc=[...new Set(g.map(r=>r.encName).filter(Boolean))].slice(0,4).join(', ');
+    return `<tr><td>${badge(l)}</td><td class="num">${nf(g.length)}</td><td class="num">${nf(qty)}</td><td class="num">${items}</td><td>${esc(recent)}</td><td style="white-space:normal;color:var(--ink-3)">${esc(enc)}</td></tr>`;
+  }).join('');
+  $('view').innerHTML=`<div class="panel"><h2>🏷️ TAG TYPE별 발주 현황</h2><p class="desc">라벨 유형별 발주 건수·수량·품목수와 주요 품목을 요약합니다.</p>
+    <div class="tbl-wrap"><table style="min-width:720px"><thead><tr><th>TAG TYPE</th><th>발주 건수</th><th>총 수량</th><th>품목 수</th><th>최근 발주일</th><th>주요 품목</th></tr></thead>
+    <tbody>${body}</tbody></table></div></div>`;
+}
+
+/* ── 뷰: 중복 검증 ── */
+function viewDup(rows){
+  const seq=seqDupGroups(rows);
+  const mis=tagMismatchRows(rows);
+  let seqH='';
+  if(seq.length){
+    seqH=seq.map(g=>{
+      const r0=g[0];
+      const rowsH=g.map(r=>`<tr class="dup"><td><span class="mono">${esc(r.code)}</span></td><td>${esc(r.encName)}</td><td style="color:var(--warn-fg);font-weight:800">발주순서 ${esc(String(r.seq))}</td><td>${esc(r.date)}</td><td class="num">${nf(r.qty)}</td><td>${badge(r.tagType)}</td></tr>`).join('');
+      return rowsH;
+    }).join('');
+    seqH=`<div class="tbl-wrap"><table style="min-width:720px"><thead><tr><th>제품코드</th><th>인코딩파일명</th><th>중복 발주순서</th><th>발주일</th><th>수량</th><th>TAG TYPE</th></tr></thead><tbody>${seqH}</tbody></table></div>`;
+  }else{
+    seqH='<div class="ok-note">✅ 발주순서 중복 없음</div>';
+  }
+  let misH='';
+  if(mis.length){
+    misH='<div class="tbl-wrap"><table style="min-width:760px"><thead><tr><th>제품코드</th><th>인코딩파일명</th><th>발주일</th><th>TAG ID(시작)</th><th>7~17자리(이 행)</th><th>다수 값</th></tr></thead><tbody>'
+      + mis.map(r=>`<tr><td><span class="mono">${esc(r.code)}</span></td><td>${esc(r.encName)}</td><td>${esc(r.date)}</td><td><span class="mono">${esc(r.tagStart.replace(/~\s*$/,'').trim())}</span></td><td><span class="mono" style="background:#FDEBEC;color:#B42318">${esc(r._mismKey)}</span></td><td><span class="mono">${esc(r._major)}</span></td></tr>`).join('')
+      + '</tbody></table></div>';
+  }else{
+    misH='<div class="ok-note">✅ TAG ID 7~17자리 불일치 없음</div>';
+  }
+  $('view').innerHTML=`<div class="panel">
+    <div class="crit-head y">🟡 중복검증 방식 2 — 동일 품목 발주순서 중복 <span class="cc">${seq.length}건</span></div>
+    ${seqH}
+    <div class="crit-head b" style="margin-top:22px">🔵 중복검증 방식 1 — 동일 제품·인코딩에서 TAG ID 7~17자리 불일치 <span class="cc">${mis.length}건</span></div>
+    <p class="desc" style="margin-top:10px">📌 검증기준: 제품코드와 인코딩 파일명이 같은 행끼리 묶어, TAG ID(시작)의 7~17번째 자리를 비교합니다. 그룹 내 서로 다른 값이 있으면 <b>가장 많이 나온 값(다수)과 다른 값</b>을 가진 행만 경고합니다.</p>
+    ${misH}
+  </div>`;
+}
+
+/* ── 뷰: 차트 ── */
+function destroyCharts(){ Object.values(charts).forEach(c=>c&&c.destroy()); charts={}; }
+function viewChart(rows){
+  $('view').innerHTML=`<div class="chart-grid">
+    <div class="panel"><h2>📅 월별 발주 건수</h2><p class="desc">발주가 몰리는 시기를 확인합니다.</p><div class="chart-box"><canvas id="cMonth"></canvas></div><div class="chart-fallback" id="fMonth"></div></div>
+    <div class="panel"><h2>🖊️ 품목별 발주 수량</h2><p class="desc">인코딩파일명 기준 상위 품목 수량</p><div class="chart-box"><canvas id="cItem"></canvas></div><div class="chart-fallback" id="fItem"></div></div>
+    <div class="panel"><h2>🏷️ TAG TYPE 분포</h2><p class="desc">라벨 유형별 발주 건수 비중</p><div class="chart-box"><canvas id="cType"></canvas></div><div class="chart-fallback" id="fType"></div></div>
+    <div class="panel"><h2>🔢 발주순서별 건수 분포</h2><p class="desc">1차·2차·3차 등 발주 순서별 비중</p><div class="chart-box"><canvas id="cSeq"></canvas></div><div class="chart-fallback" id="fSeq"></div></div>
+  </div>`;
+  destroyCharts();
+  if(typeof Chart==='undefined'){ ['fMonth','fItem','fType','fSeq'].forEach(id=>{const e=$(id);if(e){e.style.display='block';e.textContent='차트 라이브러리를 불러오지 못했습니다.';}}); return; }
+  const PAL=['#7C3AED','#2563EB','#059669','#E0A32E','#DC2626','#0EA5A0','#DB2777','#6366F1','#F59E0B','#14B8A6','#8B5CF6'];
+  const grid='rgba(76,29,149,0.08)', tick='#6B6580';
+  // 월별
+  const mon={}; rows.forEach(r=>{ if(r.date){const k=r.date.slice(0,7); mon[k]=(mon[k]||0)+1;} });
+  const mk=Object.keys(mon).sort();
+  charts.month=new Chart($('cMonth'),{type:'bar',data:{labels:mk,datasets:[{data:mk.map(k=>mon[k]),backgroundColor:'#7C3AED',borderRadius:6,maxBarThickness:34}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:grid},ticks:{color:tick,stepSize:1}},x:{grid:{display:false},ticks:{color:tick,font:{size:10}}}}}});
+  // 품목별 수량 top11
+  const im={}; rows.forEach(r=>{ const k=r.encName||r.code; im[k]=(im[k]||0)+(Number(r.qty)||0); });
+  const ie=Object.entries(im).sort((a,b)=>b[1]-a[1]).slice(0,11);
+  charts.item=new Chart($('cItem'),{type:'bar',data:{labels:ie.map(e=>e[0]),datasets:[{data:ie.map(e=>e[1]),backgroundColor:ie.map((e,i)=>PAL[i%PAL.length]),borderRadius:5,maxBarThickness:20}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>nf(c.parsed.x)+'개'}}},scales:{x:{beginAtZero:true,grid:{color:grid},ticks:{color:tick,callback:v=>nf(v)}},y:{grid:{display:false},ticks:{color:tick,font:{size:10.5,weight:'700'}}}}}});
+  // TAG TYPE 분포(건수)
+  const order=['새틀(소형)','리니어(대형)','합지라벨(위탁)']; const tm={};
+  rows.forEach(r=>{const l=tagLabel(r.tagType);tm[l]=(tm[l]||0)+1;});
+  const tl=order.filter(l=>tm[l]).concat(Object.keys(tm).filter(l=>!order.includes(l)));
+  charts.type=new Chart($('cType'),{type:'doughnut',data:{labels:tl,datasets:[{data:tl.map(l=>tm[l]),backgroundColor:['#7C3AED','#2563EB','#059669','#E0A32E'],borderColor:'#fff',borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'bottom',labels:{color:'#3A3550',font:{weight:'700',size:11},padding:12,usePointStyle:true}}}}});
+  // 발주순서별
+  const sm={}; rows.forEach(r=>{const k='순서 '+r.seq; sm[k]=(sm[k]||0)+1;});
+  const sk=Object.keys(sm).sort();
+  charts.seq=new Chart($('cSeq'),{type:'pie',data:{labels:sk,datasets:[{data:sk.map(k=>sm[k]),backgroundColor:['#7C3AED','#2563EB','#059669','#E0A32E','#DC2626'],borderColor:'#fff',borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#3A3550',font:{weight:'700',size:11},padding:12,usePointStyle:true}}}}});
+}
+
+/* ── 렌더 ── */
+function renderView(){
+  const rows=getFiltered();
+  recomputeFlags(rows);
+  renderKPI(rows);
+  if(VIEW==='list') viewList(rows);
+  else if(VIEW==='prod') viewProd(rows);
+  else if(VIEW==='tag') viewTag(rows);
+  else if(VIEW==='dup') viewDup(rows);
+  else if(VIEW==='chart') viewChart(rows);
+}
+
+/* ── 이벤트 ── */
+document.querySelectorAll('.vtab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.vtab').forEach(x=>x.classList.remove('on')); t.classList.add('on');
+  VIEW=t.getAttribute('data-v'); renderView();
+}));
+$('btnGo').addEventListener('click',renderView);
+$('fQ').addEventListener('keydown',e=>{if(e.key==='Enter')renderView();});
+$('fTag').addEventListener('change',renderView);
+$('btnReset').addEventListener('click',()=>{ $('fFrom').value='';$('fTo').value='';$('fQ').value='';$('fTag').value='';
+  document.querySelectorAll('.btn-quick').forEach(b=>b.classList.remove('on')); renderView(); });
+$('btnAll').addEventListener('click',()=>{ $('btnReset').click(); });
+document.querySelectorAll('.btn-quick').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.btn-quick').forEach(x=>x.classList.remove('on')); b.classList.add('on');
+  const m=+b.getAttribute('data-m'); const to=new Date(); const from=new Date(); from.setMonth(from.getMonth()-m);
+  const fmt=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  $('fFrom').value=fmt(from); $('fTo').value=fmt(to); renderView();
+}));
+
+/* ── 시계 ── */
+function tick(){ const d=new Date();
+  const wd=['일','월','화','수','목','금','토'][d.getDay()];
+  $('clkD').textContent=`${d.getFullYear()}. ${String(d.getMonth()+1).padStart(2,'0')}. ${String(d.getDate()).padStart(2,'0')}. (${wd})`;
+  $('clkT').textContent=(d.getHours()<12?'오전 ':'오후 ')+String(((d.getHours()+11)%12)+1).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
+}
+tick(); setInterval(tick,1000);
+
+/* ── 시작 ── */
+renderSidebar();
+renderView();
+</script>
+</body>
+</html>
