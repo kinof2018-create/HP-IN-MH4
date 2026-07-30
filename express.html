@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>국제특송(UPS외) 통합 대시보드 · (주)삼화당피앤티</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>if(typeof Chart==='undefined'){document.write('<script src="https:\/\/cdnjs.cloudflare.com\/ajax\/libs\/Chart.js\/4.4.4\/chart.umd.min.js"><\/script>');}</script>
+<script>if(typeof Chart==='undefined'){document.write('<script src="https:\/\/unpkg.com\/chart.js@4.4.4\/dist\/chart.umd.min.js"><\/script>');}</script>
+<style>
+:root{
+  --p300:#4D67C3; --p400:#2645B0; --p500:#1428A0; --p600:#0F1E78; --p700:#0A1758; --secondary:#4FBFB8;
+  /* 다크(기본, HPPK 톤) */
+  --bg-base:#17171D; --bg-subtle:#1E1E27; --bg-elevated:#27272F; --bg-elev2:#2F2F3A;
+  --text-primary:#FFFFFF; --text-secondary:rgba(255,255,255,0.84); --text-tertiary:rgba(255,255,255,0.67);
+  --border-default:rgba(255,255,255,0.11); --border-subtle:rgba(255,255,255,0.06); --border-strong:rgba(255,255,255,0.22);
+  --success-bg:#0F2A1A; --success-fg:#2DC07A; --warn-bg:#2A2010; --warn-fg:#FFB84F; --error-bg:#2A0F18; --error-fg:#FF4D6D; --info-fg:#4FA0FF;
+  --radius-md:8px; --radius-lg:12px; --radius-xl:20px; --radius-full:9999px;
+  --shadow-md:0 8px 20px rgba(0,0,0,0.40); --shadow-card:0 14px 28px rgba(20,40,160,0.35);
+  --page-grad:radial-gradient(1200px 600px at 50% -10%, #1C2F58 0%, #17171D 55%);
+  --font:'Pretendard',SamsungOne,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+body.light{
+  --bg-base:#F4F5F8; --bg-subtle:#EEF0F5; --bg-elevated:#FFFFFF; --bg-elev2:#FFFFFF;
+  --text-primary:#0A0A0F; --text-secondary:#2A2E3A; --text-tertiary:#5A5F6E;
+  --border-default:#E1E4EC; --border-subtle:#EDEFF4; --border-strong:#C4C9D6;
+  --success-bg:#E4F7EC; --success-fg:#0E9F5E; --warn-bg:#FFF3DE; --warn-fg:#B5730A; --error-bg:#FDE7EC; --error-fg:#D6294B; --info-fg:#1B63D6;
+  --shadow-md:0 6px 18px rgba(16,24,40,0.08); --shadow-card:0 14px 28px rgba(20,40,160,0.16);
+  --page-grad:radial-gradient(1200px 600px at 12% -10%, rgba(20,40,160,0.10), transparent 60%), radial-gradient(900px 500px at 100% 0%, rgba(42,163,155,0.08), transparent 55%);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{font-family:var(--font);background:var(--page-grad) fixed,var(--bg-base);color:var(--text-primary);min-height:100vh;-webkit-font-smoothing:antialiased;}
+.container{max-width:1440px;margin:0 auto;padding:24px 20px 60px;}
+
+/* Header */
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:20px 24px;border-radius:var(--radius-xl);margin-bottom:20px;
+  background:linear-gradient(120deg,var(--p700) 0%,var(--p500) 55%,var(--secondary) 140%);box-shadow:var(--shadow-card);position:relative;overflow:hidden;}
+.topbar::after{content:"";position:absolute;inset:0;background:radial-gradient(400px 200px at 90% 0%,rgba(255,255,255,0.18),transparent 70%);}
+.tb-brand{display:flex;flex-direction:column;gap:4px;position:relative;z-index:1;color:#fff;}
+.tb-brand .eyebrow{font:700 11px/1 var(--font);letter-spacing:.16em;text-transform:uppercase;opacity:.85;}
+.tb-brand h1{margin:0;font:800 24px/1.25 var(--font);letter-spacing:-0.01em;}
+.tb-brand .sub{font:500 12.5px/1.5 var(--font);color:rgba(255,255,255,0.85);}
+.tb-meta{display:flex;gap:9px;flex-wrap:wrap;position:relative;z-index:1;align-items:center;}
+.pill{background:rgba(0,0,0,0.28);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.18);color:#fff;padding:8px 14px;border-radius:var(--radius-full);font:700 11.5px/1 var(--font);display:flex;align-items:center;gap:6px;}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--success-fg);box-shadow:0 0 8px var(--success-fg);}
+.btn{cursor:pointer;border:0;border-radius:var(--radius-full);padding:9px 15px;font:700 11.5px/1 var(--font);display:inline-flex;align-items:center;gap:7px;}
+.btn-print{background:#fff;color:var(--p500);box-shadow:0 4px 14px rgba(0,0,0,0.22);}
+.btn-theme{background:rgba(0,0,0,0.28);border:1px solid rgba(255,255,255,0.25);color:#fff;}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px;}
+.kpi{background:linear-gradient(160deg,var(--bg-elevated) 0%,var(--bg-subtle) 100%);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:16px 16px 14px;position:relative;overflow:hidden;box-shadow:var(--shadow-md);}
+.kpi .bar{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--p500);}
+.kpi.k2 .bar{background:var(--secondary);} .kpi.k3 .bar{background:var(--error-fg);} .kpi.k4 .bar{background:var(--warn-fg);} .kpi.k5 .bar{background:var(--info-fg);}
+.kpi .l{font:700 11px/1.3 var(--font);color:var(--text-tertiary);}
+.kpi .v{font:800 22px/1.15 var(--font);margin-top:8px;font-variant-numeric:tabular-nums;letter-spacing:-0.01em;}
+.kpi .f{margin-top:7px;font:600 10.5px/1.3 var(--font);color:var(--text-tertiary);}
+@media (max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+
+/* Sections & panels */
+.section{margin-bottom:22px;}
+.section-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.section-head h2{font:800 17px/1.3 var(--font);margin:0;display:flex;align-items:center;gap:10px;}
+.section-head h2 .idx{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;border-radius:50%;background:var(--p500);color:#fff;font:800 12px/1 var(--font);}
+.section-head .desc{font:500 12px/1.5 var(--font);color:var(--text-tertiary);}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media (max-width:960px){.grid-2{grid-template-columns:1fr;}}
+.panel{background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:18px 20px 14px;box-shadow:var(--shadow-md);}
+.panel h3{margin:0 0 4px;font:700 14px/1.3 var(--font);}
+.chart-q{font:600 11.5px/1.5 var(--font);color:var(--text-tertiary);margin:0 0 10px;padding:7px 11px;background:rgba(79,160,255,0.08);border-left:3px solid var(--info-fg);border-radius:0 8px 8px 0;}
+.chart-wrap{position:relative;height:250px;}
+.chart-fallback{display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-tertiary);font:600 12px/1.6 var(--font);text-align:center;padding:16px;}
+
+/* Table */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center;}
+.toolbar input{background:var(--bg-subtle);border:1px solid var(--border-default);border-radius:var(--radius-md);padding:9px 13px;color:var(--text-primary);font:500 12.5px/1 var(--font);min-width:230px;}
+.toolbar input:focus{outline:none;border-color:var(--p400);}
+.toolbar .count{margin-left:auto;font:600 11.5px/1 var(--font);color:var(--text-tertiary);}
+.table-scroll{overflow-x:auto;border-radius:var(--radius-md);border:1px solid var(--border-default);}
+table.det{width:100%;border-collapse:collapse;font-size:12px;min-width:1050px;}
+table.det thead th{position:sticky;top:0;background:var(--bg-subtle);color:var(--text-tertiary);text-align:right;font:700 11px/1.3 var(--font);padding:10px 10px;border-bottom:1px solid var(--border-default);white-space:nowrap;}
+table.det thead th:nth-child(-n+5){text-align:left;}
+table.det tbody td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--border-subtle);color:var(--text-secondary);white-space:nowrap;font-variant-numeric:tabular-nums;}
+table.det tbody td:nth-child(-n+5){text-align:left;color:var(--text-primary);font-weight:600;}
+table.det tbody tr:hover{background:rgba(127,127,160,0.10);}
+.badge{display:inline-block;padding:3px 9px;border-radius:var(--radius-full);font:700 10px/1.4 var(--font);}
+.b-done{background:var(--success-bg);color:var(--success-fg);} .b-open{background:var(--error-bg);color:var(--error-fg);}
+.docchip{display:inline-block;font:700 9.5px/1.4 var(--font);padding:2px 6px;margin:1px;border-radius:5px;background:rgba(127,140,200,0.18);color:var(--info-fg);border:1px solid var(--border-subtle);}
+.footnote{margin-top:14px;font:500 11px/1.7 var(--font);color:var(--text-tertiary);}
+
+@media (max-width:1180px){.kpi-grid{grid-template-columns:repeat(3,1fr);}}
+</style>
+</head>
+<body class="light">
+<div class="container">
+  <header class="topbar">
+    <div class="tb-brand">
+      <span class="eyebrow">SAMHWADANG P&amp;T · INTERNATIONAL EXPRESS</span>
+      <h1>국제특송(UPS외) 통합 대시보드</h1>
+      <span class="sub">(주)삼화당피앤티 · UPS 국제특송 발송·요금·정산 현황 및 선적서류 조회</span>
+    </div>
+    <div class="tb-meta">
+      <span class="pill"><span class="dot"></span>기준일 <span id="asOf">-</span></span>
+      <span class="pill">총 발송 <span id="cntPill">-</span>건</span>
+      <button class="btn btn-print" id="stmtBtn">📄 삼성에피스 상세거래명세서 출력</button>
+      <button class="btn btn-theme" id="themeBtn">🌙 <span id="themeLabel">다크 모드</span></button>
+    </div>
+  </header>
+
+  <section class="section"><div class="kpi-grid" id="kpiGrid"></div></section>
+
+  <section class="section">
+    <div class="section-head"><h2><span class="idx">1</span>발송 물량 · 특송비용 추이</h2><span class="desc">연도별 발송 건수와 확정 특송비용, 도착 국가별 분포</span></div>
+    <div class="grid-2">
+      <div class="panel"><h3>연도별 발송 건수 &amp; 확정 특송비용</h3><p class="chart-q">Q. 해마다 발송량과 특송비용이 어떻게 변하고 있는가?</p><div class="chart-wrap"><canvas id="chYear"></canvas></div></div>
+      <div class="panel"><h3>도착 국가별 발송 비중</h3><p class="chart-q">Q. 어느 나라로 가장 많이 발송하는가?</p><div class="chart-wrap"><canvas id="chCountry"></canvas></div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2><span class="idx">2</span>비용 분석</h2><span class="desc">국가별 특송비용 합계와 발송 건별 요금 상위</span></div>
+    <div class="grid-2">
+      <div class="panel"><h3>국가별 확정 특송비용 합계</h3><p class="chart-q">Q. 비용이 어느 목적지에 집중되는가?</p><div class="chart-wrap"><canvas id="chCountryFee"></canvas></div></div>
+      <div class="panel"><h3>발송 건별 확정 요금 상위</h3><p class="chart-q">Q. 어떤 발송 건의 특송비용이 가장 컸는가?</p><div class="chart-wrap"><canvas id="chTop"></canvas></div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head"><h2><span class="idx">3</span>발송 · 요금 상세 조회</h2><span class="desc">발송 건별 전체 내역 · 선적서류</span></div>
+    <div class="panel">
+      <div class="toolbar">
+        <input id="q" type="text" placeholder="INVOICE · 송장번호 · 품목 · 국가 검색">
+        <span class="count"><span id="rowCnt">0</span>건 표시</span>
+      </div>
+      <div class="table-scroll">
+        <table class="det"><thead><tr>
+          <th>No</th><th>INVOICE</th><th>발송일</th><th>도착일</th><th>도착국</th>
+          <th>제품</th><th>수량</th><th>중량</th><th>확정요금</th><th>미정산</th><th>정산</th><th>선적서류</th>
+        </tr></thead><tbody id="tbody"></tbody></table>
+      </div>
+      <div class="footnote">※ 선적서류(인보이스·팩킹리스트·상세거래명세서·운송장)는 화면 설계 단계이며, 다음 단계에서 <b>EXPRESS/&lt;INVOICE&gt;/</b> 폴더 연결 시 클릭 조회로 전환됩니다. · 데이터: UPS 출하내역 시트</div>
+    </div>
+  </section>
+</div>
+
+<script>
+const UPS = [{"no": "1", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "", "sendDate": "24-5-14", "arrDate": "24-5-15", "client": "삼성바이오에피스", "tracking": "1ZH95K67G105771155", "product": "아필리부주 40mm 설명서", "qty": "2", "pkg": "BOX", "weight": "12.00", "estWeight": "24.00", "actWeight": "26.00", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩569,933", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩620,025", "feeSum": "₩620,025", "settleDate": "24-6-4", "duty": "₩0", "logistics": "₩620,025", "settleSum": "₩620,025", "unsettled": "₩0", "note": "실제중량 차이로 인한 요금 상승 발생"}, {"no": "2", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "", "sendDate": "24-6-3", "arrDate": "24-6-4", "client": "삼성바이오에피스", "tracking": "1ZH95K67D340024618", "product": "아필리부주 40mg 설명서", "qty": "16", "pkg": "BOX", "weight": "14.70", "estWeight": "235.20", "actWeight": "240.00", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩4,595,470", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩2,126,202", "feeSum": "₩2,126,202", "settleDate": "24-7-15", "duty": "₩0", "logistics": "₩2,126,202", "settleSum": "₩2,126,202", "unsettled": "₩0", "note": ""}, {"no": "3", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "", "sendDate": "24-6-4", "arrDate": "24-6-5", "client": "삼성바이오에피스", "tracking": "1ZH95K67D340034376", "product": "아필리부주 40mg 케이스", "qty": "1", "pkg": "BOX", "weight": "5.00", "estWeight": "5.00", "actWeight": "5.00", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩208,184", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩150,736", "feeSum": "₩150,736", "settleDate": "24-7-15", "duty": "₩0", "logistics": "₩150,736", "settleSum": "₩150,736", "unsettled": "₩0", "note": ""}, {"no": "4", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "", "sendDate": "24-6-7", "arrDate": "24-6-10", "client": "삼성바이오에피스", "tracking": "1ZH95K67D308520357", "product": "아필리부주 40mg 케이스14 BOX + 라벨 1 BOX", "qty": "15", "pkg": "BOX", "weight": "12.00", "estWeight": "180.00", "actWeight": "194.00", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩1,677,044", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩1,752,330", "feeSum": "₩1,752,330", "settleDate": "24-7-15", "duty": "₩0", "logistics": "₩1,752,330", "settleSum": "₩1,752,330", "unsettled": "₩0", "note": "실제중량 차이로 인한 요금 상승 발생"}, {"no": "5", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "", "sendDate": "24-7-31", "arrDate": "24-8-1", "client": "삼성바이오에피스", "tracking": "1ZH95K67D940235988", "product": "아필리부주 40mg 케이스 34 BOX + 라벨 1 BOX + 설명서 42 BOX", "qty": "77", "pkg": "BOX", "weight": "13.66", "estWeight": "1,052.00", "actWeight": "?", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩7,910,800", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩7,091,520", "feeSum": "₩7,091,520", "settleDate": "24-9-30", "duty": "₩0", "logistics": "₩7,091,520", "settleSum": "₩7,091,520", "unsettled": "₩0", "note": "추가 할인 적용"}, {"no": "6", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "특송 (당일오전)", "sendDate": "24-10-8", "arrDate": "24-10-10", "client": "삼성바이오에피스", "tracking": "1ZH95K67G127767271", "product": "아필리부주 40mg 라벨 1 BOX", "qty": "1", "pkg": "BOX", "weight": "3.00", "estWeight": "3.00", "actWeight": "?", "destName": "Sharp Packaging Solutions - 384 Penn Drive", "destMgr": "Jeremy Hart", "feeEst": "₩151,847", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩157,147", "feeSum": "₩157,147", "settleDate": "24-11-15", "duty": "₩0", "logistics": "₩157,147", "settleSum": "₩157,147", "unsettled": "₩0", "note": ""}, {"no": "7", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "일반 (당일)", "sendDate": "24-10-15", "arrDate": "24-10-16", "client": "삼성바이오에피스", "tracking": "1ZH95K67D315936501", "product": "아필리부주 40mg 라벨 1 BOX", "qty": "1", "pkg": "BOX", "weight": "3.00", "estWeight": "3.00", "actWeight": "?", "destName": "Sharp Packaging Solutions - 384 Penn Drive", "destMgr": "Jeremy Hart", "feeEst": "₩89,742", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩95,042", "feeSum": "₩95,042", "settleDate": "24-11-15", "duty": "₩0", "logistics": "₩95,042", "settleSum": "₩95,042", "unsettled": "₩0", "note": ""}, {"no": "8", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "일반 (당일)", "sendDate": "24-11-15", "arrDate": "24-11-18", "client": "삼성바이오에피스", "tracking": "1ZH95K67DA35187286", "product": "Opuviz (SB15 US 상업용) label 1BOX", "qty": "1", "pkg": "BOX", "weight": "5.00", "estWeight": "5.00", "actWeight": "?", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "", "vatYN": "₩1,300", "inspectFee": "", "feeFinal": "₩141,917", "feeSum": "₩141,917", "settleDate": "24-12-4", "duty": "₩0", "logistics": "₩143,217", "settleSum": "₩143,217", "unsettled": "₩0", "note": ""}, {"no": "9", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-0808", "method": "특송 (당일오전)", "sendDate": "25-8-8", "arrDate": "25-8-11", "client": "삼성바이오에피스", "tracking": "1ZH95K67D921408694", "product": "샘플) SB2 FDP VIAL 설명서-무지/ 샘플) SB2 FDP 무지 카톤", "qty": "1", "pkg": "BOX", "weight": "12.00", "estWeight": "12.00", "actWeight": "?", "destName": "Topa Institute Torenlaan 10 2215 RW Voorhout The Netherlands", "destMgr": "Evert-Jan Kluivers", "feeEst": "₩400,000", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩245,856", "feeSum": "₩245,856", "settleDate": "25-8-25", "duty": "₩0", "logistics": "₩245,856", "settleSum": "₩245,856", "unsettled": "₩0", "note": ""}, {"no": "10", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-0820", "method": "특송 (당일오전)", "sendDate": "25-8-20", "arrDate": "25-8-23", "client": "삼성바이오에피스", "tracking": "1ZH95K67D338627507", "product": "샘플) 1. SB5B SAFETY PFS 1 PACK C/S 무지 외 7종 ( 상세거래명세서 참고)", "qty": "7", "pkg": "BOX", "weight": "89.10", "estWeight": "89.10", "actWeight": "?", "destName": "Topa Institute Torenlaan 10 2215 RW Voorhout The Netherlands", "destMgr": "Evert-Jan Kluivers", "feeEst": "₩1,443,450", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩1,442,662", "feeSum": "₩1,442,662", "settleDate": "25-8-25", "duty": "₩0", "logistics": "₩1,442,662", "settleSum": "₩1,442,662", "unsettled": "₩0", "note": ""}, {"no": "11", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-0829", "method": "특송 (당일오전)", "sendDate": "25-8-28", "arrDate": "25-9-1", "client": "삼성바이오에피스", "tracking": "1ZH95K67D921408694", "product": "[CARTON] Technical Drawing - 000260000 - 2,496 외 6종 ( 상세 거래 명세서 참고)", "qty": "7", "pkg": "BOX", "weight": "90.10", "estWeight": "90.10", "actWeight": "?", "destName": "Topa Institute Torenlaan 10 2215 RW Voorhout The Netherlands", "destMgr": "Evert-Jan Kluivers", "feeEst": "₩1,377,170", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩1,390,970", "feeSum": "₩1,390,970", "settleDate": "25-8-25", "duty": "₩0", "logistics": "₩1,390,970", "settleSum": "₩1,390,970", "unsettled": "₩0", "note": ""}, {"no": "12", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-1016", "method": "특송(당일)", "sendDate": "25-10-16", "arrDate": "25-10-20", "client": "삼성바이오에피스", "tracking": "1ZH95K67D93715037", "product": "SB5B 40mg PFP CARTON + TRAY", "qty": "7", "pkg": "BOX", "weight": "43.00", "estWeight": "43.00", "actWeight": "", "destName": "Topa Institute Torenlaan 10 2215 RW Voorhout The Netherlands_ Brigitte Zwart", "destMgr": "Brigitte Zwart", "feeEst": "₩1,350,000", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩1,328,850", "feeSum": "₩1,328,850", "settleDate": "25-11-17", "duty": "₩0", "logistics": "₩1,328,850", "settleSum": "₩1,328,850", "unsettled": "₩0", "note": ""}, {"no": "13", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-1030", "method": "특송(당일)", "sendDate": "25-10-30", "arrDate": "25-10-31", "client": "삼성바이오에피스", "tracking": "1ZH95K67044504226", "product": "아필리부주 40mg 설명서", "qty": "21", "pkg": "BOX", "weight": "17.00", "estWeight": "348.00", "actWeight": "", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩4,753,084", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩4,629,834", "feeSum": "₩4,629,834", "settleDate": "25-11-17", "duty": "₩0", "logistics": "₩4,629,834", "settleSum": "₩4,629,834", "unsettled": "₩0", "note": ""}, {"no": "14", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-1112", "method": "특송(당일)", "sendDate": "25-11-12", "arrDate": "25-11-15", "client": "삼성바이오에피스", "tracking": "1ZH95K67D336177846", "product": "샘플)SB2 - 이중지라벨", "qty": "1", "pkg": "BOX", "weight": "6.20", "estWeight": "6.20", "actWeight": "", "destName": "PCI Pharma Services 4545 Assembly Dr Rockford, IL 61109", "destMgr": "Cole Dunn", "feeEst": "₩154,959", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩192,793", "feeSum": "₩192,793", "settleDate": "25-12-15", "duty": "₩0", "logistics": "₩192,793", "settleSum": "₩192,793", "unsettled": "₩0", "note": ""}, {"no": "15", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-1219", "method": "특송(당일)", "sendDate": "25-12-19", "arrDate": "25-12-22", "client": "삼성바이오에피스", "tracking": "1ZH95K67DG21077651", "product": "샘플)SB17 PFS 카톤-일본용 외 2종", "qty": "15", "pkg": "BOX", "weight": "9.30", "estWeight": "9.30", "actWeight": "", "destName": "Kyoto Industry Freight Co. 34-9 Kawaguchi Takahara, Yawata-shi, Kyoto-fu 613-0851 Japan", "destMgr": "Mr. MITSHUHIRO AMITANI", "feeEst": "₩1,075,723", "vatYN": "관세 부과", "inspectFee": "₩174,418", "feeFinal": "₩1,023,833", "feeSum": "₩1,198,251", "settleDate": "26-1-15", "duty": "", "logistics": "₩1,023,833", "settleSum": "₩1,023,833", "unsettled": "₩174,418", "note": "일본 관세 부과"}, {"no": "16", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-0209", "method": "특송(당일)", "sendDate": "26-2-9", "arrDate": "26-2-13", "client": "삼성바이오에피스", "tracking": "1ZH95K67D909945387", "product": "샘플)SB16 라벨", "qty": "1", "pkg": "BOX", "weight": "1.20", "estWeight": "1.20", "actWeight": "", "destName": "Grunenthal: Fieldwork Farmaceutici Formenti S.p.A. Via Di Vittorio 2 - 21040 Origgio (VA) – Italia", "destMgr": "Mauro.Sponchiado", "feeEst": "₩113,767", "vatYN": "관세 부과", "inspectFee": "₩159,670", "feeFinal": "₩113,767", "feeSum": "₩273,437", "settleDate": "", "duty": "", "logistics": "", "settleSum": "", "unsettled": "", "note": "이탈리아 관세 부과"}, {"no": "17", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-0611", "method": "특송(일반)", "sendDate": "26-6-11", "arrDate": "26-6-16", "client": "삼성바이오에피스", "tracking": "1ZH95K67DG35542809", "product": "샘플)CARTON BOX", "qty": "7", "pkg": "BOX", "weight": "21.00", "estWeight": "21.00", "actWeight": "", "destName": "Grunenthal: Fieldwork Farmaceutici Formenti S.p.A. Via Di Vittorio 2 - 21040 Origgio (VA) – Italia", "destMgr": "Mauro.Sponchiado", "feeEst": "₩1,164,575", "vatYN": "", "inspectFee": "", "feeFinal": "", "feeSum": "", "settleDate": "", "duty": "", "logistics": "", "settleSum": "", "unsettled": "", "note": ""}];
+const STMT = {"asOf": "기준일: 2026. 03.13 현재", "recs": [{"no": "1", "items": ["샘플)SB15 PFS dose mark 라벨(0.4mm) -1차발송"], "boxQty": "1박스", "date": "24.10.08", "est": "₩151,847", "confirmed": "₩252,189", "paid": "₩252,189", "unpaid": "₩0", "payDate": "24.11.15", "note": "통관검사비 면제"}, {"no": "2", "items": ["샘플)SB15 PFS dose mark 라벨(0.4mm) -2차발송"], "boxQty": "1박스", "date": "24.10.15", "est": "₩89,742", "confirmed": "", "paid": "", "unpaid": "", "payDate": "", "note": "통관검사비 면제"}, {"no": "3", "items": ["SB15 라벨 - 상업 SKU"], "boxQty": "6박스", "date": "24.11.15", "est": "?", "confirmed": "₩141,917", "paid": "₩141,917", "unpaid": "₩0", "payDate": "24.12.16", "note": "통관검사비 면제"}, {"no": "4", "items": ["샘플)SB2 FDP Vial 설명서 - 무지", "샘플)SB2 FDP 무지 카톤"], "boxQty": "1박스", "date": "25.08.08", "est": "₩400,000", "confirmed": "₩3,079,488", "paid": "₩3,079,488", "unpaid": "₩0", "payDate": "25.09.25", "note": "통관검사비 면제"}, {"no": "5", "items": ["샘플)SB5B Safety PFS 1 pack C/S 무지", "샘플)SB5B Safety PFS 2 pack C/S 무지", "샘플)SB5B Safety PFS 6 pack C/S 무지", "샘플)SB5B Safety PFS 1 pack 트레이 무지", "샘플)SB5B Safety PFS 2/6 pack 트레이 무지", "샘플)SB5B PFP 1 pack 트레이 무지", "샘플)SB5B PFP 2/6 pack 트레이 무지", "샘플)SB5B PFP 1/2 pack C/S 무지", "샘플)SB5B PFP 6 pack C/S 무지"], "boxQty": "7박스", "date": "25.08.20", "est": "₩1,443,450", "confirmed": "", "paid": "", "unpaid": "", "payDate": "", "note": "통관검사비 면제"}, {"no": "6", "items": ["[Carton]Technical Drawing-000260000-2,496", "[Carton]Technical Drawing-000260000-2,496", "[Carton]Technical Drawing-00317266", "[Carton]Technical Drawing-000260005", "[Tray]Technical Drawing-000260007", "[Tray]Technical Drawing-000260009", "[Tray]Technical Drawing-000317268"], "boxQty": "7박스", "date": "25.08.28", "est": "₩1,377,170", "confirmed": "", "paid": "", "unpaid": "", "payDate": "", "note": "통관검사비 면제"}, {"no": "7", "items": ["샘플)SB5B 40mg PFP (Neopak,Hypak공용) 카톤", "샘플)SB5B 40mg PFP (Neopak,Hypak공용) 트레이", "샘플)SB5B 40mg PFP (Neopak,Hypak공용) 설명서"], "boxQty": "7박스", "date": "25.10.16", "est": "₩1,350,000", "confirmed": "₩5,958,684", "paid": "₩5,958,684", "unpaid": "₩0", "payDate": "25.11.17", "note": "통관검사비 면제"}, {"no": "8", "items": ["아필리부주 40mg 설명서-SB15"], "boxQty": "21박스", "date": "25.10.30", "est": "₩4,753,084", "confirmed": "", "paid": "", "unpaid": "", "payDate": "", "note": ""}, {"no": "9", "items": ["샘플)SB2 - 이중지라벨"], "boxQty": "1박스", "date": "25.11.12", "est": "₩154,959", "confirmed": "₩192,793", "paid": "192,793", "unpaid": "0", "payDate": "25.12.15", "note": "통관검사비 면제"}, {"no": "10", "items": ["샘플)SB17 PFS 카톤-일본용", "샘플)SB17 PFS 설명서-일본용", "샘플)SB17 PFS 트레이-일본용", "추가 관세 부과", "추가 관세 부과"], "boxQty": "15박스", "date": "25.12.19", "est": "₩1,075,723", "confirmed": "₩1,023,833", "paid": "1,023,833", "unpaid": "0", "payDate": "26.01.15", "note": ""}, {"no": "11", "items": ["샘플)SB16 라벨-이탈리아", "추가 관세 부과"], "boxQty": "1박스", "date": "26.02.09", "est": "₩113,767", "confirmed": "₩113,767", "paid": "₩113,767", "unpaid": "₩0", "payDate": "26.03.16 예정", "note": ""}]};
+const $ = id => document.getElementById(id);
+document.getElementById('asOf').textContent='2026-06-11';
+
+function won(v){ const n=parseInt(String(v||'').replace(/[^0-9-]/g,''),10); return isNaN(n)?0:n; }
+function fmtW(n){ return '₩'+(n||0).toLocaleString('ko-KR'); }
+function label(r){ return r.invNo && r.invNo.trim()? r.invNo.trim() : ('NO.'+r.no); }
+function country(dest){ const s=(dest||'').toLowerCase();
+  if(/japan|kyoto/.test(s)) return '일본'; if(/netherlands|voorhout/.test(s)) return '네덜란드';
+  if(/italia|italy|origgio/.test(s)) return '이탈리아'; if(/u\.s\.a|usa|rockford|blvd|penn|drive|il /.test(s)) return '미국';
+  return '기타'; }
+function flag(c){ return ({'일본':'🇯🇵','네덜란드':'🇳🇱','이탈리아':'🇮🇹','미국':'🇺🇸'}[c])||'🌐'; }
+function yearOf(r){ const m=String(r.sendDate||'').match(/^(\d{2})/); return m? (2000+parseInt(m[1],10)) : null; }
+
+let charts={};
+const PALETTE=['#1428A0','#E8710A','#0E9F6E','#D6294B','#7C3AED','#0EA5E9','#F59E0B','#14B8A6'];
+
+function renderKPI(){
+  const cnt=UPS.length;
+  const fee=UPS.reduce((s,r)=>s+won(r.feeFinal||r.feeSum),0);
+  const unpaid=UPS.reduce((s,r)=>s+won(r.unsettled),0);
+  const countries=[...new Set(UPS.map(r=>country(r.destName)))];
+  const avg=cnt?Math.round(fee/cnt):0;
+  const cards=[
+    {c:'', l:'총 발송 건수', v:cnt+'건', f:'특송사 UPS'},
+    {c:'k2',l:'총 확정 특송비용', v:fmtW(fee), f:'확정요금 누적'},
+    {c:'k3',l:'미정산 금액', v:fmtW(unpaid), f:'누적 기준'},
+    {c:'k4',l:'건당 평균요금', v:fmtW(avg), f:'총요금 ÷ 건수'},
+    {c:'k5',l:'도착 국가', v:countries.length+'개국', f:countries.map(x=>flag(x)+x).join(' ')},
+  ];
+  $('cntPill').textContent=cnt;
+  $('kpiGrid').innerHTML=cards.map(k=>`<div class="kpi ${k.c}"><div class="bar"></div><div class="l">${k.l}</div><div class="v">${k.v}</div><div class="f">${k.f}</div></div>`).join('');
+}
+
+function themed(){ const lt=document.body.classList.contains('light');
+  return {tick:lt?'#3A3F4D':'rgba(255,255,255,0.68)', grid:lt?'rgba(16,24,40,0.08)':'rgba(255,255,255,0.10)', legend:lt?'#2A2E3A':'rgba(255,255,255,0.82)'}; }
+
+function renderCharts(){
+  Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}}); charts={};
+  if(typeof Chart==='undefined'){
+    document.querySelectorAll('.chart-wrap').forEach(el=>el.innerHTML='<div class="chart-fallback">⚠ 차트 라이브러리를 불러오지 못했습니다.<br>인터넷 연결 후 새로고침하면 그래프가 표시됩니다.<br>(KPI·상세표는 정상 동작합니다)</div>');
+    return;
+  }
+  const T=themed();
+  Chart.defaults.font.family="Pretendard, sans-serif"; Chart.defaults.color=T.tick;
+  const grid={color:T.grid}, tick={color:T.tick,font:{size:11}};
+
+  // 1) 연도별 건수 + 확정요금
+  const years=[...new Set(UPS.map(yearOf).filter(Boolean))].sort();
+  const yc=years.map(y=>UPS.filter(r=>yearOf(r)===y).length);
+  const yf=years.map(y=>UPS.filter(r=>yearOf(r)===y).reduce((s,r)=>s+won(r.feeFinal||r.feeSum),0));
+  try{ charts.year=new Chart($('chYear'),{data:{labels:years.map(String),datasets:[
+      {type:'bar',label:'발송 건수',data:yc,backgroundColor:'#4FBFB8',borderRadius:6,yAxisID:'y',maxBarThickness:46},
+      {type:'line',label:'확정 특송비용',data:yf,borderColor:'#FFB84F',backgroundColor:'rgba(255,184,79,0.15)',tension:.35,fill:true,pointRadius:4,pointBackgroundColor:'#FFB84F',yAxisID:'y1'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:T.legend,usePointStyle:true,boxWidth:10,font:{size:11}}}},
+      scales:{x:{grid:{display:false},ticks:tick},y:{position:'left',grid,ticks:{...tick,stepSize:1},title:{display:true,text:'건수',color:T.tick,font:{size:10}},beginAtZero:true},
+      y1:{position:'right',grid:{display:false},ticks:{...tick,callback:v=>(v/10000).toFixed(0)+'만'},beginAtZero:true}}}}); }catch(e){console.error(e);}
+
+  // 2) 국가별 건수 도넛
+  const cc={}; UPS.forEach(r=>{const c=country(r.destName); cc[c]=(cc[c]||0)+1;});
+  const ce=Object.entries(cc).sort((a,b)=>b[1]-a[1]);
+  try{ charts.country=new Chart($('chCountry'),{type:'doughnut',data:{labels:ce.map(e=>flag(e[0])+' '+e[0]),datasets:[{data:ce.map(e=>e[1]),backgroundColor:PALETTE,borderColor:'#ffffff22',borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'right',labels:{color:T.legend,font:{size:12},usePointStyle:true,boxWidth:12,padding:12}},tooltip:{callbacks:{label:c=>`${c.label}: ${c.parsed}건`}}}}}); }catch(e){console.error(e);}
+
+  // 3) 국가별 확정요금 합계 (가로바)
+  const cf={}; UPS.forEach(r=>{const c=country(r.destName); cf[c]=(cf[c]||0)+won(r.feeFinal||r.feeSum);});
+  const fe=Object.entries(cf).sort((a,b)=>b[1]-a[1]);
+  try{ charts.cfee=new Chart($('chCountryFee'),{type:'bar',data:{labels:fe.map(e=>flag(e[0])+' '+e[0]),datasets:[{data:fe.map(e=>e[1]),backgroundColor:'#1428A0',hoverBackgroundColor:'#2645B0',borderRadius:6,maxBarThickness:30}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtW(c.parsed.x)}}},scales:{x:{grid,ticks:{...tick,callback:v=>(v/10000).toFixed(0)+'만'}},y:{grid:{display:false},ticks:tick}}}}); }catch(e){console.error(e);}
+
+  // 4) 발송 건별 확정요금 상위 8
+  const top=UPS.map(r=>({l:label(r),v:won(r.feeFinal||r.feeSum)})).sort((a,b)=>b.v-a.v).slice(0,8);
+  try{ charts.top=new Chart($('chTop'),{type:'bar',data:{labels:top.map(t=>t.l),datasets:[{data:top.map(t=>t.v),backgroundColor:['#1428A0','#2645B0','#4D67C3','#0EA5E9','#14B8A6','#0E9F6E','#F59E0B','#E8710A'],borderRadius:6,maxBarThickness:26}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtW(c.parsed.x)}}},scales:{x:{grid,ticks:{...tick,callback:v=>(v/10000).toFixed(0)+'만'}},y:{grid:{display:false},ticks:{...tick,font:{size:10}}}}}}); }catch(e){console.error(e);}
+}
+
+function renderTable(){
+  const kw=($('q').value||'').trim().toLowerCase();
+  const rows=UPS.filter(r=>!kw||[label(r),r.tracking,r.product,country(r.destName),r.sendDate].join(' ').toLowerCase().includes(kw));
+  $('rowCnt').textContent=rows.length;
+  $('tbody').innerHTML=rows.map(r=>{
+    const c=country(r.destName); const unpaid=won(r.unsettled);
+    const docs=['INV','PACK','명세서','운송장'].map(d=>`<span class="docchip" title="다음 단계 연결">${d}</span>`).join('');
+    return `<tr>
+      <td>${r.no}</td><td>${label(r)}</td><td>${r.sendDate||'-'}</td><td>${r.arrDate||'-'}</td><td>${flag(c)} ${c}</td>
+      <td title="${(r.product||'').replace(/"/g,'')}">${(r.product||'-').slice(0,22)}${(r.product||'').length>22?'…':''}</td>
+      <td>${r.qty||''} ${r.pkg||''}</td><td>${r.weight||'-'}</td><td>${r.feeFinal||r.feeSum||'-'}</td>
+      <td>${unpaid>0?fmtW(unpaid):'-'}</td>
+      <td><span class="badge ${unpaid>0?'b-open':'b-done'}">${unpaid>0?'미정산':'정산완료'}</span></td>
+      <td>${docs}</td></tr>`;
+  }).join('') || `<tr><td colspan="12" style="text-align:center;padding:26px;color:var(--text-tertiary)">검색 결과가 없습니다.</td></tr>`;
+}
+
+/* ===== 삼성에피스 상세거래명세서 인쇄 리포트 (새 창) ===== */
+function openStatement(){
+  const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  const won2=v=>{const n=parseInt(String(v||'').replace(/[^0-9-]/g,''),10);return isNaN(n)?0:n;};
+  const recs=STMT.recs||[];
+  const tot=k=>recs.reduce((s,r)=>s+won2(r[k]),0);
+  const sumConf=tot('confirmed'), sumPaid=tot('paid'), sumUnpaid=tot('unpaid');
+  const rowsHtml=recs.map(r=>`<tr>
+      <td class="c">${esc(r.no)}</td>
+      <td class="l">${(r.items||[]).map(esc).join('<br>')||'-'}</td>
+      <td class="c">${esc(r.boxQty)||'-'}</td>
+      <td class="c">${esc(r.date)||'-'}</td>
+      <td class="r">${esc(r.est)||'-'}</td>
+      <td class="r b">${esc(r.confirmed)||'-'}</td>
+      <td class="r">${esc(r.paid)||'-'}</td>
+      <td class="r ${won2(r.unpaid)>0?'red':''}">${esc(r.unpaid)||'-'}</td>
+      <td class="c">${esc(r.payDate)||'-'}</td>
+      <td class="l sm">${esc(r.note)||''}</td></tr>`).join('');
+  const html=`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<title>삼성에피스 상세거래명세서</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<style>
+  *{box-sizing:border-box;} body{font-family:Pretendard,sans-serif;color:#111;margin:0;background:#f0f2f6;}
+  .sheet{background:#fff;max-width:1000px;margin:18px auto;padding:34px 40px;box-shadow:0 8px 30px rgba(0,0,0,.15);}
+  .rpt-head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #1428A0;padding-bottom:14px;margin-bottom:6px;}
+  .rpt-head h1{margin:0;font-size:24px;font-weight:800;letter-spacing:-.01em;color:#0A1758;}
+  .rpt-head .co{font-size:12.5px;color:#555;font-weight:600;margin-top:6px;}
+  .rpt-head .asof{text-align:right;font-size:12px;color:#555;font-weight:600;}
+  .rpt-head .asof b{display:block;font-size:15px;color:#111;margin-top:3px;}
+  .sumrow{display:flex;gap:12px;margin:16px 0 14px;flex-wrap:wrap;}
+  .sumbox{flex:1;min-width:150px;border:1px solid #E1E4EC;border-radius:10px;padding:12px 14px;background:#F7F9FC;}
+  .sumbox .l{font-size:11px;font-weight:700;color:#5A5F6E;} .sumbox .v{font-size:19px;font-weight:800;margin-top:5px;font-variant-numeric:tabular-nums;}
+  .sumbox.blue{border-color:#B3BFE7;background:#EEF2FF;} .sumbox.blue .v{color:#1428A0;}
+  .sumbox.green .v{color:#0E9F5E;} .sumbox.red{border-color:#F3C0CB;background:#FDEEF1;} .sumbox.red .v{color:#D6294B;}
+  table{width:100%;border-collapse:collapse;font-size:11.5px;}
+  thead th{background:#0A1758;color:#fff;font-weight:700;padding:9px 8px;border:1px solid #0A1758;white-space:nowrap;}
+  tbody td{border:1px solid #E1E4EC;padding:7px 8px;vertical-align:top;}
+  td.c{text-align:center;} td.r{text-align:right;font-variant-numeric:tabular-nums;} td.l{text-align:left;}
+  td.b{font-weight:800;color:#0A1758;} td.red{color:#D6294B;font-weight:700;} td.sm{font-size:10.5px;color:#555;}
+  tbody tr:nth-child(even){background:#F7F9FC;}
+  tfoot td{border:1px solid #E1E4EC;padding:9px 8px;font-weight:800;background:#EEF2FF;color:#0A1758;text-align:right;}
+  tfoot td.lbl{text-align:center;}
+  .note{margin-top:14px;font-size:10.5px;color:#777;line-height:1.7;}
+  .sign{margin-top:26px;display:flex;justify-content:flex-end;gap:40px;font-size:12px;color:#333;}
+  .sign .box{text-align:center;} .sign .ln{margin-top:34px;border-top:1px solid #999;width:150px;padding-top:5px;}
+  .toolbar{max-width:1000px;margin:10px auto 0;text-align:right;}
+  .toolbar button{cursor:pointer;border:0;border-radius:8px;padding:9px 16px;font:700 12px/1 Pretendard,sans-serif;margin-left:8px;}
+  .toolbar .p{background:#1428A0;color:#fff;} .toolbar .c{background:#e6e8ef;color:#333;}
+  @media print{ body{background:#fff;} .sheet{box-shadow:none;margin:0;max-width:none;padding:10mm;} .toolbar{display:none;} @page{size:A4 landscape;margin:10mm;} }
+</style></head><body>
+<div class="toolbar"><button class="p" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button><button class="c" onclick="window.close()">닫기</button></div>
+<div class="sheet">
+  <div class="rpt-head">
+    <div><h1>삼성에피스 상세거래명세서</h1><div class="co">(주)삼화당피앤티 · SAMHWADANG P&amp;T &nbsp;|&nbsp; UPS 국제특송 거래 내역</div></div>
+    <div class="asof">${esc(STMT.asOf||'')}<b>거래처: 삼성바이오에피스</b></div>
+  </div>
+  <div class="sumrow">
+    <div class="sumbox blue"><div class="l">확정금액 합계 (세금계산서)</div><div class="v">₩${sumConf.toLocaleString('ko-KR')}</div></div>
+    <div class="sumbox green"><div class="l">입금액 합계</div><div class="v">₩${sumPaid.toLocaleString('ko-KR')}</div></div>
+    <div class="sumbox red"><div class="l">미수금액 합계</div><div class="v">₩${sumUnpaid.toLocaleString('ko-KR')}</div></div>
+    <div class="sumbox"><div class="l">거래 건수</div><div class="v">${recs.length}건</div></div>
+  </div>
+  <table>
+    <thead><tr><th>NO</th><th>품 목</th><th>총 박스</th><th>발송일<br>(명세서 작성일)</th><th>추정금액</th><th>확정금액<br>(세금계산서)</th><th>입금금액</th><th>미수금액</th><th>입금일자</th><th>비고</th></tr></thead>
+    <tbody>${rowsHtml}</tbody>
+    <tfoot><tr><td class="lbl" colspan="5">합 계</td><td>₩${sumConf.toLocaleString('ko-KR')}</td><td>₩${sumPaid.toLocaleString('ko-KR')}</td><td>₩${sumUnpaid.toLocaleString('ko-KR')}</td><td colspan="2"></td></tr></tfoot>
+  </table>
+  <div class="note">※ 본 명세서는 UPS 국제특송 발송 내역을 기준으로 작성되었습니다. 금액은 원(₩) 기준이며, 확정금액은 세금계산서 발행 기준입니다. '?' 또는 공란은 확정 전 항목입니다.</div>
+  <div class="sign"><div class="box">담당<div class="ln">(주)삼화당피앤티</div></div><div class="box">확인<div class="ln">삼성바이오에피스</div></div></div>
+</div></body></html>`;
+  const w=window.open('','_blank');
+  if(!w){ alert('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해 주세요.'); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+}
+
+/* 테마 토글 (다크 기본 → 라이트) */
+$('themeBtn').addEventListener('click', ()=>{
+  const lt=document.body.classList.toggle('light');
+  $('themeBtn').firstChild.nodeValue = lt? '🌙 ' : '☀️ ';
+  $('themeLabel').textContent = lt? '다크 모드' : '라이트 모드';
+  renderCharts();
+});
+$('stmtBtn').addEventListener('click', openStatement);
+$('q').addEventListener('input', renderTable);
+
+renderKPI(); renderTable(); renderCharts();
+</script>
+</body>
+</html>

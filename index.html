@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>삼화당피앤티 통합 대시보드 · 시설관리 / HPPK 입출고·미수금</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.css" />
+<style>
+  :root{
+    --nav-h:60px;
+    --blue-700:#0A1758; --blue-600:#0F1E78; --blue-500:#1428A0; --blue-400:#2645B0;
+    --teal:#2AA39B;
+    --ink:#0A0A0F; --muted:rgba(255,255,255,0.72);
+    --font:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{font-family:var(--font);background:#0d1330;overflow:hidden;}
+
+  /* ── 상단 통합 내비게이션 ── */
+  .navbar{
+    position:fixed;top:0;left:0;right:0;height:var(--nav-h);z-index:10;
+    display:flex;align-items:center;gap:18px;padding:0 20px;
+    background:linear-gradient(120deg, var(--blue-700) 0%, var(--blue-500) 60%, #12307a 130%);
+    box-shadow:0 6px 22px rgba(6,14,54,0.45);
+  }
+  .nav-brand{display:flex;align-items:center;gap:11px;flex:none;color:#fff;}
+  .nav-brand .mk{
+    width:38px;height:38px;border-radius:10px;flex:none;display:grid;place-items:center;font-size:20px;
+    background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.22);
+  }
+  .nav-brand .tt{display:flex;flex-direction:column;line-height:1.15;}
+  .nav-brand .tt b{font-size:15px;font-weight:800;letter-spacing:-0.01em;}
+  .nav-brand .tt span{font-size:10.5px;font-weight:600;color:rgba(255,255,255,0.75);letter-spacing:0.03em;}
+
+  .nav-tabs{display:flex;gap:8px;margin-left:6px;}
+  .tab{
+    appearance:none;border:1px solid rgba(255,255,255,0.20);cursor:pointer;
+    display:flex;align-items:center;gap:8px;
+    padding:9px 18px;border-radius:9999px;
+    background:rgba(255,255,255,0.06);color:rgba(255,255,255,0.82);
+    font:700 13.5px/1 var(--font);letter-spacing:-0.01em;
+    transition:background .18s, color .18s, border-color .18s, transform .12s;
+    white-space:nowrap;
+  }
+  .tab .ic{font-size:15px;}
+  .tab:hover{background:rgba(255,255,255,0.14);color:#fff;}
+  .tab.active{background:#fff;color:var(--blue-500);border-color:#fff;box-shadow:0 4px 14px rgba(0,0,0,0.22);}
+  .tab.active:hover{background:#fff;}
+  .tab{cursor:grab;}
+  .tab:active{cursor:grabbing;}
+  .tab.dragging{opacity:0.45;transform:scale(0.96);}
+  .tab.drop-target{box-shadow:inset 0 0 0 2px rgba(255,255,255,0.9);}
+
+  .nav-hint{margin-left:auto;color:rgba(255,255,255,0.62);font:600 11.5px/1.3 var(--font);
+    display:flex;align-items:center;gap:7px;white-space:nowrap;}
+  .nav-hint .live{width:8px;height:8px;border-radius:50%;background:#2DC07A;box-shadow:0 0 0 3px rgba(45,192,122,0.25);}
+
+  /* ── 화면(프레임) 영역 ── */
+  .stage{position:fixed;top:var(--nav-h);left:0;right:0;bottom:0;background:#F4F5F8;}
+  .frame{position:absolute;inset:0;width:100%;height:100%;border:0;display:none;background:transparent;}
+  .frame.active{display:block;}
+
+  /* 최초 로딩 표시 */
+  .booting{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:#5A5F6E;font:600 14px/1.5 var(--font);background:#F4F5F8;
+  }
+  .booting.hidden{display:none;}
+
+  @media (max-width:720px){
+    :root{--nav-h:104px;}
+    .navbar{flex-wrap:wrap;align-content:center;gap:10px 14px;padding:8px 14px;}
+    .nav-hint{display:none;}
+    .nav-tabs{width:100%;margin-left:0;}
+    .tab{flex:1;justify-content:center;padding:9px 10px;font-size:12.5px;}
+  }
+</style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-brand">
+      <div class="mk">🏢</div>
+      <div class="tt">
+        <b>(주)삼화당피앤티 통합 대시보드</b>
+        <span>SAMHWADANG P&amp;T · Integrated Cloud Dashboard</span>
+      </div>
+    </div>
+    <div class="nav-tabs" role="tablist">
+      <button class="tab active" id="tab-facility" role="tab" aria-selected="true" onclick="showView('facility')">
+        <span class="ic">🏢</span>시설관리 유지보수
+      </button>
+      <button class="tab" id="tab-hppk" role="tab" aria-selected="false" onclick="showView('hppk')">
+        <span class="ic">📦</span>HPPK 입출고 · 미수금
+      </button>
+      <button class="tab" id="tab-safety" role="tab" aria-selected="false" onclick="showView('safety')">
+        <span class="ic">🛡️</span>안전보건관리
+      </button>
+      <button class="tab" id="tab-express" role="tab" aria-selected="false" onclick="showView('express')">
+        <span class="ic">✈️</span>국제특송(UPS외)
+      </button>
+      <button class="tab" id="tab-esg" role="tab" aria-selected="false" onclick="showView('esg')">
+        <span class="ic">🌿</span>ESG 심층 보고서
+      </button>
+    </div>
+    <div class="nav-hint"><span class="live"></span>탭을 클릭해 화면을 전환하세요</div>
+  </nav>
+
+  <div class="stage">
+    <div class="booting" id="booting">화면을 불러오는 중입니다…</div>
+    <iframe class="frame active" id="frame-facility" title="시설관리 유지보수 대시보드"></iframe>
+    <iframe class="frame" id="frame-hppk" title="HPPK 입출고·미수금 통합 대시보드"></iframe>
+    <iframe class="frame" id="frame-safety" title="안전보건관리"></iframe>
+    <iframe class="frame" id="frame-express" title="국제특송(UPS외)"></iframe>
+    <iframe class="frame" id="frame-esg" title="ESG 심층 보고서"></iframe>
+  </div>
+
+  <script>
+    // 각 탭은 완전히 독립된 대시보드 파일입니다. index 는 iframe src 로 불러올 뿐,
+    // 탭끼리는 실행환경(스크립트·스타일·데이터)이 서로 격리되어 영향을 주지 않습니다.
+    // 새 탭 추가 = (1) 파일 추가 → (2) FILES 에 한 줄 → (3) 상단 버튼·iframe 한 줄.
+    var FILES = {
+      facility: 'facility.html',
+      hppk:     'hppk.html',
+      safety:   'safety.html',
+      express:  'express.html',
+      esg:      'esg.html'
+    };
+    var VIEWS = ['facility','hppk','safety','express','esg'];
+    var loaded = { facility:false, hppk:false, safety:false, express:false, esg:false };
+
+    function ensureLoaded(view){
+      if(loaded[view]) return;
+      var fr = document.getElementById('frame-' + view);
+      fr.src = FILES[view];          // 지연 로딩: 처음 열 때만 해당 독립 파일을 불러옴
+      loaded[view] = true;
+    }
+    function showView(view){
+      ensureLoaded(view);
+      VIEWS.forEach(function(v){
+        document.getElementById('frame-' + v).classList.toggle('active', v === view);
+        var t = document.getElementById('tab-' + v);
+        var on = (v === view);
+        t.classList.toggle('active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+    }
+
+    // 최초: 시설관리 화면 로드
+    document.getElementById('frame-facility').addEventListener('load', function(){
+      var b = document.getElementById('booting'); if(b) b.classList.add('hidden');
+    }, { once:true });
+    ensureLoaded('facility');
+
+    // 탭 좌우 위치 이동(드래그로 순서 변경)
+    (function(){
+      var navTabs = document.querySelector('.nav-tabs');
+      if(!navTabs) return;
+      var dragEl = null;
+      function clearMarks(){ navTabs.querySelectorAll('.tab').forEach(function(x){ x.classList.remove('drop-target'); }); }
+      navTabs.querySelectorAll('.tab').forEach(function(t){
+        t.setAttribute('draggable','true');
+        t.addEventListener('dragstart', function(e){
+          dragEl = t; t.classList.add('dragging');
+          if(e.dataTransfer){ e.dataTransfer.effectAllowed='move'; try{ e.dataTransfer.setData('text/plain', t.id); }catch(_){} }
+        });
+        t.addEventListener('dragend', function(){ t.classList.remove('dragging'); dragEl=null; clearMarks(); });
+      });
+      function afterElement(x){
+        var els = [].slice.call(navTabs.querySelectorAll('.tab:not(.dragging)'));
+        var closest = { offset:-Infinity, el:null };
+        els.forEach(function(el){
+          var box = el.getBoundingClientRect();
+          var offset = x - box.left - box.width/2;
+          if(offset < 0 && offset > closest.offset){ closest = { offset:offset, el:el }; }
+        });
+        return closest.el;
+      }
+      navTabs.addEventListener('dragover', function(e){
+        e.preventDefault();
+        if(e.dataTransfer) e.dataTransfer.dropEffect='move';
+        if(!dragEl) return;
+        var after = afterElement(e.clientX);
+        clearMarks(); if(after) after.classList.add('drop-target');
+        if(after == null){ navTabs.appendChild(dragEl); }
+        else if(after !== dragEl){ navTabs.insertBefore(dragEl, after); }
+      });
+      navTabs.addEventListener('drop', function(e){ e.preventDefault(); clearMarks(); });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ESG 심층 보고서 · (주)삼화당피앤티</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --color-primary-300:#4D67C3; --color-primary-400:#2645B0; --color-primary-500:#1428A0;
+  --color-primary-600:#0F1E78; --color-primary-700:#0A1758;
+  --e:#2E9E5B; --e-d:#1F7A44; --s:#2478C8; --s-d:#155F9E; --g:#8A5AD6; --g-d:#6C3EB8;
+  --secondary-500:#2AA39B;
+  /* 라이트(기본) */
+  --bg-base:#F4F5F8; --bg-subtle:#EEF0F5; --bg-elevated:#FFFFFF;
+  --text-primary:#0A0A0F; --text-secondary:#2A2E3A; --text-tertiary:#5A5F6E;
+  --border-default:#E1E4EC; --border-subtle:#EDEFF4; --border-strong:#C4C9D6;
+  --sidebar-bg:#0A1758; --sidebar-fg:rgba(255,255,255,0.86); --sidebar-fg-dim:rgba(255,255,255,0.6);
+  --radius-md:8px; --radius-lg:12px; --radius-xl:18px; --radius-full:9999px;
+  --shadow-sm:0 1px 2px rgba(16,24,40,0.06);
+  --shadow-md:0 6px 18px rgba(16,24,40,0.08);
+  --shadow-card:0 14px 28px rgba(20,40,160,0.16);
+  --font:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+/* 다크 모드 오버라이드 */
+body.dark{
+  --bg-base:#12121A; --bg-subtle:#1A1A24; --bg-elevated:#22222D;
+  --text-primary:#FFFFFF; --text-secondary:rgba(255,255,255,0.84); --text-tertiary:rgba(255,255,255,0.66);
+  --border-default:rgba(255,255,255,0.12); --border-subtle:rgba(255,255,255,0.07); --border-strong:rgba(255,255,255,0.24);
+  --sidebar-bg:#080E24; --sidebar-fg:rgba(255,255,255,0.86); --sidebar-fg-dim:rgba(255,255,255,0.55);
+  --shadow-md:0 8px 20px rgba(0,0,0,0.40); --shadow-card:0 14px 28px rgba(0,0,0,0.5);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{font-family:var(--font);background:var(--bg-base);color:var(--text-primary);-webkit-font-smoothing:antialiased;}
+
+.app{display:flex;height:100%;min-height:100%;}
+
+/* ── 좌측 사이드바 ── */
+.sidebar{
+  width:250px;flex:none;height:100%;overflow-y:auto;
+  background:linear-gradient(180deg,var(--sidebar-bg),#0F1E78);
+  color:var(--sidebar-fg);display:flex;flex-direction:column;
+}
+.sb-brand{display:flex;align-items:center;gap:11px;padding:18px 18px 14px;position:sticky;top:0;
+  background:linear-gradient(180deg,var(--sidebar-bg),rgba(15,30,120,0));backdrop-filter:blur(2px);z-index:2;}
+.sb-brand .mk{width:38px;height:38px;border-radius:10px;flex:none;display:grid;place-items:center;font-size:19px;
+  background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.22);}
+.sb-brand .tt b{display:block;font-size:14.5px;font-weight:800;letter-spacing:-0.01em;color:#fff;}
+.sb-brand .tt span{font-size:10px;font-weight:600;color:var(--sidebar-fg-dim);letter-spacing:0.03em;}
+.sb-sec{font-size:10.5px;font-weight:700;letter-spacing:0.06em;color:var(--sidebar-fg-dim);
+  padding:12px 20px 6px;text-transform:uppercase;}
+.sb-nav{list-style:none;margin:0;padding:2px 10px 20px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;
+  font-size:13.5px;font-weight:600;color:var(--sidebar-fg);transition:background .15s,color .15s;margin-bottom:2px;}
+.sb-item .ic{font-size:15px;width:20px;text-align:center;flex:none;}
+.sb-item:hover{background:rgba(255,255,255,0.10);color:#fff;}
+.sb-item.active{background:#fff;color:var(--color-primary-500);font-weight:800;box-shadow:0 4px 12px rgba(0,0,0,0.18);}
+.sb-item .cnt{margin-left:auto;font-size:10.5px;font-weight:700;opacity:.7;}
+.sb-item .pill{margin-left:auto;font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:9999px;color:#fff;}
+.sb-item.active .pill{color:#fff;}
+
+/* ── 메인 영역 ── */
+.main{flex:1;height:100%;overflow-y:auto;}
+.topbar{display:flex;align-items:center;gap:14px;padding:20px 26px 6px;flex-wrap:wrap;}
+.topbar .title h1{margin:0;font-size:1.4rem;font-weight:800;letter-spacing:-0.01em;}
+.topbar .title p{margin:3px 0 0;font-size:0.8rem;font-weight:600;color:var(--text-tertiary);}
+.topbar .spacer{margin-left:auto;}
+.chip{font-size:0.7rem;font-weight:700;padding:7px 12px;border-radius:var(--radius-full);
+  background:var(--bg-elevated);color:var(--text-tertiary);border:1px solid var(--border-default);box-shadow:var(--shadow-sm);
+  display:inline-flex;align-items:center;gap:7px;}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:#0E9F5E;box-shadow:0 0 0 3px rgba(14,159,94,0.18);}
+.report-btn{cursor:pointer;border:0;border-radius:var(--radius-full);padding:8px 15px;font:800 0.72rem/1 var(--font);
+  background:linear-gradient(120deg,#0E9F5E,#2AA39B);color:#fff;box-shadow:var(--shadow-sm);
+  display:inline-flex;align-items:center;gap:7px;}
+.report-btn:hover{filter:brightness(1.06);}
+.theme-btn{cursor:pointer;border:1px solid var(--border-default);background:var(--bg-elevated);color:var(--text-secondary);
+  border-radius:var(--radius-full);padding:8px 14px;font:700 0.72rem/1 var(--font);box-shadow:var(--shadow-sm);
+  display:inline-flex;align-items:center;gap:7px;}
+.theme-btn:hover{border-color:var(--border-strong);}
+
+.content{padding:14px 26px 44px;}
+
+/* 카테고리 헤더 */
+.cat-head{display:flex;align-items:center;gap:14px;padding:18px 20px;margin-bottom:16px;
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-card);color:#fff;
+  background:linear-gradient(120deg,var(--color-primary-600),var(--color-primary-500) 70%,var(--secondary-500) 150%);}
+.cat-head.tone-e{background:linear-gradient(120deg,var(--e-d),var(--e) 90%);}
+.cat-head.tone-s{background:linear-gradient(120deg,var(--s-d),var(--s) 90%);}
+.cat-head.tone-g{background:linear-gradient(120deg,var(--g-d),var(--g) 90%);}
+.cat-head .big{width:48px;height:48px;border-radius:12px;flex:none;display:grid;place-items:center;font-size:24px;
+  background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.25);}
+.cat-head h2{margin:0;font-size:1.2rem;font-weight:800;}
+.cat-head p{margin:3px 0 0;font-size:0.78rem;font-weight:600;color:rgba(255,255,255,0.9);}
+.cat-head .hscore{margin-left:auto;text-align:right;}
+.cat-head .hscore b{font-size:1.7rem;font-weight:900;line-height:1;}
+.cat-head .hscore span{display:block;font-size:0.7rem;font-weight:700;color:rgba(255,255,255,0.9);margin-top:4px;}
+
+.section-label{font-size:0.82rem;font-weight:800;color:var(--text-primary);margin:24px 2px 12px;
+  display:flex;align-items:center;gap:8px;}
+.section-label .bar{width:4px;height:15px;border-radius:2px;background:var(--color-primary-500);}
+.section-label .sub{font-weight:600;color:var(--text-tertiary);font-size:0.72rem;}
+
+/* KPI 카드 (HPPK 스타일) */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;}
+.kpi{background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-lg);
+  padding:16px 17px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;}
+.kpi .bar{position:absolute;left:0;top:0;bottom:0;width:5px;}
+.kpi .kl{font-size:0.72rem;font-weight:700;color:var(--text-tertiary);display:flex;align-items:center;gap:6px;}
+.kpi .kv{margin-top:8px;font-size:1.75rem;font-weight:900;letter-spacing:-0.02em;line-height:1;}
+.kpi .kv small{font-size:0.8rem;font-weight:800;color:var(--text-tertiary);margin-left:3px;}
+.kpi .ks{margin-top:7px;font-size:0.7rem;font-weight:700;}
+.kpi .ks.up{color:#D64545;} .kpi .ks.down{color:#0E9F5E;} .kpi .ks.flat{color:var(--text-tertiary);}
+.grade-badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;
+  border-radius:6px;font-size:0.68rem;font-weight:900;color:#fff;}
+
+/* 카드 그리드 (차트/패널) */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;}
+.card{background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-lg);
+  padding:18px 20px;box-shadow:var(--shadow-md);}
+.card h3{margin:0 0 3px;font-size:0.95rem;font-weight:800;}
+.card .cdesc{margin:0 0 12px;font-size:0.72rem;font-weight:600;color:var(--text-tertiary);}
+.chart-box{position:relative;height:260px;}
+.chart-box.tall{height:300px;}
+.chart-fallback{display:none;padding:22px;text-align:center;font-size:0.78rem;color:var(--text-tertiary);
+  background:var(--bg-subtle);border:1px dashed var(--border-default);border-radius:var(--radius-md);}
+
+/* 등급 요약 도넛 옆 범례 */
+.legend{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:8px 16px;}
+.legend li{display:flex;align-items:center;gap:7px;font-size:0.73rem;font-weight:700;color:var(--text-secondary);}
+.legend li .sw{width:11px;height:11px;border-radius:3px;flex:none;}
+
+/* 진단 항목 리스트 */
+.item-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:10px;}
+.item{background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-md);
+  padding:12px 14px;box-shadow:var(--shadow-sm);border-left:4px solid var(--border-strong);}
+.item.lv-good{border-left-color:#0E9F5E;} .item.lv-mid{border-left-color:#E0A32E;} .item.lv-low{border-left-color:#D64545;}
+.item .ihd{display:flex;align-items:center;gap:8px;}
+.item .code{font-size:0.64rem;font-weight:900;padding:2px 7px;border-radius:5px;background:var(--bg-subtle);color:var(--text-secondary);}
+.item .lvtag{margin-left:auto;font-size:0.62rem;font-weight:800;padding:2px 8px;border-radius:9999px;color:#fff;}
+.item .lvtag.good{background:#0E9F5E;} .item .lvtag.mid{background:#E0A32E;} .item .lvtag.low{background:#D64545;}
+.item .inm{margin-top:6px;font-size:0.82rem;font-weight:700;color:var(--text-primary);}
+.item .iop{margin-top:5px;font-size:0.71rem;font-weight:500;color:var(--text-tertiary);line-height:1.55;}
+
+/* 개선과제 카드 */
+.task-card{background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-lg);
+  padding:16px 18px;box-shadow:var(--shadow-sm);border-top:4px solid var(--color-primary-500);}
+.task-card.dom-e{border-top-color:var(--e);} .task-card.dom-s{border-top-color:var(--s);} .task-card.dom-g{border-top-color:var(--g);}
+.task-card .thd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.task-card .tcode{font-size:0.68rem;font-weight:900;padding:3px 9px;border-radius:6px;color:#fff;}
+.task-card .tcode.dom-e{background:var(--e);} .task-card .tcode.dom-s{background:var(--s);} .task-card .tcode.dom-g{background:var(--g);}
+.task-card .tnm{font-size:0.9rem;font-weight:800;}
+.task-card .tmeta{margin-left:auto;display:flex;gap:6px;}
+.task-card .tmeta .m{font-size:0.62rem;font-weight:800;padding:3px 9px;border-radius:9999px;background:var(--bg-subtle);color:var(--text-secondary);}
+.task-card .tmeta .m.pri-상{background:#FDE7E7;color:#C0392B;} .task-card .tmeta .m.pri-중{background:#FEF3DC;color:#B5730A;} .task-card .tmeta .m.pri-하{background:#E7F4EC;color:#1F7A44;}
+body.dark .task-card .tmeta .m.pri-상{background:rgba(192,57,43,.22);color:#FF9A8F;}
+body.dark .task-card .tmeta .m.pri-중{background:rgba(181,115,10,.24);color:#F0C368;}
+body.dark .task-card .tmeta .m.pri-하{background:rgba(31,122,68,.24);color:#7FD9A2;}
+.task-card .tdesc{margin-top:10px;font-size:0.76rem;font-weight:500;color:var(--text-secondary);line-height:1.65;}
+
+/* 종합의견 키워드 */
+.kw-wrap{display:flex;flex-wrap:wrap;gap:9px;margin:2px 0 16px;}
+.kw{font-size:0.76rem;font-weight:800;padding:8px 14px;border-radius:var(--radius-full);
+  background:var(--bg-elevated);border:1px solid var(--border-default);color:var(--color-primary-500);box-shadow:var(--shadow-sm);}
+.opinion{background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-lg);
+  padding:16px 20px;box-shadow:var(--shadow-sm);margin-bottom:14px;}
+.opinion h4{margin:0 0 8px;font-size:0.86rem;font-weight:800;display:flex;align-items:center;gap:8px;}
+.opinion h4 .bar{width:4px;height:14px;border-radius:2px;background:var(--secondary-500);}
+.opinion p{margin:0;font-size:0.79rem;font-weight:500;color:var(--text-secondary);line-height:1.75;}
+
+/* 자료 · 첨부파일 영역 */
+.files-panel{margin-top:14px;background:var(--bg-elevated);border:1px solid var(--border-default);
+  border-radius:var(--radius-lg);padding:18px 20px;box-shadow:var(--shadow-md);}
+.files-panel .fp-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap;}
+.files-panel .fp-head h3{margin:0;font-size:0.95rem;font-weight:800;}
+.files-panel .fp-head .tag{font-size:0.66rem;font-weight:700;padding:3px 9px;border-radius:var(--radius-full);
+  background:var(--bg-subtle);color:var(--text-tertiary);}
+.files-panel .fp-desc{font-size:0.75rem;color:var(--text-tertiary);font-weight:500;margin:0 0 14px;line-height:1.6;}
+.subsel{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px;}
+.subsel .ss{font-size:0.72rem;font-weight:700;padding:7px 13px;border-radius:var(--radius-full);cursor:pointer;
+  background:var(--bg-subtle);color:var(--text-secondary);border:1px solid var(--border-default);}
+.subsel .ss:hover{border-color:var(--color-primary-300);}
+.subsel .ss.active{background:var(--color-primary-500);color:#fff;border-color:var(--color-primary-500);}
+.file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+.file-card{border:1.5px dashed var(--border-strong);border-radius:var(--radius-md);padding:16px 12px;text-align:center;
+  color:var(--text-tertiary);background:var(--bg-subtle);}
+.file-card .fi{font-size:26px;opacity:.55;}
+.file-card .fn{margin-top:8px;font-size:0.74rem;font-weight:700;color:var(--text-secondary);}
+.file-card .fs{margin-top:3px;font-size:0.66rem;font-weight:600;color:var(--text-tertiary);}
+.file-card.doc{border-style:solid;border-color:var(--border-default);background:var(--bg-elevated);cursor:pointer;
+  text-decoration:none;transition:transform .12s,box-shadow .12s,border-color .12s;display:block;}
+.file-card.doc:hover{transform:translateY(-2px);box-shadow:var(--shadow-card);border-color:var(--color-primary-400);}
+.file-card.doc .fi{opacity:1;color:var(--color-primary-500);}
+.file-card.doc .fn{color:var(--text-primary);word-break:break-all;}
+.upload-btn{margin-left:auto;font-size:0.7rem;font-weight:700;text-decoration:none;padding:7px 13px;border-radius:var(--radius-full);
+  background:var(--color-primary-500);color:#fff;border:0;box-shadow:var(--shadow-sm);white-space:nowrap;}
+.upload-btn:hover{background:var(--color-primary-400);}
+.empty-note{margin-top:14px;font-size:0.72rem;color:var(--text-tertiary);background:var(--bg-subtle);
+  border:1px dashed var(--border-default);border-radius:var(--radius-md);padding:12px 14px;line-height:1.7;}
+.empty-note b{color:var(--color-primary-500);}
+
+.scaffold-badge{display:inline-block;font-size:0.62rem;font-weight:800;letter-spacing:0.03em;
+  padding:4px 10px;border-radius:var(--radius-full);background:#FFF3DE;color:#B5730A;border:1px solid #F0D28A;}
+body.dark .scaffold-badge{background:rgba(181,115,10,.22);color:#F0C368;border-color:rgba(240,210,138,.4);}
+
+/* 기업 개요 테이블 */
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;}
+.ov-cell{background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-md);
+  padding:12px 14px;box-shadow:var(--shadow-sm);}
+.ov-cell .k{font-size:0.68rem;font-weight:700;color:var(--text-tertiary);}
+.ov-cell .v{margin-top:4px;font-size:0.9rem;font-weight:800;color:var(--text-primary);}
+
+@media (max-width:820px){ .sidebar{width:210px;} }
+@media (max-width:640px){
+  .app{flex-direction:column;}
+  .sidebar{width:100%;height:auto;max-height:230px;}
+  .main{height:auto;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="mk">🌿</div>
+      <div class="tt"><b>ESG 심층 보고서</b><span>(주)삼화당피앤티 · ESG DEEP-DIVE</span></div>
+    </div>
+    <div class="sb-sec">보고서 메뉴</div>
+    <ul class="sb-nav" id="sbNav"></ul>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="title">
+        <h1>ESG 심층 보고서 <span class="scaffold-badge">화면 설계 · GitHub 자동 연동</span></h1>
+        <p>좌측에서 항목을 선택하면 통계·인포그래픽과 함께 관련 자료를 조회·업로드할 수 있습니다.</p>
+      </div>
+      <div class="spacer"></div>
+      <button class="report-btn" id="reportBtn" title="연간 ESG 보고서(공개용) 인쇄">📄 연간 ESG 보고서</button>
+      <span class="chip"><span class="dot"></span>진단일 2025-09-24</span>
+      <button class="theme-btn" id="themeBtn" title="라이트/다크 전환">🌙 <span id="themeLabel">다크 모드</span></button>
+    </div>
+    <div class="content" id="content"></div>
+  </main>
+</div>
+
+<script>
+/* ============================================================
+   ESG 심층진단 데이터 — 출처: 중소벤처기업진흥공단 ESG 심층진단 보고서
+   (진단일 2025-09-24 · 진단위원 강태농 · 기업 삼화당피앤티)
+   ============================================================ */
+const COMPANY = {
+  name:'삼화당피앤티', ceo:'이경수', addr:'경기 남양주시', founded:'1985-08-01',
+  biz:'오프셋 인쇄업 (18113)', reg:'542-88-02247', emp:'40명',
+  sales:[{y:'2022',v:14698},{y:'2023',v:14660},{y:'2024',v:13189}], // 백만원
+  diagDate:'2025-09-24', self:'2025-08-22', officer:'강태농', org:'중소벤처기업진흥공단', peers:17328
+};
+const OVERALL = {
+  E:{score:90.0, grade:1, top:3.78, level:'매우 우수', dist:[7.36,13.48,30.49,34.68,13.99], items:16, good:12, mid:3, low:1,
+     self:1, deep:1, gap:0, match:100, color:'#2E9E5B',
+     gapNote:'환경분야 각 지표별 실적검토 결과 대부분 상위 그룹의 평가등급으로 판정되어 부분적인 개선활동을 지도함'},
+  S:{score:69.64, grade:2, top:40.4, level:'우수', dist:[21.80,38.60,28.28,10.07,1.26], items:28, good:17, mid:5, low:6,
+     self:2, deep:2, gap:0, match:100, color:'#2478C8',
+     gapNote:'사회안전분야 각 지표별 실적검토 결과 부분적으로 개선보완 사항 발견 및 문서화된 정보의 이행실적에 대한 보다 명확한 증빙관리를 보완할 것을 지도함'},
+  G:{score:68.18, grade:2, top:29.54, level:'우수', dist:[11.42,22.33,29.39,23.04,13.82], items:11, good:6, mid:3, low:2,
+     self:3, deep:2, gap:1, match:80, color:'#8A5AD6',
+     gapNote:'지배구조 분야 실적검토 결과 사회공헌 등 전 임직원 참여활동 계획 수행과 관련 정책·지침의 문서화 보완 및 실적 증빙관리를 전반적으로 개선보완할 것을 지도함'}
+};
+// 진단 세부항목 (등급: good=우수, mid=보통, low=미흡)
+const ITEMS = {
+  E:[
+    {c:'E01',n:'환경 목표 수립',lv:'good',op:'ISO 14001 국제 인증 및 방침·목표 설정에 따라 목표가 문서화·유지됨'},
+    {c:'E02',n:'환경성과 점검 및 관리',lv:'good',op:'환경담당 지정·업무분장, 정기적인 환경점검활동 수행 확인'},
+    {c:'E03',n:'온실가스 배출 관리',lv:'good',op:'2023~2024 온실가스 인벤토리 구축 및 점검활동 수행'},
+    {c:'E04',n:'에너지 사용량 관리',lv:'good',op:'가스·전기 등 에너지 사용량 관리 정책 문서화 및 점검 수행'},
+    {c:'E05',n:'폐기물 관리',lv:'good',op:'폐기물관리 정책 문서화 및 주기적 점검 수행'},
+    {c:'E06',n:'수처리 및 폐수 관리',lv:'good',op:'상하수도 처리 이행, 공정용 폐수는 발생하지 않음'},
+    {c:'E07',n:'악취 및 소음 관리',lv:'good',op:'인허가 완료, 대기 방지시설 설치·운영 적합'},
+    {c:'E08',n:'(유해)화학물질 관리',lv:'good',op:'화학물질 인벤토리 구축 및 점검관리 적합 수행'},
+    {c:'E09',n:'대기오염물질 관리',lv:'good',op:'대기 관리 정책 문서화, 방지시설 운영·자가측정 수행'},
+    {c:'E10',n:'에너지 사용량 절감 활동',lv:'mid',op:'고효율 전기구 교체·소등 캠페인 등 절감방안 운영(투자형 활동 필요)'},
+    {c:'E11',n:'용수 절감 활동',lv:'good',op:'상하수도 외 용수 없어 해당사항 없음'},
+    {c:'E12',n:'원부자재 순환성 향상',lv:'good',op:'용지에 대한 재생원료 사용 및 관련 인증 확보'},
+    {c:'E13',n:'환경오염 저감 활동',lv:'good',op:'환경방침 목표 설정, 대기오염 배출량 감소 저감노력 확인'},
+    {c:'E14',n:'기후변화 완화 활동',lv:'mid',op:'완화 활동 목표 수립(구체적 중장기 절감목표는 미수립)'},
+    {c:'E15',n:'환경 관련 인증',lv:'good',op:'국제 환경경영인증(ISO 14001) 확보'},
+    {c:'E16',n:'환경 종합 관리',lv:'low',op:'환경경영 전반 체계수립·개선노력 지속 보완 필요'}
+  ],
+  S:[
+    {c:'S01',n:'사회 관련 정책 수립',lv:'good',op:'산업안전·보건·인권 방침 문서화 및 지침 운영'},
+    {c:'S02',n:'사회 관련 인증',lv:'good',op:'국제 품질경영인증(ISO 9001) 획득·운영'},
+    {c:'S03',n:'취업규칙 적용',lv:'good',op:'표준 취업규칙 문서화, 전 임직원 동의 및 고용노동부 신고 완료'},
+    {c:'S04',n:'표준근로계약서 적용',lv:'good',op:'채용·연봉 계약 시 표준근로계약서 적용'},
+    {c:'S05',n:'채용수수료 부담금지',lv:'good',op:'채용 관련 수수료 일체 회사 부담'},
+    {c:'S06',n:'아동노동 금지',lv:'good',op:'아동노동 금지 방침 문서화 및 실행 유지'},
+    {c:'S07',n:'강제노동 금지',lv:'good',op:'강제노동 금지 방침 문서화 및 실행 유지'},
+    {c:'S08',n:'노사 상생문화 조성',lv:'good',op:'분기 1회 노사협의회 운영·기록 확인'},
+    {c:'S09',n:'임직원 역량개발',lv:'mid',op:'추진실적은 없으나 공인노무사 상시 지원 통한 준수점검 확인'},
+    {c:'S10',n:'고용상 차별 금지',lv:'good',op:'차별금지 정책 문서화 및 수행'},
+    {c:'S11',n:'차별금지 및 모니터링',lv:'good',op:'신고채널 운영, 점검·인식개선 교육 수행'},
+    {c:'S12',n:'여성 임원 보유',lv:'low',op:'여성임원 보유 실적 없음'},
+    {c:'S13',n:'이해관계자 소통 채널',lv:'good',op:'내·외부 이해관계자 소통채널 보유·유지'},
+    {c:'S14',n:'신고자 보호 및 권리 보장',lv:'good',op:'익명성 보장·보복금지 조항 문서화 및 실행'},
+    {c:'S15',n:'사회공헌 프로그램 운영',lv:'mid',op:'프로그램형 운영은 없으며 기부금 기여 등으로 수행'},
+    {c:'S16',n:'동반성장',lv:'good',op:'고객사 공급망 ESG 실사대응 등 활동참여 확인'},
+    {c:'S17',n:'공급망 관리',lv:'mid',op:'공급망 행동규범 마련(협력사 실사 활동 실적은 아직 없음)'},
+    {c:'S18',n:'휴게시설 제공 및 위생 관리',lv:'good',op:'직원 휴게소 마련, 주기적 점검·청결관리 수행'},
+    {c:'S19',n:'사업장 안전 관리',lv:'mid',op:'방침 문서화·전담조직·위험성평가 수행(안전보건경영시스템 문서화 체계 보완 필요)'},
+    {c:'S20',n:'임직원 건강 관리',lv:'good',op:'건강검진·작업환경측정 등 적합 수행'},
+    {c:'S21',n:'산업재해 발생 내역',lv:'good',op:'지난 3년간 산업재해 미발생'},
+    {c:'S22',n:'비상상황 대응 체계',lv:'good',op:'비상 시나리오 구축 및 훈련 수행'},
+    {c:'S23',n:'제품 안전 및 품질 관리',lv:'good',op:'매뉴얼 문서화, ISO 9001 인증 기반 점검·관리'},
+    {c:'S24',n:'제품·서비스 안전정보 제공',lv:'good',op:'제품검사성적서 작성·제공, 하자 시 조치 이행'},
+    {c:'S25',n:'책임있는 원부자재 관리',lv:'low',op:'책임·분쟁광물 관련사항 해당 없음'},
+    {c:'S26',n:'데이터 및 정보 보안',lv:'low',op:'보안절차 문서화 미수행(POP 시스템으로 생산관리정보 관리)'},
+    {c:'S27',n:'개인정보 보호',lv:'low',op:'체계화 미비, 전직원 개인정보보호 교육은 수행 확인'},
+    {c:'S28',n:'사회분야 종합',lv:'low',op:'문서화된 정보의 이행실적에 대한 증빙관리 보완 필요'}
+  ],
+  G:[
+    {c:'G01',n:'윤리경영 정책',lv:'good',op:'윤리경영 지침·정책 문서화'},
+    {c:'G02',n:'윤리경영 인증',lv:'low',op:'윤리경영 관련 인증 실적 아직 없음'},
+    {c:'G03',n:'준법경영시스템 구축',lv:'good',op:'담당자 지정 및 준수관리 절차 문서화 확인'},
+    {c:'G04',n:'법규준수 및 위험관리',lv:'good',op:'법규 준수평가 및 내부심사 실시 확인'},
+    {c:'G05',n:'하도급업체와 공정계약 이행',lv:'mid',op:'공급망 지침 따라 계약서 작성(공정성 주기 점검 보완 필요)'},
+    {c:'G06',n:'ESG KPI 설정',lv:'good',op:'ESG 분야별 주요 성과지표 목표·성과 관리 확인'},
+    {c:'G07',n:'ESG 정보 공개',lv:'low',op:'홈페이지·ESG 보고서 등 정보 공개 아직 미수행'},
+    {c:'G08',n:'경영진의 ESG 역량 개발',lv:'good',op:'경영진·직원 ESG 역량개발 교육참여 확인'},
+    {c:'G09',n:'정기적인 이사회 운영',lv:'good',op:'정기 이사회 운영 및 회의록 작성'},
+    {c:'G10',n:'주주 권리 참여 보장',lv:'mid',op:'주주총회 소집 통지 10일 이전 진행'},
+    {c:'G11',n:'지배구조 종합',lv:'mid',op:'전 임직원 참여활동 정책·지침 문서화 및 증빙관리 개선 필요'}
+  ]
+};
+// 개선과제 6건
+const TASKS = [
+  {code:'E03',dom:'E',nm:'온실가스 배출 관리',pri:'중',term:'단기(6개월)',
+   desc:'3년주기 기간 중 온실가스 배출관리를 위한 온실가스 인벤토리 구축 및 배출관리 운영 개선'},
+  {code:'E10',dom:'E',nm:'에너지 사용량 절감 활동',pri:'중',term:'중기(1년)',
+   desc:'기준년도 에너지 사용량 데이터 결정 및 목표년도(중기·단기) 에너지 절감계획 수립·운영'},
+  {code:'E14',dom:'E',nm:'기후변화 완화 활동',pri:'하',term:'중장기(3년)',
+   desc:'온실가스 인벤토리 구축·기준년도 배출량 분석 및 원단위 검토를 통한 중장기 온실가스 저감 활동'},
+  {code:'S17',dom:'S',nm:'공급망 관리',pri:'중',term:'중기(1년)',
+   desc:'협력사 공급망 관리지침 개선·보완 및 협력사 동의 접수·교육을 통한 공급망 실사 운영방안 개선'},
+  {code:'S19',dom:'S',nm:'사업장 안전 관리',pri:'상',term:'단기(6개월)',
+   desc:'산업재해·중대재해 예방을 위한 안전보건경영시스템 보완 구축·운영(ISO 45001 인증은 정착 후 결정)'},
+  {code:'G05',dom:'G',nm:'하도급업체와 공정계약 이행',pri:'중',term:'중기(1년)',
+   desc:'협력사 공급망 관리체계 구축 통한 하도급 계약서류 공정성 충족여부 주기 점검·보완·개선'}
+];
+// 환경/사회 관리 현황 지표
+const METRICS = {
+  ghg:{label:'온실가스 배출량',unit:'전년 대비',delta:-4.4,note:'2023~2024 인벤토리 구축, 2024년 기준년도 예정 · 전년比 4.4% 저감'},
+  eui:{label:'원단위 에너지',unit:'전년 대비',delta:+6.3,note:'매출액 감소 영향으로 원단위 6.3% 증가(kwh/백만원)'},
+  hire:{label:'고용창출',unit:'명/년',val:'1',note:'2023~2024 매년 1명 고용창출 실적'},
+  tenure:{label:'평균 근속연수',unit:'년',val:'약 15',note:'평균 15년대 · 고령화 진행'},
+  safety:{label:'산업재해',unit:'건(3년)',val:'0',note:'지난 3년간 산업재해·중대재해 0건'},
+  fair:{label:'공정계약 위반',unit:'건',val:'0',note:'공정계약 위반 사실 없음'}
+};
+// 종합의견 키워드 & 문단
+const OPINION = {
+  keywords:['온실가스 인벤토리','에너지 저감계획','기준년도 설정','위험성평가 재구축','안전보건관리체계','중대재해 예방','무재해 직장','공급망 ESG 실사','ESG 담당자 역량강화','전 임직원 ESG 교육'],
+  blocks:[
+    {h:'진단자 종합 의견',p:'에너지 사용량·온실가스 배출량 인벤토리가 2023~2024 2년간 작성되어 있으나 아직 기준년도 설정 및 저감계획을 수립하지 못하였고, 지난 3년간 산업재해·중대재해가 없으나 회전체 끼임·중량물 취급 등 산업재해 우려가 있는 공정 특성을 가지고 있음.'},
+    {h:'주요 개선과제 및 추진 전략',p:'온실가스 인벤토리 3년 데이터 확보 후 기준년도 설정과 단기·중기 에너지 절감·온실가스 감축 활동계획을 개선보완하고, 재해우려 공정 특성을 감안해 위험성평가 및 안전보건관리체계 전면 재구축과 중대재해 예방점검으로 무재해 직장을 추진할 필요가 있음.'},
+    {h:'기타 제언',p:'국내 전문 제약회사·첨단 바이오 업체 등 고객의 공급망 ESG 및 실사 요구에 대응하기 위해 ESG 담당자에게 책임·권한을 부여하고 역량강화 전문교육과 전 임직원의 ESG 인식·실행 참여 교육을 강화할 것을 제안함.'}
+  ]
+};
+
+/* ===== 좌측 메뉴 구성 ===== */
+const NAV = [
+  {key:'summary',  icon:'📊', name:'진단 결과 요약',  pill:'', pc:''},
+  {key:'grade',    icon:'📈', name:'ESG 등급 분석',  pill:'', pc:''},
+  {key:'E',        icon:'🌱', name:'환경 (E)',        pill:'1등급', pc:'#2E9E5B'},
+  {key:'S',        icon:'🤝', name:'사회 (S)',        pill:'2등급', pc:'#2478C8'},
+  {key:'G',        icon:'🏛️', name:'지배구조 (G)',    pill:'2등급', pc:'#8A5AD6'},
+  {key:'tasks',    icon:'🎯', name:'개선과제',        pill:'6건', pc:'#B5730A'},
+  {key:'opinion',  icon:'📝', name:'종합의견',        pill:'', pc:''},
+  {key:'docs',     icon:'📁', name:'자료실 (증빙)',   pill:'GitHub', pc:'#0F1E78'}
+];
+
+const $ = id => document.getElementById(id);
+let activeKey = 'summary';
+const charts = {};
+
+/* ===================================================================
+   자료(증빙) 연동 — GitHub 저장소의 ESG 폴더를 자동 조회
+   구조: ESG/<E|S|G|공통>/<세부항목>/파일  (안전보건 SAFE 방식과 동일)
+   =================================================================== */
+const GH_OWNER='kinof2018-create', GH_REPO='HP-IN-MH4', GH_BRANCH='main', ESG_BASE='ESG';
+let ESG_INDEX=null;   // { '카테고리|세부항목'(정규화): [{path,file}] }
+const DOC_CATS = {
+  E:{folder:'E', label:'환경(E) 증빙', subs:['환경경영인증(ISO14001)','온실가스·에너지 인벤토리','폐기물·수처리 관리','화학물질·대기 관리','환경목표·저감활동']},
+  S:{folder:'S', label:'사회(S) 증빙', subs:['취업규칙·근로계약','노사협의회','안전보건·위험성평가','건강검진·작업환경측정','품질인증(ISO9001)','공급망 관리']},
+  G:{folder:'G', label:'지배구조(G) 증빙', subs:['윤리경영 지침','준법·내부심사','이사회·주주총회','ESG KPI·정보공개','하도급 공정계약']},
+  common:{folder:'공통', label:'공통·연간보고', subs:['ESG 심층진단 보고서','연간 ESG 보고서','대외제출 증빙','기타']}
+};
+let docCatKey='E', docSubIdx=0;
+
+function normTxt(s){ return String(s==null?'':s).replace(/\s+/g,'').toLowerCase(); }
+function skey(cat,sub){ return normTxt(cat)+'|'+normTxt(sub); }
+function fileMeta(file){
+  const m=file.match(/(\d{4}-\d{2}-\d{2})/); const date=m?m[1]:'';
+  let title=file.replace(/\.[^.]+$/,'');
+  if(m) title=title.replace(m[1],'').replace(/^[_\-\s]+/,'').trim()||file;
+  return {date,title};
+}
+function addUploadHref(folder,sub){
+  return 'https://github.com/'+GH_OWNER+'/'+GH_REPO+'/upload/'+GH_BRANCH+'/'+encodeURI(ESG_BASE+'/'+folder+'/'+sub);
+}
+async function loadEsgIndex(){
+  const api='https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/git/trees/'+GH_BRANCH+'?recursive=1';
+  const idx={};
+  try{
+    const res=await fetch(api,{headers:{'Accept':'application/vnd.github+json'}});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    (data.tree||[]).forEach(function(n){
+      if(n.type!=='blob') return;
+      const p=n.path||''; const parts=p.split('/');
+      if(parts.length<4) return;                          // ESG/카테고리/세부항목/파일
+      if(parts[0].toUpperCase()!==ESG_BASE.toUpperCase()) return;
+      const file=parts[parts.length-1];
+      if(!/\.(pdf|png|jpe?g|gif|webp|hwp|hwpx|docx?|xlsx?|pptx?|tiff?)$/i.test(file)) return;
+      const key=skey(parts[1],parts[2]);
+      (idx[key]=idx[key]||[]).push({path:p,file:file});
+    });
+    ESG_INDEX=idx;
+  }catch(e){ console.warn('ESG 자료 목록을 불러오지 못했습니다:', e&&e.message); ESG_INDEX={}; }
+  if(activeKey==='docs') renderMain();
+}
+function docFilesHTML(){
+  const cat=DOC_CATS[docCatKey]; const sub=cat.subs[docSubIdx]||cat.subs[0];
+  const key=skey(cat.folder,sub);
+  const loading=(ESG_INDEX===null);
+  const files=(ESG_INDEX&&ESG_INDEX[key])?ESG_INDEX[key].slice():[];
+  files.sort(function(a,b){
+    const da=(a.file.match(/\d{4}-\d{2}-\d{2}/)||[''])[0], db=(b.file.match(/\d{4}-\d{2}-\d{2}/)||[''])[0];
+    if(da!==db) return da<db?1:-1; return a.file<b.file?1:-1;
+  });
+  let cards;
+  if(loading){
+    cards='<div class="file-card"><div class="fi">⏳</div><div class="fn">불러오는 중…</div><div class="fs">GitHub 조회</div></div>';
+  }else if(files.length){
+    cards=files.map(function(f){ const meta=fileMeta(f.file);
+      return '<a class="file-card doc" href="'+encodeURI(f.path)+'" target="_blank" rel="noopener" title="'+f.file.replace(/"/g,'')+'">'+
+             '<div class="fi">📄</div><div class="fn">'+(meta.title||f.file)+'</div><div class="fs">'+(meta.date||'')+'</div></a>';
+    }).join('');
+  }else{
+    cards='<div class="file-card"><div class="fi">🗂️</div><div class="fn">등록된 자료 없음</div><div class="fs">GitHub에 올리면 표시됩니다</div></div>';
+  }
+  const subChips=cat.subs.map((s,i)=>`<span class="ss ${i===docSubIdx?'active':''}" data-sub="${i}">${s}</span>`).join('');
+  const catChips=Object.keys(DOC_CATS).map(k=>`<span class="ss ${k===docCatKey?'active':''}" data-cat="${k}">${DOC_CATS[k].label}</span>`).join('');
+  const cnt=loading?'…':files.length;
+  return `
+    <div class="subsel" id="docCatSel">${catChips}</div>
+    <div class="fp-head"><h3>${cat.label} · ${sub}</h3><span class="tag">등록된 자료 ${cnt}건</span>
+      <a class="upload-btn" href="${addUploadHref(cat.folder,sub)}" target="_blank" rel="noopener">＋ GitHub에 자료 올리기</a></div>
+    <div class="subsel" id="docSubSel">${subChips}</div>
+    <p class="fp-desc">이 항목의 증빙(PDF·이미지·문서 등)을 GitHub <b>${ESG_BASE}/${cat.folder}/${sub}</b> 폴더에 올리면, 아래에 자동으로 나타나고 클릭하면 새 탭에서 열립니다.</p>
+    <div class="file-grid">${cards}</div>
+    <div class="empty-note">※ 지금은 <b>GitHub 업로드 방식</b>입니다. 위 <b>＋GitHub에 자료 올리기</b> 버튼을 누르면 해당 폴더의 업로드 화면으로 바로 이동합니다. 폴더 규칙은 <b>${ESG_BASE}/[E·S·G·공통]/[세부항목]/[연도]_[제목].확장자</b> 입니다. <b>향후</b> 대시보드에서 직접 업로드하는 기능으로 교체할 수 있도록 설계되어 있습니다.</div>`;
+}
+
+/* ===== 좌측 메뉴 렌더 ===== */
+function renderNav(){
+  $('sbNav').innerHTML = NAV.map(c=>{
+    const pill=c.pill?`<span class="pill" style="background:${c.pc||'#3a3f57'}">${c.pill}</span>`:'';
+    return `<li class="sb-item ${c.key===activeKey?'active':''}" data-key="${c.key}">
+      <span class="ic">${c.icon}</span><span>${c.name}</span>${pill}</li>`;
+  }).join('');
+  $('sbNav').querySelectorAll('.sb-item').forEach(el=>{
+    el.addEventListener('click', ()=>{ activeKey = el.getAttribute('data-key');
+      if(['E','S','G'].includes(activeKey)){ docCatKey=activeKey; docSubIdx=0; }
+      renderNav(); renderMain(); });
+  });
+}
+
+/* ===== 차트 테마 색 ===== */
+function themed(){
+  const dark=document.body.classList.contains('dark');
+  return {grid:dark?'rgba(255,255,255,0.1)':'rgba(16,24,40,0.08)',
+          tick:dark?'rgba(255,255,255,0.72)':'#5A5F6E',
+          legend:dark?'rgba(255,255,255,0.85)':'#2A2E3A'};
+}
+function destroyCharts(){ Object.keys(charts).forEach(k=>{ if(charts[k]){charts[k].destroy(); delete charts[k];} }); }
+function hasChart(){ return typeof Chart !== 'undefined'; }
+
+/* ===== 본문 렌더 ===== */
+function renderMain(){
+  destroyCharts();
+  if(activeKey==='summary') return renderSummary();
+  if(activeKey==='grade')   return renderGrade();
+  if(activeKey==='tasks')   return renderTasks();
+  if(activeKey==='opinion') return renderOpinion();
+  if(activeKey==='docs')    return renderDocs();
+  return renderDomain(activeKey);   // E / S / G
+}
+
+function gradeColor(g){ return ['#0E9F5E','#3FA9F5','#E0A32E','#EF8A3C','#D64545'][g-1]||'#888'; }
+function kpiTrend(delta){
+  if(delta===0) return `<div class="ks flat">— 전년 대비 변동 없음</div>`;
+  const up=delta>0; const good = !up; // 배출/원단위는 감소가 좋음
+  return `<div class="ks ${up?'up':'down'}">${up?'▲':'▼'} 전년 대비 ${Math.abs(delta)}%</div>`;
+}
+
+/* ── 진단 결과 요약 (HPPK 스타일 KPI + 차트) ── */
+function renderSummary(){
+  const E=OVERALL.E,S=OVERALL.S,G=OVERALL.G;
+  const ov = c=>c;
+  $('content').innerHTML = `
+    <div class="cat-head">
+      <div class="big">📊</div>
+      <div><h2>진단 결과 요약</h2><p>${COMPANY.org} ESG 심층진단 · 진단일 ${COMPANY.diagDate} · 진단위원 ${COMPANY.officer}</p></div>
+      <div class="hscore"><b>1 / 2 / 2</b><span>E · S · G 등급</span></div>
+    </div>
+
+    <div class="section-label"><span class="bar"></span>영역별 종합 점수 <span class="sub">— 1등급(우수) ~ 5등급(미흡) · 참여기업 ${COMPANY.peers.toLocaleString()}개사 기준</span></div>
+    <div class="kpi-grid">
+      ${[['환경 (E)',E,'#2E9E5B'],['사회 (S)',S,'#2478C8'],['지배구조 (G)',G,'#8A5AD6']].map(([nm,o,col])=>`
+        <div class="kpi"><div class="bar" style="background:${col}"></div>
+          <div class="kl">${nm} <span class="grade-badge" style="background:${gradeColor(o.grade)}">${o.grade}등급</span></div>
+          <div class="kv">${o.score.toFixed(o.score%1?2:1)}<small>점</small></div>
+          <div class="ks down">상위 ${o.top}% · ${o.level}</div>
+        </div>`).join('')}
+      <div class="kpi"><div class="bar" style="background:#B5730A"></div>
+        <div class="kl">개선과제</div><div class="kv">6<small>건</small></div>
+        <div class="ks flat">단기 2 · 중기 3 · 중장기 1</div>
+      </div>
+    </div>
+
+    <div class="section-label"><span class="bar"></span>통계 · 인포그래픽</div>
+    <div class="card-grid">
+      <div class="card"><h3>영역별 점수 비교</h3><p class="cdesc">E·S·G 심층진단 점수(100점 만점)</p>
+        <div class="chart-box"><canvas id="cScore"></canvas></div>
+        <div class="chart-fallback" id="fScore">환경 90.0 · 사회 69.64 · 지배구조 68.18점</div></div>
+      <div class="card"><h3>업계 내 상위 백분위</h3><p class="cdesc">전체 ${COMPANY.peers.toLocaleString()}개사 대비 상위 비율(작을수록 우수)</p>
+        <div class="chart-box"><canvas id="cTop"></canvas></div>
+        <div class="chart-fallback" id="fTop">E 상위 3.78% · S 상위 40.4% · G 상위 29.54%</div></div>
+      <div class="card"><h3>진단 항목 우수/보통/미흡 분포</h3><p class="cdesc">영역별 세부 진단항목 평가 결과</p>
+        <div class="chart-box"><canvas id="cItems"></canvas></div>
+        <div class="chart-fallback" id="fItems">E 12/3/1 · S 17/5/6 · G 6/3/2</div></div>
+      <div class="card"><h3>매출액 추이</h3><p class="cdesc">최근 3개년 매출액(단위: 백만원)</p>
+        <div class="chart-box"><canvas id="cSales"></canvas></div>
+        <div class="chart-fallback" id="fSales">2022 14,698 · 2023 14,660 · 2024 13,189</div></div>
+    </div>
+
+    <div class="section-label"><span class="bar"></span>기업 개요</div>
+    <div class="ov-grid">
+      ${[['회사명',COMPANY.name],['대표자',COMPANY.ceo],['소재지',COMPANY.addr],['설립일',COMPANY.founded],
+         ['표준산업분류',COMPANY.biz],['종업원수',COMPANY.emp],['사업자등록번호',COMPANY.reg],['진단기관',COMPANY.org]]
+        .map(([k,v])=>`<div class="ov-cell"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('')}
+    </div>`;
+  drawSummaryCharts();
+}
+function drawSummaryCharts(){
+  const t=themed();
+  if(!hasChart()){ ['fScore','fTop','fItems','fSales'].forEach(id=>{const e=$(id);if(e)e.style.display='block';}); return; }
+  const E=OVERALL.E,S=OVERALL.S,G=OVERALL.G;
+  charts.score=new Chart($('cScore'),{type:'bar',
+    data:{labels:['환경 (E)','사회 (S)','지배구조 (G)'],datasets:[{data:[E.score,S.score,G.score],
+      backgroundColor:['#2E9E5B','#2478C8','#8A5AD6'],borderRadius:8,maxBarThickness:70}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,max:100,grid:{color:t.grid},ticks:{color:t.tick}},x:{grid:{display:false},ticks:{color:t.tick,font:{weight:'700'}}}}}});
+  charts.top=new Chart($('cTop'),{type:'bar',
+    data:{labels:['환경 (E)','사회 (S)','지배구조 (G)'],datasets:[{data:[E.top,S.top,G.top],
+      backgroundColor:['#2E9E5B','#2478C8','#8A5AD6'],borderRadius:8,maxBarThickness:60}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>'상위 '+c.raw+'%'}}},
+      scales:{x:{beginAtZero:true,grid:{color:t.grid},ticks:{color:t.tick,callback:v=>v+'%'}},y:{grid:{display:false},ticks:{color:t.tick,font:{weight:'700'}}}}}});
+  charts.items=new Chart($('cItems'),{type:'bar',
+    data:{labels:['환경 (E)','사회 (S)','지배구조 (G)'],datasets:[
+      {label:'우수',data:[E.good,S.good,G.good],backgroundColor:'#0E9F5E',borderRadius:5,stack:'x'},
+      {label:'보통',data:[E.mid,S.mid,G.mid],backgroundColor:'#E0A32E',borderRadius:5,stack:'x'},
+      {label:'미흡',data:[E.low,S.low,G.low],backgroundColor:'#D64545',borderRadius:5,stack:'x'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:t.legend,font:{weight:'700'}}}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{color:t.tick,font:{weight:'700'}}},y:{stacked:true,beginAtZero:true,grid:{color:t.grid},ticks:{color:t.tick}}}}});
+  charts.sales=new Chart($('cSales'),{type:'line',
+    data:{labels:COMPANY.sales.map(s=>s.y),datasets:[{data:COMPANY.sales.map(s=>s.v),
+      borderColor:'#1428A0',backgroundColor:'rgba(20,40,160,0.12)',fill:true,tension:0.35,pointRadius:5,pointBackgroundColor:'#1428A0',borderWidth:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>c.raw.toLocaleString()+' 백만원'}}},
+      scales:{y:{grid:{color:t.grid},ticks:{color:t.tick,callback:v=>v.toLocaleString()}},x:{grid:{display:false},ticks:{color:t.tick,font:{weight:'700'}}}}}});
+}
+
+/* ── ESG 등급 분석 (GAP) ── */
+function renderGrade(){
+  const rows=['E','S','G'].map(k=>{const o=OVERALL[k];const nm={E:'환경(E)',S:'사회(S)',G:'지배구조(G)'}[k];
+    return {k,nm,o};});
+  $('content').innerHTML = `
+    <div class="cat-head">
+      <div class="big">📈</div>
+      <div><h2>ESG 등급 분석 · GAP CHECK</h2><p>자가진단(${COMPANY.self}) ↔ 심층진단(${COMPANY.diagDate}) 간 수준 차이 분석</p></div>
+    </div>
+    <div class="card-grid">
+      <div class="card"><h3>자가진단 vs 심층진단 등급</h3><p class="cdesc">등급이 낮을수록 우수 (1등급=매우 우수)</p>
+        <div class="chart-box"><canvas id="cGap"></canvas></div>
+        <div class="chart-fallback" id="fGap">E 1→1 · S 2→2 · G 3→2</div></div>
+      <div class="card"><h3>등급 일치도</h3><p class="cdesc">자가진단과 심층진단 결과의 일치 정도</p>
+        <div class="chart-box"><canvas id="cMatch"></canvas></div>
+        <div class="chart-fallback" id="fMatch">E 100% · S 100% · G 80%</div></div>
+    </div>
+    <div class="section-label"><span class="bar"></span>영역별 GAP 분석의견</div>
+    <div class="card-grid">
+      ${rows.map(r=>`<div class="card">
+        <h3>${r.nm} <span class="grade-badge" style="background:${gradeColor(r.o.deep)};margin-left:4px;">GAP ${r.o.gap>0?'+':''}${r.o.gap}</span></h3>
+        <p class="cdesc">자가 ${r.o.self}등급 → 심층 ${r.o.deep}등급 · 일치도 ${r.o.match}%</p>
+        <p style="margin:0;font-size:0.79rem;line-height:1.7;color:var(--text-secondary);font-weight:500;">${r.o.gapNote}</p>
+      </div>`).join('')}
+    </div>`;
+  const t=themed();
+  if(!hasChart()){ ['fGap','fMatch'].forEach(id=>{const e=$(id);if(e)e.style.display='block';}); return; }
+  charts.gap=new Chart($('cGap'),{type:'bar',
+    data:{labels:['환경(E)','사회(S)','지배구조(G)'],datasets:[
+      {label:'자가진단',data:[1,2,3],backgroundColor:'#B9C2E0',borderRadius:6,maxBarThickness:34},
+      {label:'심층진단',data:[1,2,2],backgroundColor:'#1428A0',borderRadius:6,maxBarThickness:34}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:t.legend,font:{weight:'700'}}},
+      tooltip:{callbacks:{label:c=>c.dataset.label+' '+c.raw+'등급'}}},
+      scales:{y:{reverse:true,min:1,max:5,ticks:{stepSize:1,color:t.tick,callback:v=>v+'등급'},grid:{color:t.grid}},x:{grid:{display:false},ticks:{color:t.tick,font:{weight:'700'}}}}}});
+  charts.match=new Chart($('cMatch'),{type:'bar',
+    data:{labels:['환경(E)','사회(S)','지배구조(G)'],datasets:[{data:[100,100,80],
+      backgroundColor:['#2E9E5B','#2478C8','#8A5AD6'],borderRadius:8,maxBarThickness:60}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>'일치도 '+c.raw+'%'}}},
+      scales:{x:{beginAtZero:true,max:100,grid:{color:t.grid},ticks:{color:t.tick,callback:v=>v+'%'}},y:{grid:{display:false},ticks:{color:t.tick,font:{weight:'700'}}}}}});
+}
+
+/* ── 영역별 상세 (E / S / G) : 도넛 + 등급분포 + 항목 리스트 + 지표 + 자료 ── */
+function renderDomain(k){
+  const o=OVERALL[k]; const nm={E:'환경 (E)',S:'사회 (S)',G:'지배구조 (G)'}[k];
+  const desc={E:'환경경영·온실가스·에너지·폐기물 등 환경 전 분야 진단 결과',
+              S:'노동·인권·안전보건·공급망·품질 등 사회적 책임 진단 결과',
+              G:'윤리경영·준법·이사회·정보공개 등 지배구조 진단 결과'}[k];
+  const items=ITEMS[k];
+  const lvLabel={good:'우수',mid:'보통',low:'미흡'};
+  // 환경/사회 관리 현황 지표
+  let metricCards='';
+  if(k==='E'){
+    metricCards=`
+      <div class="kpi"><div class="bar" style="background:#2E9E5B"></div><div class="kl">🔥 ${METRICS.ghg.label}</div>
+        <div class="kv" style="font-size:1.3rem;">▼ 4.4<small>%</small></div>${kpiTrend(-4.4)}<div class="ks flat" style="font-weight:600;">${METRICS.ghg.note}</div></div>
+      <div class="kpi"><div class="bar" style="background:#E0A32E"></div><div class="kl">⚡ ${METRICS.eui.label}</div>
+        <div class="kv" style="font-size:1.3rem;">▲ 6.3<small>%</small></div>${kpiTrend(6.3)}<div class="ks flat" style="font-weight:600;">${METRICS.eui.note}</div></div>`;
+  }else if(k==='S'){
+    metricCards=`
+      <div class="kpi"><div class="bar" style="background:#0E9F5E"></div><div class="kl">🛡️ ${METRICS.safety.label}</div>
+        <div class="kv">${METRICS.safety.val}<small>건</small></div><div class="ks down">지난 3년 무재해</div></div>
+      <div class="kpi"><div class="bar" style="background:#2478C8"></div><div class="kl">👷 ${METRICS.tenure.label}</div>
+        <div class="kv">${METRICS.tenure.val}<small>년</small></div><div class="ks flat">고령화 진행 · 세대전환 대비 필요</div></div>
+      <div class="kpi"><div class="bar" style="background:#3FA9F5"></div><div class="kl">🧑‍💼 ${METRICS.hire.label}</div>
+        <div class="kv">${METRICS.hire.val}<small>명/년</small></div><div class="ks flat">2023~2024 매년 1명</div></div>`;
+  }else{
+    metricCards=`
+      <div class="kpi"><div class="bar" style="background:#8A5AD6"></div><div class="kl">⚖️ ${METRICS.fair.label}</div>
+        <div class="kv">${METRICS.fair.val}<small>건</small></div><div class="ks down">공정계약 위반 없음</div></div>
+      <div class="kpi"><div class="bar" style="background:#6C3EB8"></div><div class="kl">🏛️ 이사회 운영</div>
+        <div class="kv" style="font-size:1.3rem;">정기</div><div class="ks flat">연 1회 이상 개최·회의록 관리</div></div>`;
+  }
+  $('content').innerHTML = `
+    <div class="cat-head tone-${k.toLowerCase()}">
+      <div class="big">${{E:'🌱',S:'🤝',G:'🏛️'}[k]}</div>
+      <div><h2>${nm}</h2><p>${desc}</p></div>
+      <div class="hscore"><b>${o.score.toFixed(o.score%1?2:1)}점</b><span>${o.grade}등급 · 상위 ${o.top}% · ${o.level}</span></div>
+    </div>
+
+    <div class="section-label"><span class="bar"></span>핵심 지표</div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="bar" style="background:${o.color}"></div><div class="kl">종합 점수</div>
+        <div class="kv">${o.score.toFixed(o.score%1?2:1)}<small>점</small></div><div class="ks down">상위 ${o.top}% · ${o.level}</div></div>
+      <div class="kpi"><div class="bar" style="background:${o.color}"></div><div class="kl">진단 항목</div>
+        <div class="kv">${o.items}<small>개</small></div><div class="ks flat">우수 ${o.good} · 보통 ${o.mid} · 미흡 ${o.low}</div></div>
+      ${metricCards}
+    </div>
+
+    <div class="section-label"><span class="bar"></span>통계 · 인포그래픽</div>
+    <div class="card-grid">
+      <div class="card"><h3>진단 항목 평가 분포</h3><p class="cdesc">우수 / 보통 / 미흡 비율</p>
+        <div class="chart-box"><canvas id="cDonut"></canvas></div>
+        <ul class="legend">
+          <li><span class="sw" style="background:#0E9F5E"></span>우수 ${o.good}개</li>
+          <li><span class="sw" style="background:#E0A32E"></span>보통 ${o.mid}개</li>
+          <li><span class="sw" style="background:#D64545"></span>미흡 ${o.low}개</li></ul>
+        <div class="chart-fallback" id="fDonut">우수 ${o.good} · 보통 ${o.mid} · 미흡 ${o.low}</div></div>
+      <div class="card"><h3>업계 등급 분포 내 위치</h3><p class="cdesc">참여기업 ${COMPANY.peers.toLocaleString()}개사의 1~5등급 분포(%) · ★ 우리 회사</p>
+        <div class="chart-box"><canvas id="cDist"></canvas></div>
+        <div class="chart-fallback" id="fDist">${o.dist.join(' / ')} (%) · 우리회사 ${o.grade}등급</div></div>
+    </div>
+
+    <div class="section-label"><span class="bar"></span>세부 진단 항목 <span class="sub">— 총 ${items.length}개 항목</span></div>
+    <div class="item-list">
+      ${items.map(it=>`<div class="item lv-${it.lv}">
+        <div class="ihd"><span class="code">${it.c}</span><span class="lvtag ${it.lv}">${lvLabel[it.lv]}</span></div>
+        <div class="inm">${it.n}</div><div class="iop">${it.op}</div></div>`).join('')}
+    </div>
+
+    <div class="section-label"><span class="bar"></span>${nm} 증빙 자료 <span class="sub">— GitHub ${ESG_BASE}/${k} 폴더 자동 연동</span></div>
+    <div class="files-panel" id="domFiles"></div>`;
+
+  // 자료 패널 (해당 영역 폴더)
+  docCatKey=k; renderDomainFiles(k);
+
+  // 차트
+  const t=themed();
+  if(!hasChart()){ ['fDonut','fDist'].forEach(id=>{const e=$(id);if(e)e.style.display='block';}); return; }
+  charts.donut=new Chart($('cDonut'),{type:'doughnut',
+    data:{labels:['우수','보통','미흡'],datasets:[{data:[o.good,o.mid,o.low],
+      backgroundColor:['#0E9F5E','#E0A32E','#D64545'],borderWidth:2,borderColor:getComputedStyle(document.body).getPropertyValue('--bg-elevated')||'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false}}}});
+  const distColors=o.dist.map((_,i)=>i===(o.grade-1)?o.color:(document.body.classList.contains('dark')?'rgba(255,255,255,0.22)':'#D8DEEC'));
+  charts.dist=new Chart($('cDist'),{type:'bar',
+    data:{labels:['1등급','2등급','3등급','4등급','5등급'],datasets:[{data:o.dist,backgroundColor:distColors,borderRadius:6,maxBarThickness:56}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>c.raw+'%'+(c.dataIndex===(o.grade-1)?' ★ 우리 회사':'')}}},
+      scales:{y:{beginAtZero:true,grid:{color:t.grid},ticks:{color:t.tick,callback:v=>v+'%'}},x:{grid:{display:false},ticks:{color:t.tick,font:{weight:'700'}}}}}});
+}
+function renderDomainFiles(k){
+  const cat=DOC_CATS[k]; docSubIdx=Math.min(docSubIdx,cat.subs.length-1);
+  const sub=cat.subs[docSubIdx]||cat.subs[0];
+  const key=skey(cat.folder,sub);
+  const loading=(ESG_INDEX===null);
+  const files=(ESG_INDEX&&ESG_INDEX[key])?ESG_INDEX[key].slice():[];
+  files.sort((a,b)=>a.file<b.file?1:-1);
+  let cards;
+  if(loading){ cards='<div class="file-card"><div class="fi">⏳</div><div class="fn">불러오는 중…</div><div class="fs">GitHub 조회</div></div>'; }
+  else if(files.length){ cards=files.map(f=>{const m=fileMeta(f.file);
+    return '<a class="file-card doc" href="'+encodeURI(f.path)+'" target="_blank" rel="noopener"><div class="fi">📄</div><div class="fn">'+(m.title||f.file)+'</div><div class="fs">'+(m.date||'')+'</div></a>';}).join(''); }
+  else{ cards='<div class="file-card"><div class="fi">🗂️</div><div class="fn">등록된 자료 없음</div><div class="fs">GitHub에 올리면 표시됩니다</div></div>'; }
+  const subChips=cat.subs.map((s,i)=>`<span class="ss ${i===docSubIdx?'active':''}" data-sub="${i}">${s}</span>`).join('');
+  const cnt=loading?'…':files.length;
+  $('domFiles').innerHTML=`
+    <div class="fp-head"><h3>${cat.label} · ${sub}</h3><span class="tag">등록된 자료 ${cnt}건</span>
+      <a class="upload-btn" href="${addUploadHref(cat.folder,sub)}" target="_blank" rel="noopener">＋ GitHub에 자료 올리기</a></div>
+    <div class="subsel" id="domSubSel">${subChips}</div>
+    <p class="fp-desc">증빙 자료를 GitHub <b>${ESG_BASE}/${cat.folder}/${sub}</b> 폴더에 올리면 자동으로 표시됩니다.</p>
+    <div class="file-grid">${cards}</div>`;
+  $('domSubSel').querySelectorAll('.ss').forEach(el=>el.addEventListener('click',()=>{docSubIdx=parseInt(el.dataset.sub,10);renderDomainFiles(k);}));
+}
+
+/* ── 개선과제 ── */
+function renderTasks(){
+  const domName={E:'환경(E)',S:'사회(S)',G:'지배구조(G)'};
+  $('content').innerHTML=`
+    <div class="cat-head">
+      <div class="big">🎯</div>
+      <div><h2>개선과제 도출 및 추진계획</h2><p>심층진단을 통해 도출된 ESG 개선과제 6건 · 중요성·시급성 및 추진 기간</p></div>
+    </div>
+    <div class="card-grid">
+      <div class="card"><h3>추진 기간별 과제 수</h3><p class="cdesc">단기(6개월)·중기(1년)·중장기(3년)</p>
+        <div class="chart-box"><canvas id="cTerm"></canvas></div>
+        <div class="chart-fallback" id="fTerm">단기 2 · 중기 3 · 중장기 1</div></div>
+      <div class="card"><h3>영역별 과제 분포</h3><p class="cdesc">E · S · G 영역별 개선과제</p>
+        <div class="chart-box"><canvas id="cDom"></canvas></div>
+        <div class="chart-fallback" id="fDom">E 3 · S 2 · G 1</div></div>
+    </div>
+    <div class="section-label"><span class="bar"></span>개선과제 상세 (6건)</div>
+    <div class="card-grid" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr));">
+      ${TASKS.map(tk=>`<div class="task-card dom-${tk.dom.toLowerCase()}">
+        <div class="thd"><span class="tcode dom-${tk.dom.toLowerCase()}">${tk.code}</span><span class="tnm">${tk.nm}</span>
+          <span class="tmeta"><span class="m pri-${tk.pri}">중요성 ${tk.pri}</span><span class="m">${tk.term}</span></span></div>
+        <div class="tdesc">${tk.desc}</div></div>`).join('')}
+    </div>`;
+  const t=themed();
+  if(!hasChart()){ ['fTerm','fDom'].forEach(id=>{const e=$(id);if(e)e.style.display='block';}); return; }
+  const terms={'단기(6개월)':0,'중기(1년)':0,'중장기(3년)':0}; TASKS.forEach(x=>terms[x.term]++);
+  charts.term=new Chart($('cTerm'),{type:'bar',
+    data:{labels:Object.keys(terms),datasets:[{data:Object.values(terms),backgroundColor:['#D64545','#E0A32E','#0E9F5E'],borderRadius:8,maxBarThickness:60}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,grid:{color:t.grid},ticks:{color:t.tick,stepSize:1}},x:{grid:{display:false},ticks:{color:t.tick,font:{weight:'700'}}}}}});
+  const doms={E:0,S:0,G:0}; TASKS.forEach(x=>doms[x.dom]++);
+  charts.dom=new Chart($('cDom'),{type:'doughnut',
+    data:{labels:['환경(E)','사회(S)','지배구조(G)'],datasets:[{data:[doms.E,doms.S,doms.G],
+      backgroundColor:['#2E9E5B','#2478C8','#8A5AD6'],borderWidth:2,borderColor:getComputedStyle(document.body).getPropertyValue('--bg-elevated')||'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'bottom',labels:{color:t.legend,font:{weight:'700'}}}}}});
+}
+
+/* ── 종합의견 ── */
+function renderOpinion(){
+  $('content').innerHTML=`
+    <div class="cat-head">
+      <div class="big">📝</div>
+      <div><h2>종합의견</h2><p>진단자 종합 의견 및 중장기 추진 전략 · 핵심 키워드</p></div>
+    </div>
+    <div class="section-label"><span class="bar"></span>핵심 키워드</div>
+    <div class="kw-wrap">${OPINION.keywords.map(k=>`<span class="kw"># ${k}</span>`).join('')}</div>
+    <div class="section-label"><span class="bar"></span>진단자 종합 의견</div>
+    ${OPINION.blocks.map(b=>`<div class="opinion"><h4><span class="bar"></span>${b.h}</h4><p>${b.p}</p></div>`).join('')}`;
+}
+
+/* ── 자료실 ── */
+function renderDocs(){
+  $('content').innerHTML=`
+    <div class="cat-head">
+      <div class="big">📁</div>
+      <div><h2>자료실 · 증빙 문서</h2><p>ESG 증빙·인증·보고서를 GitHub 폴더 규칙에 따라 업로드하고 조회합니다</p></div>
+    </div>
+    <div class="section-label"><span class="bar"></span>증빙 자료 조회 · 업로드 <span class="sub">— GitHub ${ESG_BASE} 폴더 자동 연동</span></div>
+    <div class="files-panel" id="docsPanel">${docFilesHTML()}</div>`;
+  bindDocEvents();
+}
+function bindDocEvents(){
+  const cs=$('docCatSel'); if(cs) cs.querySelectorAll('.ss').forEach(el=>el.addEventListener('click',()=>{docCatKey=el.dataset.cat;docSubIdx=0;$('docsPanel').innerHTML=docFilesHTML();bindDocEvents();}));
+  const ss=$('docSubSel'); if(ss) ss.querySelectorAll('.ss').forEach(el=>el.addEventListener('click',()=>{docSubIdx=parseInt(el.dataset.sub,10);$('docsPanel').innerHTML=docFilesHTML();bindDocEvents();}));
+}
+
+/* ============================================================
+   연간 ESG 보고서 (공개용) — 인쇄/출력 창
+   ============================================================ */
+function openAnnualReport(){
+  const E=OVERALL.E,S=OVERALL.S,G=OVERALL.G;
+  const yr='2025';
+  const gc=g=>['#0E9F5E','#3FA9F5','#E0A32E','#EF8A3C','#D64545'][g-1]||'#888';
+  const bar=(o,col)=>`<div style="height:9px;background:#EEF0F5;border-radius:6px;overflow:hidden;margin-top:6px;">
+    <div style="height:100%;width:${o.score}%;background:${col};border-radius:6px;"></div></div>`;
+  const domBlock=(nm,ico,o,col)=>`
+    <div class="dcard">
+      <div class="dtop"><span class="dico" style="background:${col}">${ico}</span>
+        <div><div class="dnm">${nm}</div><div class="dsub">${o.level} · 상위 ${o.top}%</div></div>
+        <div class="dgrade" style="background:${gc(o.grade)}">${o.grade}등급</div></div>
+      <div class="dscore">${o.score.toFixed(o.score%1?2:1)}<span>/100점</span></div>
+      ${bar(o,col)}
+      <div class="ddist">진단항목 ${o.items}개 · 우수 ${o.good} / 보통 ${o.mid} / 미흡 ${o.low}</div>
+    </div>`;
+  const kwHTML=OPINION.keywords.map(k=>`<span class="kw"># ${k}</span>`).join('');
+  const taskRows=TASKS.map(tk=>`<tr><td class="c">${tk.code}</td><td>${tk.nm}</td><td class="c">${tk.dom}</td>
+    <td class="c">${tk.pri}</td><td class="c">${tk.term}</td></tr>`).join('');
+  const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<title>${yr} ESG 연간 보고서 · ${COMPANY.name}</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  body{font-family:'Pretendard',sans-serif;color:#1a1d26;background:#e9ecf3;padding:24px;}
+  .page{width:210mm;min-height:297mm;margin:0 auto 20px;background:#fff;padding:20mm 18mm;box-shadow:0 8px 30px rgba(0,0,0,.18);}
+  .toolbar{max-width:210mm;margin:0 auto 16px;display:flex;gap:10px;justify-content:flex-end;}
+  .toolbar button{font-family:inherit;font-weight:800;font-size:13px;padding:11px 20px;border:0;border-radius:9999px;cursor:pointer;}
+  .toolbar .print{background:#0E9F5E;color:#fff;} .toolbar .close{background:#e2e6ef;color:#33384a;}
+  .rhead{display:flex;align-items:center;gap:14px;border-bottom:3px solid #0A1758;padding-bottom:16px;}
+  .rhead .logo{width:52px;height:52px;border-radius:13px;background:linear-gradient(135deg,#0E9F5E,#2AA39B);color:#fff;display:grid;place-items:center;font-size:26px;}
+  .rhead h1{font-size:23px;font-weight:900;letter-spacing:-.02em;}
+  .rhead .sub{font-size:12px;font-weight:700;color:#6a7085;margin-top:3px;}
+  .rhead .yr{margin-left:auto;text-align:right;}
+  .rhead .yr b{font-size:30px;font-weight:900;color:#0A1758;} .rhead .yr span{display:block;font-size:11px;font-weight:700;color:#6a7085;}
+  .sec{margin-top:22px;}
+  .sec h2{font-size:14px;font-weight:900;color:#0A1758;display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+  .sec h2::before{content:'';width:5px;height:16px;background:#2AA39B;border-radius:3px;}
+  .grade-row{display:flex;gap:12px;}
+  .dcard{flex:1;border:1px solid #E1E4EC;border-radius:12px;padding:14px 15px;}
+  .dtop{display:flex;align-items:center;gap:9px;}
+  .dico{width:34px;height:34px;border-radius:9px;color:#fff;display:grid;place-items:center;font-size:17px;flex:none;}
+  .dnm{font-size:14px;font-weight:800;} .dsub{font-size:10.5px;font-weight:700;color:#6a7085;margin-top:2px;}
+  .dgrade{margin-left:auto;color:#fff;font-size:11px;font-weight:900;padding:4px 10px;border-radius:9999px;}
+  .dscore{font-size:26px;font-weight:900;margin-top:12px;} .dscore span{font-size:12px;font-weight:700;color:#6a7085;margin-left:3px;}
+  .ddist{font-size:10.5px;font-weight:700;color:#6a7085;margin-top:9px;}
+  .ov{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;}
+  .ov .c{border:1px solid #E1E4EC;border-radius:9px;padding:10px 12px;}
+  .ov .c .k{font-size:10px;font-weight:700;color:#8b90a3;} .ov .c .v{font-size:13px;font-weight:800;margin-top:3px;}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;}
+  .kp{border:1px solid #E1E4EC;border-radius:10px;padding:12px 13px;border-top:4px solid #0E9F5E;}
+  .kp .k{font-size:10.5px;font-weight:700;color:#6a7085;} .kp .v{font-size:19px;font-weight:900;margin-top:5px;} .kp .n{font-size:9.5px;font-weight:600;color:#8b90a3;margin-top:5px;line-height:1.4;}
+  table{width:100%;border-collapse:collapse;font-size:11px;}
+  th,td{border:1px solid #E1E4EC;padding:7px 8px;text-align:left;} th{background:#F4F5F8;font-weight:800;color:#33384a;} td.c,th.c{text-align:center;}
+  .kw{display:inline-block;font-size:11px;font-weight:800;color:#0A1758;background:#EEF2FF;border:1px solid #D6DEF7;border-radius:9999px;padding:5px 11px;margin:0 6px 6px 0;}
+  .opin{border:1px solid #E1E4EC;border-radius:10px;padding:12px 14px;margin-bottom:9px;}
+  .opin h4{font-size:12px;font-weight:800;color:#0A1758;margin-bottom:5px;} .opin p{font-size:11px;line-height:1.7;color:#33384a;}
+  .rfoot{margin-top:26px;border-top:1px solid #E1E4EC;padding-top:12px;font-size:10px;font-weight:600;color:#8b90a3;display:flex;justify-content:space-between;}
+  @media print{ body{background:#fff;padding:0;} .toolbar{display:none;} .page{box-shadow:none;margin:0;width:auto;min-height:auto;padding:14mm;} @page{size:A4;margin:0;} }
+</style></head><body>
+<div class="toolbar">
+  <button class="print" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+  <button class="close" onclick="window.close()">닫기</button>
+</div>
+<div class="page">
+  <div class="rhead">
+    <div class="logo">🌿</div>
+    <div><h1>${COMPANY.name} ESG 연간 보고서</h1>
+      <div class="sub">SAMHWADANG P&amp;T · Annual ESG Report (공개용 요약)</div></div>
+    <div class="yr"><b>${yr}</b><span>진단일 ${COMPANY.diagDate}</span></div>
+  </div>
+
+  <div class="sec"><h2>1. 기업 개요</h2>
+    <div class="ov">
+      <div class="c"><div class="k">회사명</div><div class="v">${COMPANY.name}</div></div>
+      <div class="c"><div class="k">대표자</div><div class="v">${COMPANY.ceo}</div></div>
+      <div class="c"><div class="k">소재지</div><div class="v">${COMPANY.addr}</div></div>
+      <div class="c"><div class="k">설립일</div><div class="v">${COMPANY.founded}</div></div>
+      <div class="c"><div class="k">업종</div><div class="v">${COMPANY.biz}</div></div>
+      <div class="c"><div class="k">종업원수</div><div class="v">${COMPANY.emp}</div></div>
+      <div class="c"><div class="k">2024 매출액</div><div class="v">13,189 백만원</div></div>
+      <div class="c"><div class="k">진단기관</div><div class="v">${COMPANY.org}</div></div>
+    </div></div>
+
+  <div class="sec"><h2>2. ESG 종합 등급</h2>
+    <div class="grade-row">
+      ${domBlock('환경 (E)','🌱',E,'#2E9E5B')}
+      ${domBlock('사회 (S)','🤝',S,'#2478C8')}
+      ${domBlock('지배구조 (G)','🏛️',G,'#8A5AD6')}
+    </div></div>
+
+  <div class="sec"><h2>3. 핵심 성과 지표</h2>
+    <div class="kpis">
+      <div class="kp" style="border-top-color:#2E9E5B"><div class="k">온실가스 배출량</div><div class="v">▼ 4.4%</div><div class="n">전년 대비 저감 (tco2)</div></div>
+      <div class="kp" style="border-top-color:#E0A32E"><div class="k">원단위 에너지</div><div class="v">▲ 6.3%</div><div class="n">매출 감소 영향 (kwh/백만원)</div></div>
+      <div class="kp" style="border-top-color:#2478C8"><div class="k">산업재해</div><div class="v">0 건</div><div class="n">지난 3년간 무재해</div></div>
+      <div class="kp" style="border-top-color:#8A5AD6"><div class="k">평균 근속연수</div><div class="v">약 15 년</div><div class="n">고령화 진행</div></div>
+    </div></div>
+
+  <div class="sec"><h2>4. 주요 개선과제 (6건)</h2>
+    <table><thead><tr><th class="c">과제코드</th><th>개선과제</th><th class="c">영역</th><th class="c">중요성</th><th class="c">추진기간</th></tr></thead>
+      <tbody>${taskRows}</tbody></table></div>
+
+  <div class="sec"><h2>5. 종합의견 · 핵심 키워드</h2>
+    <div style="margin-bottom:12px;">${kwHTML}</div>
+    ${OPINION.blocks.map(b=>`<div class="opin"><h4>${b.h}</h4><p>${b.p}</p></div>`).join('')}
+  </div>
+
+  <div class="rfoot"><span>${COMPANY.name} · ${COMPANY.org} ESG 심층진단 기반</span><span>발행 ${yr} · 공개용 요약 보고서</span></div>
+</div>
+<script>window.onload=function(){setTimeout(function(){try{window.focus();}catch(e){}},200);};<\/script>
+</body></html>`;
+  const w=window.open('','_blank');
+  if(!w){ alert('팝업이 차단되었습니다. 팝업 허용 후 다시 시도해 주세요.'); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+}
+
+/* ===== 라이트/다크 전환 ===== */
+$('themeBtn').addEventListener('click', ()=>{
+  const dark = document.body.classList.toggle('dark');
+  $('themeBtn').firstChild.nodeValue = dark ? '☀️ ' : '🌙 ';
+  $('themeLabel').textContent = dark ? '라이트 모드' : '다크 모드';
+  renderMain();   // 차트 색을 테마에 맞게 다시 그림
+});
+$('reportBtn').addEventListener('click', openAnnualReport);
+
+/* ===== 초기 실행 ===== */
+renderNav();
+renderMain();
+loadEsgIndex();   // GitHub ESG 폴더에서 증빙 자료 목록을 읽어 자동 표시
+</script>
+</body>
+</html>

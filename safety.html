@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>안전보건관리 · (주)삼화당피앤티</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.css" />
+<style>
+:root{
+  /* Samsung Blue (시설관리와 동일 톤) */
+  --color-primary-300:#4D67C3; --color-primary-400:#2645B0; --color-primary-500:#1428A0;
+  --color-primary-600:#0F1E78; --color-primary-700:#0A1758;
+  --color-secondary-500:#2AA39B;
+  /* 라이트(기본) */
+  --bg-base:#F4F5F8; --bg-subtle:#EEF0F5; --bg-elevated:#FFFFFF;
+  --text-primary:#0A0A0F; --text-secondary:#2A2E3A; --text-tertiary:#5A5F6E;
+  --border-default:#E1E4EC; --border-subtle:#EDEFF4; --border-strong:#C4C9D6;
+  --sidebar-bg:#0A1758; --sidebar-fg:rgba(255,255,255,0.86); --sidebar-fg-dim:rgba(255,255,255,0.6);
+  --radius-md:8px; --radius-lg:12px; --radius-xl:18px; --radius-full:9999px;
+  --shadow-sm:0 1px 2px rgba(16,24,40,0.06);
+  --shadow-md:0 6px 18px rgba(16,24,40,0.08);
+  --shadow-card:0 14px 28px rgba(20,40,160,0.16);
+  --font:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+}
+/* 다크 모드 오버라이드 */
+body.dark{
+  --bg-base:#17171D; --bg-subtle:#1E1E27; --bg-elevated:#27272F;
+  --text-primary:#FFFFFF; --text-secondary:rgba(255,255,255,0.84); --text-tertiary:rgba(255,255,255,0.66);
+  --border-default:rgba(255,255,255,0.12); --border-subtle:rgba(255,255,255,0.07); --border-strong:rgba(255,255,255,0.24);
+  --sidebar-bg:#0A1230; --sidebar-fg:rgba(255,255,255,0.86); --sidebar-fg-dim:rgba(255,255,255,0.55);
+  --shadow-md:0 8px 20px rgba(0,0,0,0.40); --shadow-card:0 14px 28px rgba(0,0,0,0.5);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{font-family:var(--font);background:var(--bg-base);color:var(--text-primary);-webkit-font-smoothing:antialiased;}
+
+.app{display:flex;height:100%;min-height:100%;}
+
+/* ── 좌측 사이드바 ── */
+.sidebar{
+  width:250px;flex:none;height:100%;overflow-y:auto;
+  background:linear-gradient(180deg,var(--sidebar-bg),#0F1E78);
+  color:var(--sidebar-fg);display:flex;flex-direction:column;
+}
+.sb-brand{display:flex;align-items:center;gap:11px;padding:18px 18px 14px;position:sticky;top:0;
+  background:linear-gradient(180deg,var(--sidebar-bg),rgba(15,30,120,0));backdrop-filter:blur(2px);}
+.sb-brand .mk{width:38px;height:38px;border-radius:10px;flex:none;display:grid;place-items:center;font-size:19px;
+  background:rgba(255,255,255,0.14);border:1px solid rgba(255,255,255,0.22);}
+.sb-brand .tt b{display:block;font-size:14.5px;font-weight:800;letter-spacing:-0.01em;color:#fff;}
+.sb-brand .tt span{font-size:10px;font-weight:600;color:var(--sidebar-fg-dim);letter-spacing:0.03em;}
+.sb-sec{font-size:10.5px;font-weight:700;letter-spacing:0.06em;color:var(--sidebar-fg-dim);
+  padding:12px 20px 6px;text-transform:uppercase;}
+.sb-nav{list-style:none;margin:0;padding:2px 10px 20px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;
+  font-size:13.5px;font-weight:600;color:var(--sidebar-fg);transition:background .15s,color .15s;margin-bottom:2px;}
+.sb-item .ic{font-size:15px;width:20px;text-align:center;flex:none;}
+.sb-item:hover{background:rgba(255,255,255,0.10);color:#fff;}
+.sb-item.active{background:#fff;color:var(--color-primary-500);font-weight:800;box-shadow:0 4px 12px rgba(0,0,0,0.18);}
+.sb-item .cnt{margin-left:auto;font-size:10.5px;font-weight:700;opacity:.7;}
+
+/* ── 메인 영역 ── */
+.main{flex:1;height:100%;overflow-y:auto;}
+.topbar{display:flex;align-items:center;gap:14px;padding:20px 26px 6px;flex-wrap:wrap;}
+.topbar .title h1{margin:0;font-size:1.4rem;font-weight:800;letter-spacing:-0.01em;}
+.topbar .title p{margin:3px 0 0;font-size:0.8rem;font-weight:600;color:var(--text-tertiary);}
+.topbar .spacer{margin-left:auto;}
+.chip{font-size:0.7rem;font-weight:700;padding:7px 12px;border-radius:var(--radius-full);
+  background:var(--bg-elevated);color:var(--text-tertiary);border:1px solid var(--border-default);box-shadow:var(--shadow-sm);
+  display:inline-flex;align-items:center;gap:7px;}
+.chip .dot{width:8px;height:8px;border-radius:50%;background:#0E9F5E;box-shadow:0 0 0 3px rgba(14,159,94,0.18);}
+.theme-btn{cursor:pointer;border:1px solid var(--border-default);background:var(--bg-elevated);color:var(--text-secondary);
+  border-radius:var(--radius-full);padding:8px 14px;font:700 0.72rem/1 var(--font);box-shadow:var(--shadow-sm);
+  display:inline-flex;align-items:center;gap:7px;}
+.theme-btn:hover{border-color:var(--border-strong);}
+
+.content{padding:14px 26px 40px;}
+
+/* 카테고리 헤더 */
+.cat-head{display:flex;align-items:center;gap:14px;padding:18px 20px;margin-bottom:16px;
+  background:linear-gradient(120deg,var(--color-primary-600),var(--color-primary-500) 70%,var(--color-secondary-500) 150%);
+  border-radius:var(--radius-lg);box-shadow:var(--shadow-card);color:#fff;}
+.cat-head .big{width:48px;height:48px;border-radius:12px;flex:none;display:grid;place-items:center;font-size:24px;
+  background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.25);}
+.cat-head h2{margin:0;font-size:1.2rem;font-weight:800;}
+.cat-head p{margin:3px 0 0;font-size:0.78rem;font-weight:600;color:rgba(255,255,255,0.85);}
+
+/* 세부 기능 카드 */
+.section-label{font-size:0.82rem;font-weight:800;color:var(--text-primary);margin:22px 2px 10px;
+  display:flex;align-items:center;gap:8px;}
+.section-label .bar{width:4px;height:15px;border-radius:2px;background:var(--color-primary-500);}
+.sub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;}
+.sub-card{background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-lg);
+  padding:15px 16px;cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s;box-shadow:var(--shadow-sm);}
+.sub-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-card);border-color:var(--color-primary-300);}
+.sub-card.active{border-color:var(--color-primary-500);box-shadow:var(--shadow-card);}
+.sub-card .nm{font-size:0.9rem;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:8px;}
+.sub-card .nm .num{width:22px;height:22px;border-radius:6px;flex:none;display:grid;place-items:center;
+  font-size:0.68rem;font-weight:800;background:var(--bg-subtle);color:var(--color-primary-500);}
+.sub-card .meta{margin-top:8px;font-size:0.7rem;font-weight:600;color:var(--text-tertiary);}
+
+/* 자료 · 첨부파일 영역 (선적서류처럼 조회 예정) */
+.files-panel{margin-top:14px;background:var(--bg-elevated);border:1px solid var(--border-default);
+  border-radius:var(--radius-lg);padding:18px 20px;box-shadow:var(--shadow-md);}
+.files-panel .fp-head{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.files-panel .fp-head h3{margin:0;font-size:0.95rem;font-weight:800;}
+.files-panel .fp-head .tag{font-size:0.66rem;font-weight:700;padding:3px 9px;border-radius:var(--radius-full);
+  background:var(--bg-subtle);color:var(--text-tertiary);}
+.files-panel .fp-desc{font-size:0.75rem;color:var(--text-tertiary);font-weight:500;margin:0 0 14px;line-height:1.6;}
+.file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;}
+.file-card{border:1.5px dashed var(--border-strong);border-radius:var(--radius-md);padding:16px 12px;text-align:center;
+  color:var(--text-tertiary);background:var(--bg-subtle);}
+.file-card .fi{font-size:26px;opacity:.55;}
+.file-card .fn{margin-top:8px;font-size:0.74rem;font-weight:700;color:var(--text-secondary);}
+.file-card .fs{margin-top:3px;font-size:0.66rem;font-weight:600;color:var(--text-tertiary);}
+/* 실제 문서 카드(클릭 시 새 탭 조회) */
+.file-card.doc{border-style:solid;border-color:var(--border-default);background:var(--bg-elevated);cursor:pointer;
+  text-decoration:none;transition:transform .12s,box-shadow .12s,border-color .12s;display:block;}
+.file-card.doc:hover{transform:translateY(-2px);box-shadow:var(--shadow-card);border-color:var(--color-primary-400);}
+.file-card.doc .fi{opacity:1;color:var(--color-primary-500);}
+.file-card.doc .fn{color:var(--text-primary);word-break:break-all;}
+/* GitHub 업로드 버튼 (향후 대시보드 직접 업로드로 교체 예정) */
+.upload-btn{margin-left:auto;font-size:0.7rem;font-weight:700;text-decoration:none;padding:7px 13px;border-radius:var(--radius-full);
+  background:var(--color-primary-500);color:#fff;border:0;box-shadow:var(--shadow-sm);white-space:nowrap;}
+.upload-btn:hover{background:var(--color-primary-400);}
+.empty-note{margin-top:14px;font-size:0.72rem;color:var(--text-tertiary);background:var(--bg-subtle);
+  border:1px dashed var(--border-default);border-radius:var(--radius-md);padding:12px 14px;line-height:1.7;}
+.empty-note b{color:var(--color-primary-500);}
+
+.scaffold-badge{display:inline-block;font-size:0.62rem;font-weight:800;letter-spacing:0.03em;
+  padding:4px 10px;border-radius:var(--radius-full);background:#FFF3DE;color:#B5730A;border:1px solid #F0D28A;}
+
+@media (max-width:820px){
+  .sidebar{width:200px;}
+}
+@media (max-width:640px){
+  .app{flex-direction:column;}
+  .sidebar{width:100%;height:auto;max-height:220px;}
+  .main{height:auto;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- 좌측: 항목(기능) 목록 -->
+  <aside class="sidebar">
+    <div class="sb-brand">
+      <div class="mk">🛡️</div>
+      <div class="tt"><b>안전보건관리</b><span>(주)삼화당피앤티 · SAFETY &amp; HEALTH</span></div>
+    </div>
+    <div class="sb-sec">기능 메뉴</div>
+    <ul class="sb-nav" id="sbNav"></ul>
+  </aside>
+
+  <!-- 우측: 선택 항목 조회 -->
+  <main class="main">
+    <div class="topbar">
+      <div class="title">
+        <h1>안전보건관리 <span class="scaffold-badge">GitHub 자동 연동</span></h1>
+        <p>좌측에서 항목을 선택하면 해당 항목의 세부 기능과 자료를 조회합니다.</p>
+      </div>
+      <div class="spacer"></div>
+      <span class="chip"><span class="dot"></span>안전보건관리 시스템</span>
+      <button class="theme-btn" id="themeBtn" title="라이트/다크 전환">🌙 <span id="themeLabel">다크 모드</span></button>
+    </div>
+    <div class="content" id="content"></div>
+  </main>
+</div>
+
+<script>
+/* ===== 안전보건관리 항목 정의 (이미지의 기능/세부기능 기반) ===== */
+const CATS = [
+  {key:'work',        icon:'🗂️', name:'업무관리',          subs:['업무찾기','사업장업무','MY업무']},
+  {key:'system',      icon:'🏛️', name:'안전보건관리체계',   subs:['예산','경영방침','목표','조직']},
+  {key:'edu',         icon:'🎓', name:'안전보건교육',       subs:['교육계획 및 현황 관리','교육이력 관리','교육자료']},
+  {key:'risk',        icon:'⚠️', name:'위험성평가',         subs:['위험성평가 실시','평가계획 및 현황관리','감소대책 관리']},
+  {key:'inspect',     icon:'🔍', name:'안전점검',           subs:['점검결과등록','점검현황 및 점검 후 조치관리']},
+  {key:'halfinspect', icon:'📆', name:'반기점검',           subs:['반기점검 실시','점검계획 및 현황관리']},
+  {key:'chem',        icon:'🧪', name:'화학물질관리',       subs:['화학물질관리']},
+  {key:'env',         icon:'🌡️', name:'작업환경측정',       subs:['작업환경측정']},
+  {key:'approval',    icon:'🗂️', name:'결재함',             subs:['받은문서함','보낸문서함']},
+  {key:'committee',   icon:'👥', name:'위원회',             subs:['위원회 현황','심의의결사항 관리']},
+  {key:'report',      icon:'📢', name:'신고제안',           subs:['신고제안하기','MY신고·제안','신고·제안관리']},
+  {key:'ppe',         icon:'🦺', name:'보호구 관리',        subs:['보호구 대장','보호구 지급 및 이력관리','보호구 신청']},
+  {key:'dangerwork',  icon:'🚧', name:'위험작업',           subs:['작업계획등록','작업관리','작업허가서 발급함','자료 공유함']},
+  {key:'accident',    icon:'🚑', name:'산업재해조사',       subs:['산업재해조사표 작성','산업재해관리']},
+  {key:'contract',    icon:'🤝', name:'도급안전관리',       subs:['안전보건수준평가','안전점검']},
+  {key:'health',      icon:'🩺', name:'건강진단관리',       subs:['건강진단관리']},
+  {key:'vendor',      icon:'🏭', name:'수급업체관리',       subs:['수급업체관리']},
+];
+
+const $ = id => document.getElementById(id);
+let activeKey = CATS[0].key;
+let activeSubIdx = 0;
+
+/* ===================================================================
+   자료(첨부파일) 연동 — GitHub 저장소의 SAFE 폴더를 자동 조회
+   구조: SAFE/<항목명>/<세부기능명>/[연도/]파일   (HPPK 의 DOC 방식과 동일 원리)
+   - 폴더에 파일을 올리면 아래 자료영역에 자동으로 링크가 생기고, 클릭 시 새 탭 조회
+   - "＋GitHub에 자료 올리기" 버튼은 지금은 해당 폴더의 GitHub 업로드 화면으로 연결
+   - [향후 확장] 아래 addUploadHref() 만 교체하면 대시보드 직접 업로드로 전환 가능
+   =================================================================== */
+const GH_OWNER='kinof2018-create';   // GitHub 사용자/조직
+const GH_REPO ='HP-IN-MH4';          // 저장소
+const GH_BRANCH='main';              // 브랜치
+const SAFE_BASE='SAFE';              // 안전보건 자료 최상위 폴더
+let SAFE_INDEX=null;                 // { '항목|세부기능'(정규화): [{path,file}, ...] }
+
+function normTxt(s){ return String(s==null?'':s).replace(/\s+/g,'').toLowerCase(); }
+function skey(cat,sub){ return normTxt(cat)+'|'+normTxt(sub); }
+function fileMeta(file){
+  const m=file.match(/(\d{4}-\d{2}-\d{2})/); const date=m?m[1]:'';
+  let title=file.replace(/\.[^.]+$/,'');
+  if(m) title=title.replace(m[1],'').replace(/^[_\-\s]+/,'').trim()||file;
+  return {date,title};
+}
+// [향후 확장 지점] 현재는 GitHub 업로드 페이지로 연결. 대시보드 직접 업로드 도입 시 이 함수만 교체.
+function addUploadHref(cat,sub){
+  return 'https://github.com/'+GH_OWNER+'/'+GH_REPO+'/upload/'+GH_BRANCH+'/'+encodeURI(SAFE_BASE+'/'+cat+'/'+sub);
+}
+async function loadSafeIndex(){
+  const api='https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/git/trees/'+GH_BRANCH+'?recursive=1';
+  const idx={};
+  try{
+    const res=await fetch(api,{headers:{'Accept':'application/vnd.github+json'}});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    (data.tree||[]).forEach(function(n){
+      if(n.type!=='blob') return;
+      const p=n.path||''; const parts=p.split('/');
+      if(parts.length<4) return;                       // SAFE/항목/세부기능/파일 (최소 4단)
+      if(parts[0].toUpperCase()!==SAFE_BASE.toUpperCase()) return;
+      const file=parts[parts.length-1];
+      if(!/\.(pdf|png|jpe?g|gif|webp|hwp|hwpx|docx?|xlsx?|pptx?|tiff?)$/i.test(file)) return;  // .gitkeep/README 등 무시
+      const key=skey(parts[1],parts[2]);
+      (idx[key]=idx[key]||[]).push({path:p,file:file});
+    });
+    SAFE_INDEX=idx;
+  }catch(e){ console.warn('SAFE 자료 목록을 불러오지 못했습니다:', e&&e.message); SAFE_INDEX={}; }
+  renderMain();
+}
+function filesPanelHTML(c, sub){
+  const key=skey(c.name,sub);
+  const loading=(SAFE_INDEX===null);
+  const files=(SAFE_INDEX&&SAFE_INDEX[key])?SAFE_INDEX[key].slice():[];
+  files.sort(function(a,b){
+    const da=(a.file.match(/\d{4}-\d{2}-\d{2}/)||[''])[0], db=(b.file.match(/\d{4}-\d{2}-\d{2}/)||[''])[0];
+    if(da!==db) return da<db?1:-1; return a.file<b.file?1:-1;
+  });
+  let cards;
+  if(loading){
+    cards='<div class="file-card"><div class="fi">⏳</div><div class="fn">불러오는 중…</div><div class="fs">GitHub 조회</div></div>';
+  }else if(files.length){
+    cards=files.map(function(f){ const meta=fileMeta(f.file);
+      return '<a class="file-card doc" href="'+encodeURI(f.path)+'" target="_blank" rel="noopener" title="'+f.file.replace(/"/g,'')+'">'+
+             '<div class="fi">📄</div><div class="fn">'+(meta.title||f.file)+'</div><div class="fs">'+(meta.date||'')+'</div></a>';
+    }).join('');
+  }else{
+    cards='<div class="file-card"><div class="fi">🗂️</div><div class="fn">등록된 자료 없음</div><div class="fs">GitHub에 올리면 표시됩니다</div></div>';
+  }
+  const cnt=loading?'…':files.length;
+  return `
+      <div class="fp-head"><h3>${sub}</h3><span class="tag">등록된 자료 ${cnt}건</span>
+        <a class="upload-btn" href="${addUploadHref(c.name,sub)}" target="_blank" rel="noopener">＋ GitHub에 자료 올리기</a></div>
+      <p class="fp-desc">이 항목의 파일(PDF·이미지·문서 등)을 GitHub <b>${SAFE_BASE}/${c.name}/${sub}</b> 폴더에 올리면, 아래에 자동으로 나타나고 클릭하면 새 탭에서 열립니다.</p>
+      <div class="file-grid">${cards}</div>
+      <div class="empty-note">※ 지금은 <b>GitHub 업로드 방식</b>입니다. 위 <b>＋GitHub에 자료 올리기</b> 버튼을 누르면 해당 폴더의 업로드 화면으로 바로 이동합니다. <b>향후</b> 대시보드에서 직접 업로드하는 기능으로 교체할 수 있도록 설계되어 있습니다.</div>`;
+}
+
+/* 좌측 메뉴 렌더 */
+function renderNav(){
+  $('sbNav').innerHTML = CATS.map(c=>`
+    <li class="sb-item ${c.key===activeKey?'active':''}" data-key="${c.key}">
+      <span class="ic">${c.icon}</span><span>${c.name}</span><span class="cnt">${c.subs.length}</span>
+    </li>`).join('');
+  $('sbNav').querySelectorAll('.sb-item').forEach(el=>{
+    el.addEventListener('click', ()=>{ activeKey = el.getAttribute('data-key'); activeSubIdx = 0; renderNav(); renderMain(); });
+  });
+}
+
+/* 우측 본문 렌더 */
+function renderMain(){
+  const c = CATS.find(x=>x.key===activeKey);
+  const sub = c.subs[activeSubIdx] || c.subs[0];
+  $('content').innerHTML = `
+    <div class="cat-head">
+      <div class="big">${c.icon}</div>
+      <div><h2>${c.name}</h2><p>세부 기능 ${c.subs.length}개 · 항목을 선택하면 자료를 조회합니다</p></div>
+    </div>
+
+    <div class="section-label"><span class="bar"></span>세부 기능</div>
+    <div class="sub-grid" id="subGrid">
+      ${c.subs.map((s,i)=>`
+        <div class="sub-card ${i===activeSubIdx?'active':''}" data-idx="${i}">
+          <div class="nm"><span class="num">${i+1}</span>${s}</div>
+          <div class="meta">자료 조회 · 첨부파일</div>
+        </div>`).join('')}
+    </div>
+
+    <div class="section-label"><span class="bar"></span>자료 · 첨부파일 <span style="font-weight:600;color:var(--text-tertiary);font-size:0.72rem;">— ${c.name} · ${sub}</span></div>
+    <div class="files-panel">${filesPanelHTML(c, sub)}</div>
+  `;
+  $('subGrid').querySelectorAll('.sub-card').forEach(el=>{
+    el.addEventListener('click', ()=>{ activeSubIdx = parseInt(el.getAttribute('data-idx'),10); renderMain(); });
+  });
+}
+
+/* 라이트/다크 전환 */
+$('themeBtn').addEventListener('click', ()=>{
+  const dark = document.body.classList.toggle('dark');
+  $('themeBtn').firstChild.nodeValue = dark ? '☀️ ' : '🌙 ';
+  $('themeLabel').textContent = dark ? '라이트 모드' : '다크 모드';
+});
+
+renderNav();
+renderMain();
+loadSafeIndex();   // GitHub SAFE 폴더에서 자료 목록을 읽어 자동 표시
+</script>
+</body>
+</html>
