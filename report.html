@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>경영자 보고서 이력 관리 · (주)삼화당피앤티</title>
+<title>경영진 보고 이력 정리 · (주)삼화당피앤티</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@1.3.9/dist/web/static/pretendard.css" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
@@ -159,6 +159,42 @@ tbody tr:hover{background:var(--bg-subtle);}
 .feed li .fd{font-size:0.66rem;font-weight:700;color:var(--text-tertiary);white-space:nowrap;}
 .feed li .fp{font-weight:700;color:var(--gold);white-space:nowrap;}
 
+/* 새 프로젝트 추가 버튼 */
+.add-proj{width:100%;border:1px dashed rgba(255,255,255,0.32);background:rgba(255,255,255,0.06);color:#fff;
+  border-radius:10px;padding:10px;font:800 12.5px/1 var(--font);cursor:pointer;transition:background .15s;}
+.add-proj:hover{background:rgba(217,119,6,0.35);border-color:var(--gold-2);}
+.sb-item .pdel{margin-left:6px;cursor:pointer;border:0;background:none;color:var(--sidebar-dim);font-size:0.85rem;line-height:1;padding:0 2px;}
+.sb-item .pdel:hover{color:#FCA5A5;}
+/* 프로젝트 삭제 버튼(상세) */
+.proj-del{margin-left:12px;border:1px solid rgba(255,255,255,0.35);background:rgba(255,255,255,0.12);color:#fff;
+  border-radius:9999px;padding:6px 12px;font:800 0.68rem/1 var(--font);cursor:pointer;white-space:nowrap;}
+.proj-del:hover{background:rgba(220,38,38,0.5);}
+/* 이력 추가 폼 */
+.hist-add{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;align-items:center;background:var(--bg-elev);
+  border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;}
+.hist-add input,.hist-add select{border:1px solid var(--border-strong);border-radius:7px;padding:8px 10px;
+  font:600 0.74rem/1 var(--font);background:var(--bg-elev);color:var(--text-primary);min-width:0;}
+.hist-add input:focus,.hist-add select:focus{outline:none;border-color:var(--gold-2);}
+.hist-add .hbtn{border:0;border-radius:7px;background:var(--gold);color:#fff;font:800 0.74rem/1 var(--font);padding:9px 13px;cursor:pointer;}
+.hist-add .hbtn:hover{filter:brightness(1.05);}
+.hdel{cursor:pointer;border:0;background:none;color:var(--text-tertiary);font-size:0.85rem;}
+.hdel:hover{color:var(--danger);}
+/* 새 프로젝트 모달 */
+.ovp{position:fixed;inset:0;z-index:900;background:rgba(10,16,42,0.55);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:20px;}
+.ovp.show{display:flex;}
+.pcard{background:var(--bg-elev);color:var(--text-primary);border-radius:16px;box-shadow:0 30px 70px rgba(6,14,54,0.4);width:100%;max-width:520px;padding:24px;border:1px solid var(--border);}
+.pcard h3{margin:0 0 4px;font-size:1.05rem;font-weight:800;}
+.pcard .psub{margin:0 0 16px;font-size:0.76rem;color:var(--text-tertiary);font-weight:600;}
+.pcard label{display:block;font-size:0.72rem;font-weight:700;color:var(--text-secondary);margin-bottom:10px;}
+.pcard label input,.pcard label select{width:100%;margin-top:5px;border:1.5px solid var(--border-strong);border-radius:9px;
+  padding:9px 11px;font:600 0.82rem/1 var(--font);background:var(--bg-elev);color:var(--text-primary);}
+.pcard label input:focus,.pcard label select:focus{outline:none;border-color:var(--gold-2);}
+.prow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.perr{min-height:18px;color:var(--danger);font-size:0.74rem;font-weight:700;}
+.pbtns{display:flex;gap:10px;margin-top:6px;}
+.pbtn{flex:1;border:0;border-radius:10px;padding:12px;font:800 0.85rem/1 var(--font);cursor:pointer;}
+.pbtn.primary{background:var(--gold);color:#fff;} .pbtn.primary:hover{filter:brightness(1.05);}
+.pbtn.ghost{background:var(--bg-subtle);color:var(--text-secondary);}
 @media (max-width:820px){ .sidebar{width:210px;} }
 @media (max-width:640px){ .app{flex-direction:column;} .sidebar{width:100%;height:auto;max-height:240px;} .main{height:auto;} }
 </style>
@@ -166,16 +202,17 @@ tbody tr:hover{background:var(--bg-subtle);}
 <body>
 <div class="app">
   <aside class="sidebar">
-    <div class="sb-brand"><div class="mk">🗂️</div><div class="tt"><b>경영자 보고서 이력</b><span>(주)삼화당피앤티 · REPORT CONTROL</span></div></div>
+    <div class="sb-brand"><div class="mk">🗂️</div><div class="tt"><b>경영진 보고 이력 정리</b><span>(주)삼화당피앤티 · REPORT CONTROL</span></div></div>
     <div class="sb-search"><input type="text" id="sbSearch" placeholder="🔍 프로젝트·이슈 검색"></div>
     <div class="sb-sec">보기</div>
     <ul class="sb-nav" id="sbTop"></ul>
     <div class="sb-sec">프로젝트</div>
     <ul class="sb-nav" id="sbNav"></ul>
+    <div style="padding:0 12px 20px"><button class="add-proj" id="addProjBtn">＋ 새 프로젝트 추가</button></div>
   </aside>
   <main class="main">
     <div class="topbar">
-      <div class="title"><h1>경영자 보고서 서류 이력 관리 <span class="scaffold-badge">GitHub 자동 연동</span></h1>
+      <div class="title"><h1>경영진 보고 이력 정리 <span class="scaffold-badge">GitHub 자동 연동</span></h1>
         <p>프로젝트별 버전·변경이력·이슈를 추적하고, 관련 서류를 조회·업로드합니다.</p></div>
       <div class="spacer"></div>
       <span class="chip"><span class="dot"></span>문서 관리 시스템</span>
@@ -184,8 +221,38 @@ tbody tr:hover{background:var(--bg-subtle);}
     <div class="content" id="content"></div>
   </main>
 </div>
+
+<!-- 새 프로젝트 추가 모달 -->
+<div class="ovp" id="projModal">
+  <div class="pcard">
+    <h3>➕ 새 프로젝트 추가</h3>
+    <p class="psub">프로젝트를 추가하면 좌측 목록·개요에 나타나고, 이력·이슈·파일을 관리할 수 있습니다.</p>
+    <label>프로젝트명 *<input id="npName" placeholder="예: 2026 상반기 결산보고" /></label>
+    <div class="prow">
+      <label>유형<select id="npType"><option value="정기">정기</option><option value="수시">수시</option></select></label>
+      <label>분류<input id="npCat" placeholder="예: 반기전략 / 투자검토 / ESG" /></label>
+    </div>
+    <div class="prow">
+      <label>기간<input id="npPeriod" placeholder="예: 2026 하반기" /></label>
+      <label>담당자<input id="npOwner" placeholder="예: 김기태" /></label>
+    </div>
+    <div class="prow">
+      <label>최초 버전<input id="npVer" value="v0.1" /></label>
+      <label>GitHub 폴더명<input id="npFolder" placeholder="프로젝트명으로 자동 생성" /></label>
+    </div>
+    <label>최초 개정 내용<input id="npChange" value="프로젝트 생성 · 초안" /></label>
+    <div class="perr" id="npErr"></div>
+    <div class="pbtns"><button class="pbtn ghost" id="npCancel">취소</button><button class="pbtn primary" id="npOk">추가</button></div>
+  </div>
+</div>
+
 <script>
-const PROJECTS = [{"id": "p_h2strat", "name": "2026 하반기 전략보고", "folder": "2026_하반기전략보고", "type": "정기", "category": "반기전략", "period": "2026 하반기", "owner": "김기태", "latestVer": "v1.0", "status": "승인완료", "history": [{"ver": "v0.1", "date": "2026-07-20", "change": "하반기 전략보고서 초안 작성", "author": "김기태", "state": "Draft"}, {"ver": "v0.9", "date": "2026-07-25", "change": "사업장 안전설비 예산안 추가 반영", "author": "김기태", "state": "Draft"}, {"ver": "v1.0", "date": "2026-07-30", "change": "2026 하반기 전략 최종 승인", "author": "김기태", "state": "Final"}], "track": [{"kind": "문제점", "t": "상반기 대비 원가 상승분 반영 지연", "pri": "중", "status": "완료", "date": "2026-07-22"}, {"kind": "이슈", "t": "안전설비 예산안 규모 경영진 재검토 요청", "pri": "상", "status": "완료", "date": "2026-07-25"}, {"kind": "확인사항", "t": "최종본(v1.0)을 02_Final 폴더로 이동하고 읽기전용 설정", "pri": "중", "status": "확인중", "date": "2026-07-30"}, {"kind": "유의사항", "t": "승인 완료본은 수정 금지 · 수정 필요 시 v1.1로 신규 관리", "pri": "상", "status": "유의", "date": ""}, {"kind": "진행사항", "t": "경영진 최종 승인 완료 · 이사회 배포 준비", "pri": "중", "status": "완료", "date": "2026-07-30"}]}, {"id": "p_solar", "name": "태양광 설치 4개 시나리오 비교", "folder": "2026_태양광설치_시나리오비교", "type": "수시", "category": "투자검토", "period": "2026-07", "owner": "김기태", "latestVer": "v0.5", "status": "중간보고", "history": [{"ver": "v0.3", "date": "2026-07-24", "change": "SMP·REC 실측단가 수집 및 시나리오 초안", "author": "김기태", "state": "Draft"}, {"ver": "v0.5", "date": "2026-07-27", "change": "4개 시나리오 비교 경영진 중간보고 작성", "author": "김기태", "state": "Draft"}], "track": [{"kind": "문제점", "t": "한전 계통 여유용량 부족 시 연계 지연·거부 가능", "pri": "상", "status": "확인중", "date": "2026-07-27"}, {"kind": "이슈", "t": "SMP·REC 시장가 20년 변동 리스크 (SMP 2022년 340원→현재 115원)", "pri": "상", "status": "열림", "date": "2026-07-27"}, {"kind": "이슈", "t": "REC 가중치 정책 변동(1.5→1.2 하향 전례) 리스크", "pri": "중", "status": "열림", "date": "2026-07-27"}, {"kind": "확인사항", "t": "한전 계통 가능여부(용량·지중전선로 공사) 확인 중", "pri": "상", "status": "확인중", "date": "2026-07-27"}, {"kind": "유의사항", "t": "발전사업 허가 시 전기요금 8,479만원 전액 계속 납부(자가소비 없음)", "pri": "상", "status": "유의", "date": ""}, {"kind": "유의사항", "t": "초기 추가비 1,500~2,100만원은 ROI에 미반영", "pri": "중", "status": "유의", "date": ""}, {"kind": "진행사항", "t": "안2(120kW 자가+상계) ROI 3.69년 최우수 잠정 결론 · 경영진 검토 대기", "pri": "상", "status": "열림", "date": "2026-07-27"}]}, {"id": "p_q3", "name": "2026 3분기 실적보고", "folder": "2026_3분기실적보고", "type": "정기", "category": "분기실적", "period": "2026 3분기", "owner": "김기태", "latestVer": "v0.2", "status": "진행중", "history": [{"ver": "v0.1", "date": "2026-07-28", "change": "3분기 실적 데이터 취합 초안", "author": "김기태", "state": "Draft"}, {"ver": "v0.2", "date": "2026-07-30", "change": "HPPK 입출고·미수금 지표 반영", "author": "김기태", "state": "Draft"}], "track": [{"kind": "확인사항", "t": "미수금 회수율 지표 최신화 필요(HPPK 탭 연동 데이터)", "pri": "중", "status": "확인중", "date": ""}, {"kind": "진행사항", "t": "초안 작성 중 · 8월 초 분기 마감 후 최종화 예정", "pri": "중", "status": "열림", "date": ""}, {"kind": "유의사항", "t": "분기 마감 전 잠정치 · 외부 공유 금지", "pri": "상", "status": "유의", "date": ""}]}, {"id": "p_esg", "name": "ESG 공급망 실사 대응 보고", "folder": "2026_ESG공급망실사대응", "type": "수시", "category": "ESG", "period": "2026-07", "owner": "김기태", "latestVer": "v0.4", "status": "진행중", "history": [{"ver": "v0.1", "date": "2026-07-15", "change": "고객사 공급망 ESG 실사 요구사항 정리", "author": "김기태", "state": "Draft"}, {"ver": "v0.4", "date": "2026-07-26", "change": "ESG 심층진단 결과·개선과제 반영", "author": "김기태", "state": "Draft"}], "track": [{"kind": "이슈", "t": "안전보건경영시스템(ISO 45001) 문서화 체계 보완 필요", "pri": "중", "status": "열림", "date": ""}, {"kind": "확인사항", "t": "ESG 심층진단 개선과제 6건 반영 여부 확인", "pri": "중", "status": "확인중", "date": ""}, {"kind": "진행사항", "t": "고객사(제약·바이오) 실사 대응 자료 취합 중", "pri": "중", "status": "열림", "date": ""}]}];
+const SEED_PROJECTS = [{"id": "p_h2strat", "name": "2026 하반기 전략보고", "folder": "2026_하반기전략보고", "type": "정기", "category": "반기전략", "period": "2026 하반기", "owner": "김기태", "latestVer": "v1.0", "status": "승인완료", "history": [{"ver": "v0.1", "date": "2026-07-20", "change": "하반기 전략보고서 초안 작성", "author": "김기태", "state": "Draft"}, {"ver": "v0.9", "date": "2026-07-25", "change": "사업장 안전설비 예산안 추가 반영", "author": "김기태", "state": "Draft"}, {"ver": "v1.0", "date": "2026-07-30", "change": "2026 하반기 전략 최종 승인", "author": "김기태", "state": "Final"}], "track": [{"kind": "문제점", "t": "상반기 대비 원가 상승분 반영 지연", "pri": "중", "status": "완료", "date": "2026-07-22"}, {"kind": "이슈", "t": "안전설비 예산안 규모 경영진 재검토 요청", "pri": "상", "status": "완료", "date": "2026-07-25"}, {"kind": "확인사항", "t": "최종본(v1.0)을 02_Final 폴더로 이동하고 읽기전용 설정", "pri": "중", "status": "확인중", "date": "2026-07-30"}, {"kind": "유의사항", "t": "승인 완료본은 수정 금지 · 수정 필요 시 v1.1로 신규 관리", "pri": "상", "status": "유의", "date": ""}, {"kind": "진행사항", "t": "경영진 최종 승인 완료 · 이사회 배포 준비", "pri": "중", "status": "완료", "date": "2026-07-30"}]}, {"id": "p_solar", "name": "태양광 설치 4개 시나리오 비교", "folder": "2026_태양광설치_시나리오비교", "type": "수시", "category": "투자검토", "period": "2026-07", "owner": "김기태", "latestVer": "v0.5", "status": "중간보고", "history": [{"ver": "v0.3", "date": "2026-07-24", "change": "SMP·REC 실측단가 수집 및 시나리오 초안", "author": "김기태", "state": "Draft"}, {"ver": "v0.5", "date": "2026-07-27", "change": "4개 시나리오 비교 경영진 중간보고 작성", "author": "김기태", "state": "Draft"}], "track": [{"kind": "문제점", "t": "한전 계통 여유용량 부족 시 연계 지연·거부 가능", "pri": "상", "status": "확인중", "date": "2026-07-27"}, {"kind": "이슈", "t": "SMP·REC 시장가 20년 변동 리스크 (SMP 2022년 340원→현재 115원)", "pri": "상", "status": "열림", "date": "2026-07-27"}, {"kind": "이슈", "t": "REC 가중치 정책 변동(1.5→1.2 하향 전례) 리스크", "pri": "중", "status": "열림", "date": "2026-07-27"}, {"kind": "확인사항", "t": "한전 계통 가능여부(용량·지중전선로 공사) 확인 중", "pri": "상", "status": "확인중", "date": "2026-07-27"}, {"kind": "유의사항", "t": "발전사업 허가 시 전기요금 8,479만원 전액 계속 납부(자가소비 없음)", "pri": "상", "status": "유의", "date": ""}, {"kind": "유의사항", "t": "초기 추가비 1,500~2,100만원은 ROI에 미반영", "pri": "중", "status": "유의", "date": ""}, {"kind": "진행사항", "t": "안2(120kW 자가+상계) ROI 3.69년 최우수 잠정 결론 · 경영진 검토 대기", "pri": "상", "status": "열림", "date": "2026-07-27"}]}, {"id": "p_q3", "name": "2026 3분기 실적보고", "folder": "2026_3분기실적보고", "type": "정기", "category": "분기실적", "period": "2026 3분기", "owner": "김기태", "latestVer": "v0.2", "status": "진행중", "history": [{"ver": "v0.1", "date": "2026-07-28", "change": "3분기 실적 데이터 취합 초안", "author": "김기태", "state": "Draft"}, {"ver": "v0.2", "date": "2026-07-30", "change": "HPPK 입출고·미수금 지표 반영", "author": "김기태", "state": "Draft"}], "track": [{"kind": "확인사항", "t": "미수금 회수율 지표 최신화 필요(HPPK 탭 연동 데이터)", "pri": "중", "status": "확인중", "date": ""}, {"kind": "진행사항", "t": "초안 작성 중 · 8월 초 분기 마감 후 최종화 예정", "pri": "중", "status": "열림", "date": ""}, {"kind": "유의사항", "t": "분기 마감 전 잠정치 · 외부 공유 금지", "pri": "상", "status": "유의", "date": ""}]}, {"id": "p_esg", "name": "ESG 공급망 실사 대응 보고", "folder": "2026_ESG공급망실사대응", "type": "수시", "category": "ESG", "period": "2026-07", "owner": "김기태", "latestVer": "v0.4", "status": "진행중", "history": [{"ver": "v0.1", "date": "2026-07-15", "change": "고객사 공급망 ESG 실사 요구사항 정리", "author": "김기태", "state": "Draft"}, {"ver": "v0.4", "date": "2026-07-26", "change": "ESG 심층진단 결과·개선과제 반영", "author": "김기태", "state": "Draft"}], "track": [{"kind": "이슈", "t": "안전보건경영시스템(ISO 45001) 문서화 체계 보완 필요", "pri": "중", "status": "열림", "date": ""}, {"kind": "확인사항", "t": "ESG 심층진단 개선과제 6건 반영 여부 확인", "pri": "중", "status": "확인중", "date": ""}, {"kind": "진행사항", "t": "고객사(제약·바이오) 실사 대응 자료 취합 중", "pri": "중", "status": "열림", "date": ""}]}];
+const LS_PROJ='report_proj_v1';
+function userProjects(){ try{ return JSON.parse(localStorage.getItem(LS_PROJ)||'[]'); }catch(e){ return []; } }
+function saveUserProjects(a){ try{ localStorage.setItem(LS_PROJ, JSON.stringify(a)); }catch(e){} }
+let PROJECTS = SEED_PROJECTS.concat(userProjects());
+function rebuildProjects(){ PROJECTS = SEED_PROJECTS.concat(userProjects()); }
 const $ = id => document.getElementById(id);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const nf = n => (Number(n)||0).toLocaleString('ko-KR');
@@ -211,8 +278,25 @@ function trackOf(p){
   return all;
 }
 function histOf(p){
-  const user=(lsGet(LS_HIST)[p.id]||[]);
-  return p.history.concat(user).slice().sort((a,b)=>(a.date<b.date?-1:1));
+  const user=(lsGet(LS_HIST)[p.id]||[]).map(x=>Object.assign({_user:true},x));
+  return (p.history||[]).concat(user).slice().sort((a,b)=>(a.date<b.date?-1:1));
+}
+function addHist(pid,row){ const o=lsGet(LS_HIST); (o[pid]=o[pid]||[]).push(row); lsSet(LS_HIST,o); }
+function delHist(pid,h){ const o=lsGet(LS_HIST); o[pid]=(o[pid]||[]).filter(x=>!(x.ver===h.ver&&x.date===h.date&&x.change===h.change)); lsSet(LS_HIST,o); }
+/* 새 프로젝트 추가/삭제 */
+function slugFolder(name){ return String(name||'').trim().replace(/[\\/:*?"<>|]/g,'').replace(/\s+/g,'_'); }
+function addProject(o){
+  const arr=userProjects();
+  const id='u_'+Date.now();
+  arr.push({ id:id, name:o.name, folder:o.folder||slugFolder(o.name), type:o.type||'수시', category:o.category||'', period:o.period||'', owner:o.owner||'', latestVer:o.ver||'v0.1', status:'진행중', _user:true,
+    history:[{ver:o.ver||'v0.1', date:o.date||todayStr(), change:o.change||'프로젝트 생성 · 초안', author:o.owner||'', state:'Draft'}], track:[] });
+  saveUserProjects(arr); rebuildProjects(); return id;
+}
+function delProject(id){
+  saveUserProjects(userProjects().filter(p=>p.id!==id));
+  const t=lsGet(LS_TRACK); delete t[id]; lsSet(LS_TRACK,t);
+  const h=lsGet(LS_HIST); delete h[id]; lsSet(LS_HIST,h);
+  rebuildProjects();
 }
 function addTrack(pid,kind,text){ const o=lsGet(LS_TRACK); (o[pid]=o[pid]||[]).push({kind,t:text,pri:'중',status:kind==='유의사항'?'유의':'열림',date:todayStr()}); lsSet(LS_TRACK,o); }
 function delTrack(pid,it){ const o=lsGet(LS_TRACK); o[pid]=(o[pid]||[]).filter(x=>x.t!==it.t||x.kind!==it.kind); lsSet(LS_TRACK,o); }
@@ -350,7 +434,8 @@ function renderProject(id){
   $('content').innerHTML=`
     <div class="cat-head"><div class="big">${p.type==='정기'?'🗓️':'📌'}</div>
       <div><h2>${esc(p.name)}</h2><p>${p.type} · ${esc(p.category)} · ${esc(p.period)} · 담당 ${esc(p.owner)} · 폴더 REPORT/${esc(p.folder)}</p></div>
-      <div class="hstat"><div class="vv">${esc(p.latestVer)}</div><div class="ll">${p.status}</div></div></div>
+      <div class="hstat"><div class="vv">${esc(p.latestVer)}</div><div class="ll">${p.status}</div></div>
+      ${p._user?`<button class="proj-del" id="projDelBtn">🗑 프로젝트 삭제</button>`:''}</div>
 
     <div class="section-label"><span class="bar"></span>요약 지표</div>
     <div class="kpi-grid">
@@ -367,7 +452,15 @@ function renderProject(id){
 
     <div class="section-label"><span class="bar"></span>변경 이력표 (Document Control Sheet)</div>
     <div class="tbl-wrap"><table><thead><tr><th>버전</th><th>개정 일자</th><th>주요 개정 내용</th><th>작성자</th><th>상태</th></tr></thead>
-      <tbody>${hist.slice().reverse().map(h=>`<tr><td><span class="vtag">${esc(h.ver)}</span></td><td>${esc(h.date)}</td><td style="white-space:normal;color:var(--text-primary);font-weight:600">${esc(h.change)}</td><td>${esc(h.author)}</td><td><span class="state-tag state-${h.state}">${esc(h.state)}</span></td></tr>`).join('')}</tbody></table></div>
+      <tbody>${hist.slice().reverse().map(h=>`<tr><td><span class="vtag">${esc(h.ver)}</span></td><td>${esc(h.date)}</td><td style="white-space:normal;color:var(--text-primary);font-weight:600">${esc(h.change)}</td><td>${esc(h.author)}</td><td><span class="state-tag state-${h.state}">${esc(h.state)}</span>${h._user?` <button class="hdel" data-hdel='${esc(JSON.stringify({ver:h.ver,date:h.date,change:h.change}))}' title="삭제">✕</button>`:''}</td></tr>`).join('')}</tbody></table></div>
+    <div class="hist-add">
+      <input id="hVer" placeholder="버전 v0.6" style="width:92px">
+      <input id="hDate" type="date" style="width:150px">
+      <input id="hChange" placeholder="주요 개정 내용" style="flex:1;min-width:160px">
+      <input id="hAuthor" placeholder="작성자" style="width:90px">
+      <select id="hState"><option value="Draft">Draft</option><option value="Final">Final</option></select>
+      <button class="hbtn" id="hAddBtn">＋ 이력 추가</button>
+    </div>
 
     <div class="section-label"><span class="bar"></span>이력 추적 · 이슈 보드 <span class="sub">— 항목 추가/삭제, 상태 배지 클릭 시 변경</span></div>
     <div class="track-board" id="trackBoard"></div>
@@ -377,6 +470,25 @@ function renderProject(id){
   renderTrackBoard(p);
   renderFilePanels(p);
   drawProjectCharts(p, hist, tr);
+  // 이력 추가
+  const hAdd=$('hAddBtn');
+  if(hAdd) hAdd.addEventListener('click',()=>{
+    const ver=($('hVer').value||'').trim(), change=($('hChange').value||'').trim();
+    if(!ver||!change){ alert('버전과 개정 내용을 입력하세요.'); return; }
+    addHist(p.id,{ver:ver,date:($('hDate').value||todayStr()),change:change,author:($('hAuthor').value||'').trim(),state:$('hState').value});
+    renderProject(p.id);
+  });
+  // 이력 삭제(사용자 추가분)
+  document.querySelectorAll('[data-hdel]').forEach(b=>b.addEventListener('click',()=>{
+    try{ delHist(p.id, JSON.parse(b.getAttribute('data-hdel'))); }catch(e){} renderProject(p.id);
+  }));
+  // 프로젝트 삭제(사용자 추가분)
+  const pd=$('projDelBtn');
+  if(pd) pd.addEventListener('click',()=>{
+    if(confirm('이 프로젝트와 관련 이력·이슈 기록을 삭제할까요? (GitHub 파일은 삭제되지 않습니다)')){
+      delProject(p.id); activeId='overview'; renderNav(); renderMain();
+    }
+  });
 }
 function renderTrackBoard(p){
   const tr=trackOf(p);
@@ -440,6 +552,21 @@ function redrawProjectStatus(p){ if(charts.ps){charts.ps.destroy(); delete chart
 /* ── 이벤트 ── */
 $('sbSearch').addEventListener('input',e=>{ searchQ=e.target.value.trim(); renderNav(); });
 $('themeBtn').addEventListener('click',()=>{ const d=document.body.classList.toggle('dark'); $('themeBtn').firstChild.nodeValue=d?'☀️ ':'🌙 '; $('themeLabel').textContent=d?'라이트 모드':'다크 모드'; renderMain(); });
+
+/* 새 프로젝트 모달 */
+function openProjModal(){ ['npName','npCat','npPeriod','npOwner','npChange','npFolder'].forEach(id=>{ if(id==='npChange')$(id).value='프로젝트 생성 · 초안'; else $(id).value=''; }); $('npVer').value='v0.1'; $('npType').value='수시'; $('npErr').textContent=''; $('projModal').classList.add('show'); setTimeout(()=>$('npName').focus(),50); }
+function closeProjModal(){ $('projModal').classList.remove('show'); }
+$('addProjBtn').addEventListener('click', openProjModal);
+$('npCancel').addEventListener('click', closeProjModal);
+$('npName').addEventListener('input',()=>{ if(!$('npFolder').value) $('npFolder').placeholder = slugFolder($('npName').value)||'프로젝트명으로 자동 생성'; });
+$('npOk').addEventListener('click',()=>{
+  const name=($('npName').value||'').trim();
+  if(!name){ $('npErr').textContent='프로젝트명을 입력하세요.'; return; }
+  const id=addProject({ name:name, type:$('npType').value, category:($('npCat').value||'').trim(), period:($('npPeriod').value||'').trim(),
+    owner:($('npOwner').value||'').trim(), ver:($('npVer').value||'v0.1').trim(), folder:($('npFolder').value||'').trim(), change:($('npChange').value||'').trim() });
+  closeProjModal(); activeId=id; renderNav(); renderMain();
+});
+$('projModal').addEventListener('click',e=>{ if(e.target===$('projModal')) closeProjModal(); });
 
 /* ── 시작 ── */
 renderNav();

@@ -137,6 +137,27 @@ body{font-family:var(--font);background:var(--bg-base);color:var(--text-primary)
   .sidebar{width:100%;height:auto;max-height:220px;}
   .main{height:auto;}
 }
+/* ── 교육 영상 플레이어 ── */
+.vid-loading{font-size:0.78rem;color:var(--text-tertiary);padding:8px 2px;}
+.vid-wrap{margin:0 0 16px;border:1px solid var(--border-default);border-radius:var(--radius-lg);overflow:hidden;box-shadow:var(--shadow-sm);}
+.vid-head{display:flex;align-items:center;gap:10px;padding:11px 15px;font-size:0.88rem;font-weight:800;color:#fff;
+  background:linear-gradient(120deg,var(--color-primary-600),var(--color-primary-500) 80%);}
+.vid-head .vid-cnt{background:rgba(255,255,255,0.22);border-radius:9999px;padding:2px 9px;font-size:0.68rem;}
+.vid-head .vid-note{margin-left:auto;font-size:0.64rem;font-weight:600;opacity:.88;}
+.vid-body{display:grid;grid-template-columns:1.75fr 1fr;background:var(--bg-elevated);}
+.vid-player{position:relative;background:#000;aspect-ratio:16/9;min-height:200px;}
+.vid-player iframe,.vid-player video{position:absolute;inset:0;width:100%;height:100%;border:0;}
+.vid-linkbox{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#fff;font-size:0.82rem;padding:16px;text-align:center;}
+.vid-linkbox a{color:#8fc2ff;font-weight:800;}
+.vid-list{list-style:none;margin:0;padding:8px;overflow-y:auto;max-height:100%;border-left:1px solid var(--border-default);}
+.vid-item{display:flex;align-items:center;gap:9px;padding:10px 11px;border-radius:9px;cursor:pointer;font-size:0.8rem;font-weight:600;color:var(--text-secondary);margin-bottom:2px;}
+.vid-item:hover{background:var(--bg-subtle);}
+.vid-item.active{background:var(--color-primary-500);color:#fff;}
+.vid-item .vp{font-size:0.66rem;opacity:.75;}
+.vid-item .vt{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.vid-item .vk{font-size:0.58rem;font-weight:800;padding:2px 7px;border-radius:9999px;background:var(--bg-subtle);color:var(--text-tertiary);}
+.vid-item.active .vk{background:rgba(255,255,255,0.24);color:#fff;}
+@media (max-width:720px){ .vid-body{grid-template-columns:1fr;} .vid-list{max-height:180px;border-left:0;border-top:1px solid var(--border-default);} }
 </style>
 </head>
 <body>
@@ -171,7 +192,7 @@ body{font-family:var(--font);background:var(--bg-base);color:var(--text-primary)
 const CATS = [
   {key:'work',        icon:'🗂️', name:'업무관리',          subs:['업무찾기','사업장업무','MY업무']},
   {key:'system',      icon:'🏛️', name:'안전보건관리체계',   subs:['예산','경영방침','목표','조직']},
-  {key:'edu',         icon:'🎓', name:'안전보건교육',       subs:['교육계획 및 현황 관리','교육이력 관리','교육자료']},
+  {key:'edu',         icon:'🎓', name:'안전보건교육',       subs:['교육계획 및 현황 관리','교육이력 관리','교육자료','교육일지']},
   {key:'risk',        icon:'⚠️', name:'위험성평가',         subs:['위험성평가 실시','평가계획 및 현황관리','감소대책 관리']},
   {key:'inspect',     icon:'🔍', name:'안전점검',           subs:['점검결과등록','점검현황 및 점검 후 조치관리']},
   {key:'halfinspect', icon:'📆', name:'반기점검',           subs:['반기점검 실시','점검계획 및 현황관리']},
@@ -204,6 +225,56 @@ const GH_REPO ='HP-IN-MH4';          // 저장소
 const GH_BRANCH='main';              // 브랜치
 const SAFE_BASE='SAFE';              // 안전보건 자료 최상위 폴더
 let SAFE_INDEX=null;                 // { '항목|세부기능'(정규화): [{path,file}, ...] }
+let VID_INDEX=null;                  // { '항목|세부기능': [{path,file}(영상목록 파일), ...] }
+// 영상목록 파일 판별: .txt/.md 이면서 이름에 영상/video/youtube/유튜브/재생목록 포함
+function isVidList(f){ return /\.(txt|md)$/i.test(f) && /(영상|video|youtube|유튜브|재생목록|playlist)/i.test(f); }
+function escH(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+function ytId(u){ var m=String(u).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/))([\w-]{6,})/); return m?m[1]:''; }
+async function fetchText(path){
+  var enc=path.split('/').map(encodeURIComponent).join('/');
+  try{ var r=await fetch('https://raw.githubusercontent.com/'+GH_OWNER+'/'+GH_REPO+'/'+GH_BRANCH+'/'+enc); if(r.ok) return await r.text(); }catch(e){}
+  try{ var a=await fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+enc+'?ref='+GH_BRANCH,{headers:{'Accept':'application/vnd.github.raw'}}); if(a.ok) return await a.text(); }catch(e){}
+  return '';
+}
+// "제목 | URL" 각 줄 파싱 (#으로 시작하면 주석)
+function parseVidList(txt){
+  return String(txt).split(/\r?\n/).map(function(l){return l.trim();}).filter(function(l){return l && l.charAt(0)!=='#';}).map(function(l){
+    var title='', url='';
+    if(l.indexOf('|')>=0){ var p=l.split('|'); title=p[0].trim(); url=p.slice(1).join('|').trim(); }
+    else { url=l; }
+    var id=ytId(url); if(!title) title = id?('교육 영상 '+id):url;
+    return {title:title, url:url, id:id};
+  }).filter(function(v){return v.url;});
+}
+function vidKind(v){ if(v.id) return 'yt'; if(/\.(mp4|webm|ogg|mov|m4v)(\?|$)/i.test(v.url)) return 'file'; return 'link'; }
+function playerHTML(v, autoplay){
+  if(v.id) return '<iframe id="vidFrame" src="https://www.youtube.com/embed/'+v.id+(autoplay?'?autoplay=1':'')+'" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+  if(vidKind(v)==='file') return '<video id="vidFrame" src="'+encodeURI(v.url)+'" controls '+(autoplay?'autoplay':'')+'></video>';
+  return '<div class="vid-linkbox">외부 링크입니다. <a href="'+encodeURI(v.url)+'" target="_blank" rel="noopener">새 창에서 열기 ↗</a></div>';
+}
+function renderVideos(zone, items){
+  if(!items.length){ zone.innerHTML=''; return; }
+  zone.innerHTML =
+    '<div class="vid-wrap"><div class="vid-head">📺 교육 영상 <span class="vid-cnt">'+items.length+'개</span><span class="vid-note">GitHub 영상목록 자동 연동</span></div>'
+    + '<div class="vid-body"><div class="vid-player" id="vidPlayer">'+playerHTML(items[0],false)+'</div>'
+    + '<ul class="vid-list">'+items.map(function(v,i){ var k=vidKind(v); return '<li class="vid-item '+(i===0?'active':'')+'" data-i="'+i+'"><span class="vp">▶</span><span class="vt">'+escH(v.title)+'</span><span class="vk">'+(k==='yt'?'YouTube':k==='file'?'동영상':'링크')+'</span></li>'; }).join('')+'</ul></div></div>';
+  zone.querySelectorAll('.vid-item').forEach(function(li){ li.addEventListener('click', function(){
+    var i=parseInt(li.getAttribute('data-i'),10);
+    document.getElementById('vidPlayer').innerHTML=playerHTML(items[i], true);
+    zone.querySelectorAll('.vid-item').forEach(function(x){x.classList.remove('active');}); li.classList.add('active');
+  }); });
+}
+async function hydrateVideos(c, sub){
+  var zone=document.getElementById('vidZone'); if(!zone) return;
+  var key=skey(c.name, sub);
+  if(VID_INDEX===null){ zone.innerHTML='<div class="vid-loading">📺 영상 목록 확인 중…</div>'; return; }
+  var lists=VID_INDEX[key]||[];
+  if(!lists.length){ zone.innerHTML=''; return; }
+  zone.innerHTML='<div class="vid-loading">📺 교육 영상 불러오는 중…</div>';
+  var items=[];
+  for(var i=0;i<lists.length;i++){ var t=await fetchText(lists[i].path); if(t) items=items.concat(parseVidList(t)); }
+  renderVideos(zone, items);
+}
 
 function normTxt(s){ return String(s==null?'':s).replace(/\s+/g,'').toLowerCase(); }
 function skey(cat,sub){ return normTxt(cat)+'|'+normTxt(sub); }
@@ -219,7 +290,7 @@ function addUploadHref(cat,sub){
 }
 async function loadSafeIndex(){
   const api='https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/git/trees/'+GH_BRANCH+'?recursive=1';
-  const idx={};
+  const idx={}, vidx={};
   try{
     const res=await fetch(api,{headers:{'Accept':'application/vnd.github+json'}});
     if(!res.ok) throw new Error('HTTP '+res.status);
@@ -230,12 +301,13 @@ async function loadSafeIndex(){
       if(parts.length<4) return;                       // SAFE/항목/세부기능/파일 (최소 4단)
       if(parts[0].toUpperCase()!==SAFE_BASE.toUpperCase()) return;
       const file=parts[parts.length-1];
-      if(!/\.(pdf|png|jpe?g|gif|webp|hwp|hwpx|docx?|xlsx?|pptx?|tiff?)$/i.test(file)) return;  // .gitkeep/README 등 무시
       const key=skey(parts[1],parts[2]);
+      if(isVidList(file)){ (vidx[key]=vidx[key]||[]).push({path:p,file:file}); return; }              // 영상목록(txt) 파일
+      if(!/\.(pdf|png|jpe?g|gif|webp|hwp|hwpx|docx?|xlsx?|pptx?|tiff?)$/i.test(file)) return;  // .gitkeep/README 등 무시
       (idx[key]=idx[key]||[]).push({path:p,file:file});
     });
-    SAFE_INDEX=idx;
-  }catch(e){ console.warn('SAFE 자료 목록을 불러오지 못했습니다:', e&&e.message); SAFE_INDEX={}; }
+    SAFE_INDEX=idx; VID_INDEX=vidx;
+  }catch(e){ console.warn('SAFE 자료 목록을 불러오지 못했습니다:', e&&e.message); SAFE_INDEX={}; VID_INDEX={}; }
   renderMain();
 }
 function filesPanelHTML(c, sub){
@@ -259,6 +331,7 @@ function filesPanelHTML(c, sub){
   }
   const cnt=loading?'…':files.length;
   return `
+      <div id="vidZone"></div>
       <div class="fp-head"><h3>${sub}</h3><span class="tag">등록된 자료 ${cnt}건</span>
         <a class="upload-btn" href="${addUploadHref(c.name,sub)}" target="_blank" rel="noopener">＋ GitHub에 자료 올리기</a></div>
       <p class="fp-desc">이 항목의 파일(PDF·이미지·문서 등)을 GitHub <b>${SAFE_BASE}/${c.name}/${sub}</b> 폴더에 올리면, 아래에 자동으로 나타나고 클릭하면 새 탭에서 열립니다.</p>
@@ -302,6 +375,7 @@ function renderMain(){
   $('subGrid').querySelectorAll('.sub-card').forEach(el=>{
     el.addEventListener('click', ()=>{ activeSubIdx = parseInt(el.getAttribute('data-idx'),10); renderMain(); });
   });
+  hydrateVideos(c, sub);   // 이 항목 폴더에 영상목록 파일이 있으면 재생목록·플레이어 표시
 }
 
 /* 라이트/다크 전환 */
