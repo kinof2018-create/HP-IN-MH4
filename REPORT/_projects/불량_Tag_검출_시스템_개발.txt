@@ -1,0 +1,12 @@
+# 경영진 보고 프로젝트 (대시보드 자동 인식 · 모든 PC 공통)
+# 이 파일이 REPORT/_projects/ 에 있으면 모든 컴퓨터의 목록에 나타납니다.
+name | 불량 Tag 검출 시스템 개발
+type | 수시
+category | 생산기술 _프로그램 개발
+period | 2027년 하반기 목표 (시연)
+owner | 김기태
+ver | v0.1
+status | 진행중
+folder | 불량_Tag_검출_시스템_개발
+change | 프로젝트 생성 · 초안
+date | 2026-07-31
