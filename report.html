@@ -208,7 +208,10 @@ tbody tr:hover{background:var(--bg-subtle);}
     <ul class="sb-nav" id="sbTop"></ul>
     <div class="sb-sec">프로젝트</div>
     <ul class="sb-nav" id="sbNav"></ul>
-    <div style="padding:0 12px 20px"><button class="add-proj" id="addProjBtn">＋ 새 프로젝트 추가</button></div>
+    <div style="padding:0 12px 20px">
+      <button class="add-proj" id="addProjBtn">＋ 새 프로젝트 추가</button>
+      <button class="add-proj" id="ghConnBtn" style="margin-top:8px;font-size:11.5px">☁ GitHub 연결</button>
+    </div>
   </aside>
   <main class="main">
     <div class="topbar">
@@ -226,7 +229,7 @@ tbody tr:hover{background:var(--bg-subtle);}
 <div class="ovp" id="projModal">
   <div class="pcard">
     <h3>➕ 새 프로젝트 추가</h3>
-    <p class="psub">프로젝트를 추가하면 좌측 목록·개요에 나타나고, 이력·이슈·파일을 관리할 수 있습니다.</p>
+    <p class="psub">＋ 등록을 누르면 GitHub에 프로젝트 파일이 만들어지고, <b>Commit(저장)</b>하면 <b>모든 컴퓨터</b>에서 이 프로젝트가 보입니다.</p>
     <label>프로젝트명 *<input id="npName" placeholder="예: 2026 상반기 결산보고" /></label>
     <div class="prow">
       <label>유형<select id="npType"><option value="정기">정기</option><option value="수시">수시</option></select></label>
@@ -242,7 +245,33 @@ tbody tr:hover{background:var(--bg-subtle);}
     </div>
     <label>최초 개정 내용<input id="npChange" value="프로젝트 생성 · 초안" /></label>
     <div class="perr" id="npErr"></div>
-    <div class="pbtns"><button class="pbtn ghost" id="npCancel">취소</button><button class="pbtn primary" id="npOk">추가</button></div>
+    <div style="font-size:0.7rem;color:var(--text-tertiary);line-height:1.6;margin:2px 0 12px;background:var(--bg-subtle);border:1px solid var(--border);border-radius:8px;padding:9px 11px">
+      ☁ 버튼을 누르면 <b>GitHub 새 파일 등록 화면</b>이 열립니다. 그 화면 맨 아래 <b>Commit changes</b> 를 누르면 모든 PC에 반영됩니다.
+      (커밋 전에는 내 화면에서만 미리 보입니다.)</div>
+    <div class="pbtns"><button class="pbtn ghost" id="npCancel">취소</button><button class="pbtn primary" id="npOk">☁ 추가 + GitHub 등록</button></div>
+  </div>
+</div>
+
+<!-- GitHub 연결(토큰) 모달 -->
+<div class="ovp" id="ghModal">
+  <div class="pcard">
+    <h3>☁ GitHub 연결 (관리자)</h3>
+    <p class="psub">토큰을 연결하면 프로젝트 <b>추가·삭제가 곧바로 GitHub에 저장</b>되어 모든 PC에 반영됩니다. 토큰은 이 브라우저에만 저장됩니다.</p>
+    <label>GitHub 토큰(Personal Access Token)<input id="ghTokenIn" type="password" placeholder="github_pat_... 또는 ghp_..." /></label>
+    <div style="font-size:0.68rem;color:var(--text-tertiary);line-height:1.65;background:var(--bg-subtle);border:1px solid var(--border);border-radius:8px;padding:9px 11px;margin-bottom:10px">
+      <b>만드는 법</b>: GitHub → 우측상단 프로필 → Settings → Developer settings → <b>Personal access tokens → Fine-grained tokens</b> → Generate new token →
+      Repository access에서 <b>HP-IN-MH4</b> 선택 → Permissions → <b>Contents: Read and write</b> → 발급된 토큰 문자열을 위에 붙여넣기.
+      <br>⚠ 이 토큰은 저장소 쓰기 권한이 있으니 <b>외부에 노출하지 마세요</b>. (관리자 PC에서만 연결)
+    </div>
+    <div class="perr" id="ghErr"></div>
+    <div class="pbtns">
+      <button class="pbtn ghost" id="ghClear" style="flex:0 0 auto">연결 해제</button>
+      <button class="pbtn ghost" id="ghCancel">닫기</button>
+      <button class="pbtn primary" id="ghSave">저장</button>
+    </div>
+    <div style="margin-top:12px;border-top:1px solid var(--border);padding-top:10px">
+      <button class="pbtn ghost" id="ghCleanLocal" style="width:100%;font-size:0.76rem">🧹 내 화면에만 있는 임시(로컬) 프로젝트 비우기</button>
+    </div>
   </div>
 </div>
 
@@ -251,8 +280,15 @@ const SEED_PROJECTS = [{"id": "p_h2strat", "name": "2026 하반기 전략보고"
 const LS_PROJ='report_proj_v1';
 function userProjects(){ try{ return JSON.parse(localStorage.getItem(LS_PROJ)||'[]'); }catch(e){ return []; } }
 function saveUserProjects(a){ try{ localStorage.setItem(LS_PROJ, JSON.stringify(a)); }catch(e){} }
-let PROJECTS = SEED_PROJECTS.concat(userProjects());
-function rebuildProjects(){ PROJECTS = SEED_PROJECTS.concat(userProjects()); }
+let GH_PROJECTS = [];   // GitHub REPORT/_projects/*.txt 에서 읽어온 공유 프로젝트(모든 PC 공통)
+function normFolderKey(p){ return String((p.folder||p.name)||'').replace(/\s+/g,'').toLowerCase(); }
+let PROJECTS = [];
+function rebuildProjects(){
+  var all = SEED_PROJECTS.concat(GH_PROJECTS).concat(userProjects());
+  var seen = {}; PROJECTS = [];
+  all.forEach(function(p){ var k = normFolderKey(p); if(seen[k]) return; seen[k]=1; PROJECTS.push(p); });   // 폴더 기준 중복 제거(공유본 우선)
+}
+rebuildProjects();
 const $ = id => document.getElementById(id);
 const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const nf = n => (Number(n)||0).toLocaleString('ko-KR');
@@ -313,20 +349,82 @@ function normTxt(s){ return String(s==null?'':s).replace(/\s+/g,'').toLowerCase(
 function fkey(folder,sub){ return normTxt(folder)+'|'+normTxt(sub); }
 function fileMeta(file){ const m=file.match(/(\d{4}-\d{2}-\d{2})/); const date=m?m[1]:''; let t=file.replace(/\.[^.]+$/,''); return {date,title:t}; }
 function uploadHref(folder,sub){ return 'https://github.com/'+GH_OWNER+'/'+GH_REPO+'/upload/'+GH_BRANCH+'/'+encodeURI(BASE+'/'+folder+'/'+sub); }
+/* ── 공유 프로젝트(GitHub) 읽기/등록 ── */
+async function fetchText(path){
+  var enc=path.split('/').map(encodeURIComponent).join('/');
+  try{ var r=await fetch('https://raw.githubusercontent.com/'+GH_OWNER+'/'+GH_REPO+'/'+GH_BRANCH+'/'+enc); if(r.ok) return await r.text(); }catch(e){}
+  try{ var a=await fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+enc+'?ref='+GH_BRANCH,{headers:{'Accept':'application/vnd.github.raw'}}); if(a.ok) return await a.text(); }catch(e){}
+  return '';
+}
+function parseProjectFile(txt, path){
+  var o={}; String(txt).split(/\r?\n/).forEach(function(l){ l=l.trim(); if(!l||l.charAt(0)==='#')return;
+    var i=l.indexOf('|'); if(i<0)return; o[l.slice(0,i).trim().toLowerCase()]=l.slice(i+1).trim(); });
+  if(!o.name) return null;
+  var folder=o.folder||slugFolder(o.name); var ver=o.ver||o.latestver||'v0.1';
+  return { id:'g_'+String(folder).replace(/\s+/g,'').toLowerCase(), name:o.name, folder:folder, type:o.type||'수시',
+    category:o.category||'', period:o.period||'', owner:o.owner||'', latestVer:ver, status:o.status||'진행중', _shared:true, _srcPath:path,
+    history:[{ver:ver, date:o.date||'', change:o.change||'프로젝트 등록', author:o.owner||'', state:'Draft'}], track:[] };
+}
+async function loadSharedProjects(paths){
+  var arr=[];
+  for(var i=0;i<paths.length;i++){ var t=await fetchText(paths[i]); if(t){ var p=parseProjectFile(t,paths[i]); if(p) arr.push(p); } }
+  GH_PROJECTS=arr; rebuildProjects();
+}
+function projFileContent(o){
+  return ['# 경영진 보고 프로젝트 (대시보드 자동 인식 · 모든 PC 공통)',
+    '# 이 파일이 REPORT/_projects/ 에 있으면 모든 컴퓨터의 목록에 나타납니다.',
+    'name | '+(o.name||''), 'type | '+(o.type||'수시'), 'category | '+(o.category||''), 'period | '+(o.period||''),
+    'owner | '+(o.owner||''), 'ver | '+(o.ver||'v0.1'), 'status | '+(o.status||'진행중'), 'folder | '+(o.folder||''),
+    'change | '+(o.change||'프로젝트 생성 · 초안'), 'date | '+(o.date||'')].join('\n');
+}
+function githubNewFileUrl(folder, content){
+  return 'https://github.com/'+GH_OWNER+'/'+GH_REPO+'/new/'+GH_BRANCH+'?filename='+encodeURIComponent(BASE+'/_projects/'+folder+'.txt')+'&value='+encodeURIComponent(content);
+}
+function shareProjectToGitHub(p){
+  var content=projFileContent({name:p.name,type:p.type,category:p.category,period:p.period,owner:p.owner,ver:p.latestVer,status:p.status,
+    folder:p.folder, change:(p.history&&p.history[0]?p.history[0].change:'프로젝트 등록'), date:(p.history&&p.history[0]?p.history[0].date:'')});
+  var w=window.open(githubNewFileUrl(p.folder, content),'_blank');
+  if(!w) alert('팝업이 차단되었습니다. 브라우저에서 이 사이트의 팝업을 허용한 뒤 다시 눌러 주세요.');
+}
+/* ── GitHub 쓰기(토큰) : 추가·삭제를 실제 저장소에 반영(모든 PC 공통) ── */
+const LS_GHTOKEN='report_gh_token';
+function ghToken(){ try{ return localStorage.getItem(LS_GHTOKEN)||''; }catch(e){ return ''; } }
+function setGhToken(t){ try{ if(t) localStorage.setItem(LS_GHTOKEN,t); else localStorage.removeItem(LS_GHTOKEN); }catch(e){} }
+function b64utf8(s){ try{ return btoa(unescape(encodeURIComponent(s))); }catch(e){ return btoa(s); } }
+function ghHeaders(){ return {'Authorization':'Bearer '+ghToken(),'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}; }
+function projPath(folder){ return BASE+'/_projects/'+folder+'.txt'; }
+async function ghGetSha(path){
+  try{ var enc=path.split('/').map(encodeURIComponent).join('/');
+    var r=await fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+enc+'?ref='+GH_BRANCH+'&t='+Date.now(),{headers:ghHeaders(),cache:'no-store'});
+    if(r.ok){ var j=await r.json(); return j.sha||''; } }catch(e){} return '';
+}
+async function ghPutFile(path, content, message){
+  var enc=path.split('/').map(encodeURIComponent).join('/'); var sha=await ghGetSha(path);
+  var body={message:message||('update '+path), content:b64utf8(content), branch:GH_BRANCH}; if(sha) body.sha=sha;
+  try{ var r=await fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+enc,{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},ghHeaders()),body:JSON.stringify(body)}); return r.ok; }catch(e){ return false; }
+}
+async function ghDeleteFile(path, message){
+  var enc=path.split('/').map(encodeURIComponent).join('/'); var sha=await ghGetSha(path); if(!sha) return false;
+  try{ var r=await fetch('https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+enc,{method:'DELETE',headers:Object.assign({'Content-Type':'application/json'},ghHeaders()),body:JSON.stringify({message:message||('delete '+path),sha:sha,branch:GH_BRANCH})}); return r.ok; }catch(e){ return false; }
+}
+function updateGhBtn(){ var b=$('ghConnBtn'); if(b) b.textContent = ghToken()?'☁ GitHub 연결됨 ✓':'☁ GitHub 연결'; }
 async function loadReportIndex(){
-  const api='https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/git/trees/'+GH_BRANCH+'?recursive=1'; const idx={};
+  const api='https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/git/trees/'+GH_BRANCH+'?recursive=1'; const idx={}; const projPaths=[];
   try{
     const res=await fetch(api,{headers:{'Accept':'application/vnd.github+json'}}); if(!res.ok) throw 0;
     const data=await res.json();
     (data.tree||[]).forEach(function(n){ if(n.type!=='blob')return; const p=n.path||''; const parts=p.split('/');
-      if(parts.length<4)return; if(parts[0].toUpperCase()!==BASE) return;
+      if(parts[0].toUpperCase()!==BASE) return;
+      if(parts.length===3 && parts[1]==='_projects' && /\.txt$/i.test(parts[2])){ projPaths.push(p); return; }   // 공유 프로젝트 파일
+      if(parts.length<4)return;
       const file=parts[parts.length-1];
       if(!/\.(pdf|pptx?|docx?|xlsx?|png|jpe?g|gif|webp|hwp|hwpx|txt|csv)$/i.test(file)) return;
       const key=fkey(parts[1],parts[2]); (idx[key]=idx[key]||[]).push({path:p,file:file});
     });
     REPORT_INDEX=idx;
+    await loadSharedProjects(projPaths);   // GitHub 공유 프로젝트 병합(모든 PC 공통)
   }catch(e){ REPORT_INDEX={}; }
-  if(activeId && activeId!=='overview') renderProject(activeId);
+  renderNav(); renderMain();
 }
 
 /* ── 상태 ── */
@@ -435,7 +533,9 @@ function renderProject(id){
     <div class="cat-head"><div class="big">${p.type==='정기'?'🗓️':'📌'}</div>
       <div><h2>${esc(p.name)}</h2><p>${p.type} · ${esc(p.category)} · ${esc(p.period)} · 담당 ${esc(p.owner)} · 폴더 REPORT/${esc(p.folder)}</p></div>
       <div class="hstat"><div class="vv">${esc(p.latestVer)}</div><div class="ll">${p.status}</div></div>
-      ${p._user?`<button class="proj-del" id="projDelBtn">🗑 프로젝트 삭제</button>`:''}</div>
+      ${p._shared?`<span class="proj-del" style="background:rgba(255,255,255,0.16);cursor:default">☁ GitHub 공유됨</span>`:''}
+      ${p._user?`<button class="proj-del" id="projShareBtn" style="background:rgba(255,255,255,0.18)">☁ GitHub 공유 등록</button>`:''}
+      ${(p._user||p._shared)?`<button class="proj-del" id="projDelBtn">🗑 프로젝트 삭제</button>`:''}</div>
 
     <div class="section-label"><span class="bar"></span>요약 지표</div>
     <div class="kpi-grid">
@@ -482,13 +582,22 @@ function renderProject(id){
   document.querySelectorAll('[data-hdel]').forEach(b=>b.addEventListener('click',()=>{
     try{ delHist(p.id, JSON.parse(b.getAttribute('data-hdel'))); }catch(e){} renderProject(p.id);
   }));
-  // 프로젝트 삭제(사용자 추가분)
+  // 프로젝트 삭제
   const pd=$('projDelBtn');
-  if(pd) pd.addEventListener('click',()=>{
-    if(confirm('이 프로젝트와 관련 이력·이슈 기록을 삭제할까요? (GitHub 파일은 삭제되지 않습니다)')){
-      delProject(p.id); activeId='overview'; renderNav(); renderMain();
+  if(pd) pd.addEventListener('click', async ()=>{
+    if(p._shared && p._srcPath){                 // GitHub에 등록된 공유 프로젝트 → 저장소에서 삭제(모든 PC 반영)
+      if(!ghToken()){ alert('GitHub에서 삭제하려면 좌측 "☁ GitHub 연결"에서 토큰을 먼저 연결하세요.\\n(또는 GitHub 저장소의 '+p._srcPath+' 파일을 직접 삭제)'); return; }
+      if(!confirm('GitHub에서 이 프로젝트를 삭제할까요? 모든 PC에서 사라집니다.\\n('+p._srcPath+')')) return;
+      pd.disabled=true; pd.textContent='삭제 중…';
+      const ok=await ghDeleteFile(p._srcPath, 'Delete project: '+p.name);
+      if(ok){ delProject(p.id); await loadReportIndex(); activeId='overview'; renderNav(); renderMain(); alert('삭제되었습니다. 각 PC에서 새로고침하면 반영됩니다.'); }
+      else { alert('GitHub 삭제 실패 — 토큰/권한(Contents: write)을 확인하세요.'); pd.disabled=false; pd.textContent='🗑 프로젝트 삭제'; }
+    }else{                                        // 아직 커밋 안 된 로컬 임시 프로젝트
+      if(confirm('내 화면의 임시 프로젝트를 삭제할까요?')){ delProject(p.id); activeId='overview'; renderNav(); renderMain(); }
     }
   });
+  const psh=$('projShareBtn');
+  if(psh) psh.addEventListener('click',()=>{ shareProjectToGitHub(p); });
 }
 function renderTrackBoard(p){
   const tr=trackOf(p);
@@ -559,16 +668,37 @@ function closeProjModal(){ $('projModal').classList.remove('show'); }
 $('addProjBtn').addEventListener('click', openProjModal);
 $('npCancel').addEventListener('click', closeProjModal);
 $('npName').addEventListener('input',()=>{ if(!$('npFolder').value) $('npFolder').placeholder = slugFolder($('npName').value)||'프로젝트명으로 자동 생성'; });
-$('npOk').addEventListener('click',()=>{
+$('npOk').addEventListener('click', async ()=>{
   const name=($('npName').value||'').trim();
   if(!name){ $('npErr').textContent='프로젝트명을 입력하세요.'; return; }
-  const id=addProject({ name:name, type:$('npType').value, category:($('npCat').value||'').trim(), period:($('npPeriod').value||'').trim(),
-    owner:($('npOwner').value||'').trim(), ver:($('npVer').value||'v0.1').trim(), folder:($('npFolder').value||'').trim(), change:($('npChange').value||'').trim() });
-  closeProjModal(); activeId=id; renderNav(); renderMain();
+  const o={ name:name, type:$('npType').value, category:($('npCat').value||'').trim(), period:($('npPeriod').value||'').trim(),
+    owner:($('npOwner').value||'').trim(), ver:($('npVer').value||'v0.1').trim(),
+    folder:(($('npFolder').value||'').trim()||slugFolder(name)), status:'진행중', change:($('npChange').value||'').trim()||'프로젝트 생성 · 초안', date:todayStr() };
+  if(ghToken()){                                            // 토큰 연결됨 → GitHub에 바로 저장(모든 PC 반영)
+    $('npErr').textContent=''; const btn=$('npOk'); btn.disabled=true; btn.textContent='GitHub 등록 중…';
+    const ok=await ghPutFile(projPath(o.folder), projFileContent(o), 'Add project: '+o.name);
+    btn.disabled=false; btn.textContent='☁ 추가 + GitHub 등록';
+    if(ok){ closeProjModal(); await loadReportIndex(); const gp=PROJECTS.find(x=>normFolderKey(x)===normFolderKey(o)); activeId=gp?gp.id:'overview'; renderNav(); renderMain(); }
+    else { $('npErr').textContent='GitHub 등록 실패 — 토큰/권한(Contents: write)을 확인하세요.'; }
+  }else{                                                    // 토큰 없음 → 로컬 미리보기 + GitHub 새 파일 화면(수동 커밋)
+    const id=addProject(o);
+    const w=window.open(githubNewFileUrl(o.folder, projFileContent(o)),'_blank');
+    closeProjModal(); activeId=id; renderNav(); renderMain();
+    if(!w){ alert('팝업이 차단되었습니다. 상세 화면의 "☁ GitHub 공유 등록" 버튼으로 등록하거나, "☁ GitHub 연결"로 토큰을 등록하면 자동 저장됩니다.'); }
+  }
 });
 $('projModal').addEventListener('click',e=>{ if(e.target===$('projModal')) closeProjModal(); });
 
+/* GitHub 연결(토큰) 모달 */
+$('ghConnBtn').addEventListener('click',()=>{ $('ghTokenIn').value=ghToken(); $('ghErr').textContent=''; $('ghModal').classList.add('show'); setTimeout(()=>$('ghTokenIn').focus(),50); });
+$('ghCancel').addEventListener('click',()=>$('ghModal').classList.remove('show'));
+$('ghSave').addEventListener('click',()=>{ var t=($('ghTokenIn').value||'').trim(); if(!t){ $('ghErr').textContent='토큰을 입력하세요.'; return; } setGhToken(t); updateGhBtn(); $('ghModal').classList.remove('show'); loadReportIndex(); alert('GitHub에 연결되었습니다. 이제 프로젝트 추가·삭제가 모든 PC에 반영됩니다.'); });
+$('ghClear').addEventListener('click',()=>{ setGhToken(''); updateGhBtn(); $('ghModal').classList.remove('show'); });
+$('ghCleanLocal').addEventListener('click',()=>{ if(confirm('내 화면에만 있던 임시 프로젝트(로컬 저장분)를 모두 지울까요?\\nGitHub에 등록된 프로젝트는 그대로 유지됩니다.')){ saveUserProjects([]); rebuildProjects(); activeId='overview'; renderNav(); renderMain(); $('ghModal').classList.remove('show'); } });
+$('ghModal').addEventListener('click',e=>{ if(e.target===$('ghModal')) $('ghModal').classList.remove('show'); });
+
 /* ── 시작 ── */
+updateGhBtn();
 renderNav();
 renderMain();
 loadReportIndex();
