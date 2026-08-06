@@ -1,3 +1,8 @@
 # 안전보건교육 · 교육일지 영상목록
 # 형식: 제목 | URL   (한 줄에 하나, #으로 시작하면 주석)
 안전보건 교육 영상 | https://youtu.be/v8yP8hV3ot4
+
+
+# 안전보건교육 · 교육일지 영상목록
+# 형식: 제목 | URL   (한 줄에 하나, #으로 시작하면 주석)
+국민 생활안전 교육 영상 https://youtu.be/rGXXLLKU-TA?si=irltZy6GbvCnB3ME
