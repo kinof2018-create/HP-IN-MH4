@@ -34,6 +34,27 @@ html,body{margin:0;padding:0;}
 body{font-family:var(--font);background:var(--page-grad) fixed,var(--bg-base);color:var(--text-primary);min-height:100vh;-webkit-font-smoothing:antialiased;}
 .container{max-width:1440px;margin:0 auto;padding:24px 20px 60px;}
 
+/* 로그인 게이트 */
+body.locked .container{display:none;}
+body:not(.locked) #gate{display:none;}
+#gate{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(1000px 600px at 50% -10%, #1C2F58 0%, #0A1024 60%);}
+.gate-card{width:100%;max-width:380px;background:rgba(255,255,255,0.06);backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,0.16);border-radius:var(--radius-xl);padding:34px 30px 28px;
+  box-shadow:0 24px 60px rgba(0,0,0,0.45);text-align:center;color:#fff;}
+.gate-card .eyebrow{font:700 11px/1 var(--font);letter-spacing:.16em;text-transform:uppercase;opacity:.75;}
+.gate-card h1{margin:12px 0 4px;font:800 20px/1.3 var(--font);letter-spacing:-0.01em;}
+.gate-card .sub{font:500 12px/1.6 var(--font);color:rgba(255,255,255,0.72);margin-bottom:22px;}
+.gate-card .lock{font-size:34px;margin-bottom:6px;}
+.gate-card input{width:100%;background:rgba(0,0,0,0.28);border:1px solid rgba(255,255,255,0.22);border-radius:var(--radius-md);
+  padding:13px 15px;color:#fff;font:600 15px/1 var(--font);text-align:center;letter-spacing:.3em;margin-bottom:12px;}
+.gate-card input:focus{outline:none;border-color:var(--secondary);box-shadow:0 0 0 3px rgba(79,191,184,0.25);}
+.gate-card button{width:100%;cursor:pointer;border:0;border-radius:var(--radius-md);padding:13px 15px;
+  font:800 13.5px/1 var(--font);color:#fff;background:linear-gradient(120deg,var(--p500),var(--secondary));}
+.gate-card button:hover{filter:brightness(1.06);}
+.gate-err{min-height:18px;margin-top:12px;font:700 11.5px/1.4 var(--font);color:#FF8AA0;}
+.gate-foot{margin-top:16px;font:500 10.5px/1.5 var(--font);color:rgba(255,255,255,0.45);}
+
 /* Header */
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;padding:20px 24px;border-radius:var(--radius-xl);margin-bottom:20px;
   background:linear-gradient(120deg,var(--p700) 0%,var(--p500) 55%,var(--secondary) 140%);box-shadow:var(--shadow-card);position:relative;overflow:hidden;}
@@ -54,6 +75,9 @@ body{font-family:var(--font);background:var(--page-grad) fixed,var(--bg-base);co
 .kpi{background:linear-gradient(160deg,var(--bg-elevated) 0%,var(--bg-subtle) 100%);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:16px 16px 14px;position:relative;overflow:hidden;box-shadow:var(--shadow-md);}
 .kpi .bar{position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--p500);}
 .kpi.k2 .bar{background:var(--secondary);} .kpi.k3 .bar{background:var(--error-fg);} .kpi.k4 .bar{background:var(--warn-fg);} .kpi.k5 .bar{background:var(--info-fg);}
+/* 미정산 금액 카드 강조: 테두리 음영 처리 */
+.kpi.k3{border-color:var(--error-fg);box-shadow:0 0 0 2px var(--error-fg),0 10px 24px rgba(214,41,75,0.28);}
+.kpi.k3 .v{color:var(--error-fg);}
 .kpi .l{font:700 11px/1.3 var(--font);color:var(--text-tertiary);}
 .kpi .v{font:800 22px/1.15 var(--font);margin-top:8px;font-variant-numeric:tabular-nums;letter-spacing:-0.01em;}
 .kpi .f{margin-top:7px;font:600 10.5px/1.3 var(--font);color:var(--text-tertiary);}
@@ -90,10 +114,44 @@ table.det tbody tr:hover{background:rgba(127,127,160,0.10);}
 .docchip{display:inline-block;font:700 9.5px/1.4 var(--font);padding:2px 6px;margin:1px;border-radius:5px;background:rgba(127,140,200,0.18);color:var(--info-fg);border:1px solid var(--border-subtle);}
 .footnote{margin-top:14px;font:500 11px/1.7 var(--font);color:var(--text-tertiary);}
 
+/* 상세 조회 행 클릭 → 상세 팝업 */
+table.det tbody tr.det-row{cursor:pointer;}
+.det-modal{position:fixed;inset:0;z-index:9500;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(10,16,36,0.55);backdrop-filter:blur(3px);}
+.det-modal.open{display:flex;}
+.det-card{width:100%;max-width:700px;max-height:88vh;overflow:auto;background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--radius-lg);box-shadow:var(--shadow-card);}
+.det-head{position:sticky;top:0;z-index:1;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 20px;background:linear-gradient(120deg,var(--p700),var(--p500));color:#fff;}
+.det-head h3{margin:0;font:800 16px/1.3 var(--font);}
+.det-head .cls{cursor:pointer;border:0;background:rgba(255,255,255,0.22);color:#fff;border-radius:8px;padding:7px 12px;font:700 12px/1 var(--font);}
+.det-head .cls:hover{background:rgba(255,255,255,0.34);}
+.det-body{padding:18px 20px 22px;}
+.det-track{display:flex;flex-direction:column;gap:4px;padding:13px 15px;margin-bottom:16px;border-radius:10px;background:rgba(20,40,160,0.06);border:1px solid var(--border-default);}
+.det-track .k{font:700 10.5px/1 var(--font);color:var(--text-tertiary);letter-spacing:.05em;}
+.det-track .v{font:800 18px/1.25 var(--font);font-variant-numeric:tabular-nums;letter-spacing:.01em;word-break:break-all;color:var(--p400);}
+.det-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 20px;}
+.det-f{display:flex;flex-direction:column;gap:3px;padding:9px 0;border-bottom:1px solid var(--border-subtle);}
+.det-f.full{grid-column:1 / -1;}
+.det-f .k{font:700 10.5px/1.2 var(--font);color:var(--text-tertiary);}
+.det-f .v{font:600 13px/1.45 var(--font);color:var(--text-primary);word-break:break-word;font-variant-numeric:tabular-nums;}
+@media (max-width:560px){.det-grid{grid-template-columns:1fr;}}
+
 @media (max-width:1180px){.kpi-grid{grid-template-columns:repeat(3,1fr);}}
 </style>
 </head>
-<body class="light">
+<body class="light locked">
+
+<div id="gate">
+  <div class="gate-card">
+    <div class="lock">🔒</div>
+    <span class="eyebrow">SAMHWADANG P&amp;T · INTERNATIONAL EXPRESS</span>
+    <h1>국제특송 운영관리_대시보드</h1>
+    <div class="sub">접속하려면 비밀번호를 입력하세요.</div>
+    <input id="gatePw" type="password" inputmode="numeric" maxlength="12" placeholder="비밀번호" autocomplete="off" />
+    <button id="gateBtn" type="button">입장</button>
+    <div class="gate-err" id="gateErr"></div>
+    <div class="gate-foot">(주)삼화당피앤티 · UPS 국제특송 운영관리</div>
+  </div>
+</div>
+
 <div class="container">
   <header class="topbar">
     <div class="tb-brand">
@@ -145,9 +203,17 @@ table.det tbody tr:hover{background:rgba(127,127,160,0.10);}
   </section>
 </div>
 
+<div id="detModal" class="det-modal" role="dialog" aria-modal="true">
+  <div class="det-card">
+    <div class="det-head"><h3 id="detTitle">상세 내용</h3><button type="button" class="cls" id="detClose">✕ 닫기</button></div>
+    <div class="det-body" id="detBody"></div>
+  </div>
+</div>
+
 <script>
-const UPS = [{"no": "1", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "", "sendDate": "24-5-14", "arrDate": "24-5-15", "client": "삼성바이오에피스", "tracking": "1ZH95K67G105771155", "product": "아필리부주 40mm 설명서", "qty": "2", "pkg": "BOX", "weight": "12.00", "estWeight": "24.00", "actWeight": "26.00", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩569,933", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩620,025", "feeSum": "₩620,025", "settleDate": "24-6-4", "duty": "₩0", "logistics": "₩620,025", "settleSum": "₩620,025", "unsettled": "₩0", "note": "실제중량 차이로 인한 요금 상승 발생"}, {"no": "2", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "", "sendDate": "24-6-3", "arrDate": "24-6-4", "client": "삼성바이오에피스", "tracking": "1ZH95K67D340024618", "product": "아필리부주 40mg 설명서", "qty": "16", "pkg": "BOX", "weight": "14.70", "estWeight": "235.20", "actWeight": "240.00", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩4,595,470", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩2,126,202", "feeSum": "₩2,126,202", "settleDate": "24-7-15", "duty": "₩0", "logistics": "₩2,126,202", "settleSum": "₩2,126,202", "unsettled": "₩0", "note": ""}, {"no": "3", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "", "sendDate": "24-6-4", "arrDate": "24-6-5", "client": "삼성바이오에피스", "tracking": "1ZH95K67D340034376", "product": "아필리부주 40mg 케이스", "qty": "1", "pkg": "BOX", "weight": "5.00", "estWeight": "5.00", "actWeight": "5.00", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩208,184", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩150,736", "feeSum": "₩150,736", "settleDate": "24-7-15", "duty": "₩0", "logistics": "₩150,736", "settleSum": "₩150,736", "unsettled": "₩0", "note": ""}, {"no": "4", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "", "sendDate": "24-6-7", "arrDate": "24-6-10", "client": "삼성바이오에피스", "tracking": "1ZH95K67D308520357", "product": "아필리부주 40mg 케이스14 BOX + 라벨 1 BOX", "qty": "15", "pkg": "BOX", "weight": "12.00", "estWeight": "180.00", "actWeight": "194.00", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩1,677,044", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩1,752,330", "feeSum": "₩1,752,330", "settleDate": "24-7-15", "duty": "₩0", "logistics": "₩1,752,330", "settleSum": "₩1,752,330", "unsettled": "₩0", "note": "실제중량 차이로 인한 요금 상승 발생"}, {"no": "5", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "", "sendDate": "24-7-31", "arrDate": "24-8-1", "client": "삼성바이오에피스", "tracking": "1ZH95K67D940235988", "product": "아필리부주 40mg 케이스 34 BOX + 라벨 1 BOX + 설명서 42 BOX", "qty": "77", "pkg": "BOX", "weight": "13.66", "estWeight": "1,052.00", "actWeight": "?", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩7,910,800", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩7,091,520", "feeSum": "₩7,091,520", "settleDate": "24-9-30", "duty": "₩0", "logistics": "₩7,091,520", "settleSum": "₩7,091,520", "unsettled": "₩0", "note": "추가 할인 적용"}, {"no": "6", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "특송 (당일오전)", "sendDate": "24-10-8", "arrDate": "24-10-10", "client": "삼성바이오에피스", "tracking": "1ZH95K67G127767271", "product": "아필리부주 40mg 라벨 1 BOX", "qty": "1", "pkg": "BOX", "weight": "3.00", "estWeight": "3.00", "actWeight": "?", "destName": "Sharp Packaging Solutions - 384 Penn Drive", "destMgr": "Jeremy Hart", "feeEst": "₩151,847", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩157,147", "feeSum": "₩157,147", "settleDate": "24-11-15", "duty": "₩0", "logistics": "₩157,147", "settleSum": "₩157,147", "unsettled": "₩0", "note": ""}, {"no": "7", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "일반 (당일)", "sendDate": "24-10-15", "arrDate": "24-10-16", "client": "삼성바이오에피스", "tracking": "1ZH95K67D315936501", "product": "아필리부주 40mg 라벨 1 BOX", "qty": "1", "pkg": "BOX", "weight": "3.00", "estWeight": "3.00", "actWeight": "?", "destName": "Sharp Packaging Solutions - 384 Penn Drive", "destMgr": "Jeremy Hart", "feeEst": "₩89,742", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩95,042", "feeSum": "₩95,042", "settleDate": "24-11-15", "duty": "₩0", "logistics": "₩95,042", "settleSum": "₩95,042", "unsettled": "₩0", "note": ""}, {"no": "8", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "일반 (당일)", "sendDate": "24-11-15", "arrDate": "24-11-18", "client": "삼성바이오에피스", "tracking": "1ZH95K67DA35187286", "product": "Opuviz (SB15 US 상업용) label 1BOX", "qty": "1", "pkg": "BOX", "weight": "5.00", "estWeight": "5.00", "actWeight": "?", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "", "vatYN": "₩1,300", "inspectFee": "", "feeFinal": "₩141,917", "feeSum": "₩141,917", "settleDate": "24-12-4", "duty": "₩0", "logistics": "₩143,217", "settleSum": "₩143,217", "unsettled": "₩0", "note": ""}, {"no": "9", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-0808", "method": "특송 (당일오전)", "sendDate": "25-8-8", "arrDate": "25-8-11", "client": "삼성바이오에피스", "tracking": "1ZH95K67D921408694", "product": "샘플) SB2 FDP VIAL 설명서-무지/ 샘플) SB2 FDP 무지 카톤", "qty": "1", "pkg": "BOX", "weight": "12.00", "estWeight": "12.00", "actWeight": "?", "destName": "Topa Institute Torenlaan 10 2215 RW Voorhout The Netherlands", "destMgr": "Evert-Jan Kluivers", "feeEst": "₩400,000", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩245,856", "feeSum": "₩245,856", "settleDate": "25-8-25", "duty": "₩0", "logistics": "₩245,856", "settleSum": "₩245,856", "unsettled": "₩0", "note": ""}, {"no": "10", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-0820", "method": "특송 (당일오전)", "sendDate": "25-8-20", "arrDate": "25-8-23", "client": "삼성바이오에피스", "tracking": "1ZH95K67D338627507", "product": "샘플) 1. SB5B SAFETY PFS 1 PACK C/S 무지 외 7종 ( 상세거래명세서 참고)", "qty": "7", "pkg": "BOX", "weight": "89.10", "estWeight": "89.10", "actWeight": "?", "destName": "Topa Institute Torenlaan 10 2215 RW Voorhout The Netherlands", "destMgr": "Evert-Jan Kluivers", "feeEst": "₩1,443,450", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩1,442,662", "feeSum": "₩1,442,662", "settleDate": "25-8-25", "duty": "₩0", "logistics": "₩1,442,662", "settleSum": "₩1,442,662", "unsettled": "₩0", "note": ""}, {"no": "11", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-0829", "method": "특송 (당일오전)", "sendDate": "25-8-28", "arrDate": "25-9-1", "client": "삼성바이오에피스", "tracking": "1ZH95K67D921408694", "product": "[CARTON] Technical Drawing - 000260000 - 2,496 외 6종 ( 상세 거래 명세서 참고)", "qty": "7", "pkg": "BOX", "weight": "90.10", "estWeight": "90.10", "actWeight": "?", "destName": "Topa Institute Torenlaan 10 2215 RW Voorhout The Netherlands", "destMgr": "Evert-Jan Kluivers", "feeEst": "₩1,377,170", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩1,390,970", "feeSum": "₩1,390,970", "settleDate": "25-8-25", "duty": "₩0", "logistics": "₩1,390,970", "settleSum": "₩1,390,970", "unsettled": "₩0", "note": ""}, {"no": "12", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-1016", "method": "특송(당일)", "sendDate": "25-10-16", "arrDate": "25-10-20", "client": "삼성바이오에피스", "tracking": "1ZH95K67D93715037", "product": "SB5B 40mg PFP CARTON + TRAY", "qty": "7", "pkg": "BOX", "weight": "43.00", "estWeight": "43.00", "actWeight": "", "destName": "Topa Institute Torenlaan 10 2215 RW Voorhout The Netherlands_ Brigitte Zwart", "destMgr": "Brigitte Zwart", "feeEst": "₩1,350,000", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩1,328,850", "feeSum": "₩1,328,850", "settleDate": "25-11-17", "duty": "₩0", "logistics": "₩1,328,850", "settleSum": "₩1,328,850", "unsettled": "₩0", "note": ""}, {"no": "13", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-1030", "method": "특송(당일)", "sendDate": "25-10-30", "arrDate": "25-10-31", "client": "삼성바이오에피스", "tracking": "1ZH95K67044504226", "product": "아필리부주 40mg 설명서", "qty": "21", "pkg": "BOX", "weight": "17.00", "estWeight": "348.00", "actWeight": "", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩4,753,084", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩4,629,834", "feeSum": "₩4,629,834", "settleDate": "25-11-17", "duty": "₩0", "logistics": "₩4,629,834", "settleSum": "₩4,629,834", "unsettled": "₩0", "note": ""}, {"no": "14", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-1112", "method": "특송(당일)", "sendDate": "25-11-12", "arrDate": "25-11-15", "client": "삼성바이오에피스", "tracking": "1ZH95K67D336177846", "product": "샘플)SB2 - 이중지라벨", "qty": "1", "pkg": "BOX", "weight": "6.20", "estWeight": "6.20", "actWeight": "", "destName": "PCI Pharma Services 4545 Assembly Dr Rockford, IL 61109", "destMgr": "Cole Dunn", "feeEst": "₩154,959", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩192,793", "feeSum": "₩192,793", "settleDate": "25-12-15", "duty": "₩0", "logistics": "₩192,793", "settleSum": "₩192,793", "unsettled": "₩0", "note": ""}, {"no": "15", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-1219", "method": "특송(당일)", "sendDate": "25-12-19", "arrDate": "25-12-22", "client": "삼성바이오에피스", "tracking": "1ZH95K67DG21077651", "product": "샘플)SB17 PFS 카톤-일본용 외 2종", "qty": "15", "pkg": "BOX", "weight": "9.30", "estWeight": "9.30", "actWeight": "", "destName": "Kyoto Industry Freight Co. 34-9 Kawaguchi Takahara, Yawata-shi, Kyoto-fu 613-0851 Japan", "destMgr": "Mr. MITSHUHIRO AMITANI", "feeEst": "₩1,075,723", "vatYN": "관세 부과", "inspectFee": "₩174,418", "feeFinal": "₩1,023,833", "feeSum": "₩1,198,251", "settleDate": "26-1-15", "duty": "", "logistics": "₩1,023,833", "settleSum": "₩1,023,833", "unsettled": "₩174,418", "note": "일본 관세 부과"}, {"no": "16", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-0209", "method": "특송(당일)", "sendDate": "26-2-9", "arrDate": "26-2-13", "client": "삼성바이오에피스", "tracking": "1ZH95K67D909945387", "product": "샘플)SB16 라벨", "qty": "1", "pkg": "BOX", "weight": "1.20", "estWeight": "1.20", "actWeight": "", "destName": "Grunenthal: Fieldwork Farmaceutici Formenti S.p.A. Via Di Vittorio 2 - 21040 Origgio (VA) – Italia", "destMgr": "Mauro.Sponchiado", "feeEst": "₩113,767", "vatYN": "관세 부과", "inspectFee": "₩159,670", "feeFinal": "₩113,767", "feeSum": "₩273,437", "settleDate": "", "duty": "", "logistics": "", "settleSum": "", "unsettled": "", "note": "이탈리아 관세 부과"}, {"no": "17", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-0611", "method": "특송(일반)", "sendDate": "26-6-11", "arrDate": "26-6-16", "client": "삼성바이오에피스", "tracking": "1ZH95K67DG35542809", "product": "샘플)CARTON BOX", "qty": "7", "pkg": "BOX", "weight": "21.00", "estWeight": "21.00", "actWeight": "", "destName": "Grunenthal: Fieldwork Farmaceutici Formenti S.p.A. Via Di Vittorio 2 - 21040 Origgio (VA) – Italia", "destMgr": "Mauro.Sponchiado", "feeEst": "₩1,164,575", "vatYN": "", "inspectFee": "", "feeFinal": "", "feeSum": "", "settleDate": "", "duty": "", "logistics": "", "settleSum": "", "unsettled": "", "note": ""}];
-const STMT = {"asOf": "기준일: 2026. 03.13 현재", "recs": [{"no": "1", "items": ["샘플)SB15 PFS dose mark 라벨(0.4mm) -1차발송"], "boxQty": "1박스", "date": "24.10.08", "est": "₩151,847", "confirmed": "₩252,189", "paid": "₩252,189", "unpaid": "₩0", "payDate": "24.11.15", "note": "통관검사비 면제"}, {"no": "2", "items": ["샘플)SB15 PFS dose mark 라벨(0.4mm) -2차발송"], "boxQty": "1박스", "date": "24.10.15", "est": "₩89,742", "confirmed": "", "paid": "", "unpaid": "", "payDate": "", "note": "통관검사비 면제"}, {"no": "3", "items": ["SB15 라벨 - 상업 SKU"], "boxQty": "6박스", "date": "24.11.15", "est": "?", "confirmed": "₩141,917", "paid": "₩141,917", "unpaid": "₩0", "payDate": "24.12.16", "note": "통관검사비 면제"}, {"no": "4", "items": ["샘플)SB2 FDP Vial 설명서 - 무지", "샘플)SB2 FDP 무지 카톤"], "boxQty": "1박스", "date": "25.08.08", "est": "₩400,000", "confirmed": "₩3,079,488", "paid": "₩3,079,488", "unpaid": "₩0", "payDate": "25.09.25", "note": "통관검사비 면제"}, {"no": "5", "items": ["샘플)SB5B Safety PFS 1 pack C/S 무지", "샘플)SB5B Safety PFS 2 pack C/S 무지", "샘플)SB5B Safety PFS 6 pack C/S 무지", "샘플)SB5B Safety PFS 1 pack 트레이 무지", "샘플)SB5B Safety PFS 2/6 pack 트레이 무지", "샘플)SB5B PFP 1 pack 트레이 무지", "샘플)SB5B PFP 2/6 pack 트레이 무지", "샘플)SB5B PFP 1/2 pack C/S 무지", "샘플)SB5B PFP 6 pack C/S 무지"], "boxQty": "7박스", "date": "25.08.20", "est": "₩1,443,450", "confirmed": "", "paid": "", "unpaid": "", "payDate": "", "note": "통관검사비 면제"}, {"no": "6", "items": ["[Carton]Technical Drawing-000260000-2,496", "[Carton]Technical Drawing-000260000-2,496", "[Carton]Technical Drawing-00317266", "[Carton]Technical Drawing-000260005", "[Tray]Technical Drawing-000260007", "[Tray]Technical Drawing-000260009", "[Tray]Technical Drawing-000317268"], "boxQty": "7박스", "date": "25.08.28", "est": "₩1,377,170", "confirmed": "", "paid": "", "unpaid": "", "payDate": "", "note": "통관검사비 면제"}, {"no": "7", "items": ["샘플)SB5B 40mg PFP (Neopak,Hypak공용) 카톤", "샘플)SB5B 40mg PFP (Neopak,Hypak공용) 트레이", "샘플)SB5B 40mg PFP (Neopak,Hypak공용) 설명서"], "boxQty": "7박스", "date": "25.10.16", "est": "₩1,350,000", "confirmed": "₩5,958,684", "paid": "₩5,958,684", "unpaid": "₩0", "payDate": "25.11.17", "note": "통관검사비 면제"}, {"no": "8", "items": ["아필리부주 40mg 설명서-SB15"], "boxQty": "21박스", "date": "25.10.30", "est": "₩4,753,084", "confirmed": "", "paid": "", "unpaid": "", "payDate": "", "note": ""}, {"no": "9", "items": ["샘플)SB2 - 이중지라벨"], "boxQty": "1박스", "date": "25.11.12", "est": "₩154,959", "confirmed": "₩192,793", "paid": "192,793", "unpaid": "0", "payDate": "25.12.15", "note": "통관검사비 면제"}, {"no": "10", "items": ["샘플)SB17 PFS 카톤-일본용", "샘플)SB17 PFS 설명서-일본용", "샘플)SB17 PFS 트레이-일본용", "추가 관세 부과", "추가 관세 부과"], "boxQty": "15박스", "date": "25.12.19", "est": "₩1,075,723", "confirmed": "₩1,023,833", "paid": "1,023,833", "unpaid": "0", "payDate": "26.01.15", "note": ""}, {"no": "11", "items": ["샘플)SB16 라벨-이탈리아", "추가 관세 부과"], "boxQty": "1박스", "date": "26.02.09", "est": "₩113,767", "confirmed": "₩113,767", "paid": "₩113,767", "unpaid": "₩0", "payDate": "26.03.16 예정", "note": ""}]};
+const UPS = [{"no": "1", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "", "sendDate": "24-5-14", "arrDate": "24-5-15", "client": "삼성바이오에피스", "tracking": "1ZH95K67G105771155", "product": "아필리부주 40mm 설명서", "qty": "2", "pkg": "BOX", "weight": "12.00", "estWeight": "24.00", "actWeight": "26", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩569,933", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩620,025", "feeSum": "₩620,025", "settleDate": "24-6-4", "duty": "₩0", "dutyDate": "", "logistics": "₩620,025", "settleSum": "₩620,025", "unsettled": "₩0", "note": "실제중량 차이로 인한 요금 상승 발생"}, {"no": "2", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "", "sendDate": "24-6-3", "arrDate": "24-6-4", "client": "삼성바이오에피스", "tracking": "1ZH95K67D340024618", "product": "아필리부주 40mg 설명서", "qty": "16", "pkg": "BOX", "weight": "14.70", "estWeight": "235.20", "actWeight": "240", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩4,595,470", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩2,126,202", "feeSum": "₩2,126,202", "settleDate": "24-7-15", "duty": "₩0", "dutyDate": "", "logistics": "₩2,126,202", "settleSum": "₩2,126,202", "unsettled": "₩0", "note": ""}, {"no": "3", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "", "sendDate": "24-6-4", "arrDate": "24-6-5", "client": "삼성바이오에피스", "tracking": "1ZH95K67D340034376", "product": "아필리부주 40mg 케이스", "qty": "1", "pkg": "BOX", "weight": "5.00", "estWeight": "5.00", "actWeight": "5", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩208,184", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩150,736", "feeSum": "₩150,736", "settleDate": "24-7-15", "duty": "₩0", "dutyDate": "", "logistics": "₩150,736", "settleSum": "₩150,736", "unsettled": "₩0", "note": ""}, {"no": "4", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "", "sendDate": "24-6-7", "arrDate": "24-6-10", "client": "삼성바이오에피스", "tracking": "1ZH95K67D308520357", "product": "아필리부주 40mg 케이스14 BOX + 라벨 1 BOX", "qty": "15", "pkg": "BOX", "weight": "12.00", "estWeight": "180.00", "actWeight": "194", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩1,677,044", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩1,752,330", "feeSum": "₩1,752,330", "settleDate": "24-7-15", "duty": "₩0", "dutyDate": "", "logistics": "₩1,752,330", "settleSum": "₩1,752,330", "unsettled": "₩0", "note": "실제중량 차이로 인한 요금 상승 발생"}, {"no": "5", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "", "sendDate": "24-7-31", "arrDate": "24-8-1", "client": "삼성바이오에피스", "tracking": "1ZH95K67D940235988", "product": "아필리부주 40mg 케이스 34 BOX + 라벨 1 BOX + 설명서 42 BOX", "qty": "77", "pkg": "BOX", "weight": "13.66", "estWeight": "1,052.00", "actWeight": "?", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩7,910,800", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩7,091,520", "feeSum": "₩7,091,520", "settleDate": "24-9-30", "duty": "₩0", "dutyDate": "", "logistics": "₩7,091,520", "settleSum": "₩7,091,520", "unsettled": "₩0", "note": "추가 할인 적용"}, {"no": "6", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "특송 (당일오전)", "sendDate": "24-10-8", "arrDate": "24-10-10", "client": "삼성바이오에피스", "tracking": "1ZH95K67G127767271", "product": "아필리부주 40mg 라벨 1 BOX", "qty": "1", "pkg": "BOX", "weight": "3.00", "estWeight": "3.00", "actWeight": "?", "destName": "Sharp Packaging Solutions - 384 Penn Drive", "destMgr": "Jeremy Hart", "feeEst": "₩151,847", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩157,147", "feeSum": "₩157,147", "settleDate": "24-11-15", "duty": "₩0", "dutyDate": "", "logistics": "₩157,147", "settleSum": "₩157,147", "unsettled": "₩0", "note": ""}, {"no": "7", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "일반 (당일)", "sendDate": "24-10-15", "arrDate": "24-10-16", "client": "삼성바이오에피스", "tracking": "1ZH95K67D315936501", "product": "아필리부주 40mg 라벨 1 BOX", "qty": "1", "pkg": "BOX", "weight": "3.00", "estWeight": "3.00", "actWeight": "?", "destName": "Sharp Packaging Solutions - 384 Penn Drive", "destMgr": "Jeremy Hart", "feeEst": "₩89,742", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩95,042", "feeSum": "₩95,042", "settleDate": "24-11-15", "duty": "₩0", "dutyDate": "", "logistics": "₩95,042", "settleSum": "₩95,042", "unsettled": "₩0", "note": ""}, {"no": "8", "carrier": "UPS", "custNo": "H95K67", "invNo": "", "method": "일반 (당일)", "sendDate": "24-11-15", "arrDate": "24-11-18", "client": "삼성바이오에피스", "tracking": "1ZH95K67DA35187286", "product": "Opuviz (SB15 US 상업용) label 1BOX", "qty": "1", "pkg": "BOX", "weight": "5.00", "estWeight": "5.00", "actWeight": "?", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "", "vatYN": "₩1,300", "inspectFee": "", "feeFinal": "₩141,917", "feeSum": "₩141,917", "settleDate": "24-12-4", "duty": "₩0", "dutyDate": "", "logistics": "₩143,217", "settleSum": "₩143,217", "unsettled": "₩0", "note": ""}, {"no": "9", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-0808", "method": "특송 (당일오전)", "sendDate": "25-8-8", "arrDate": "25-8-11", "client": "삼성바이오에피스", "tracking": "1ZH95K67D921408694", "product": "샘플) SB2 FDP VIAL 설명서-무지/ 샘플) SB2 FDP 무지 카톤", "qty": "1", "pkg": "BOX", "weight": "12.00", "estWeight": "12.00", "actWeight": "?", "destName": "Topa Institute Torenlaan 10 2215 RW Voorhout The Netherlands", "destMgr": "Evert-Jan Kluivers", "feeEst": "₩400,000", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩245,856", "feeSum": "₩245,856", "settleDate": "25-8-25", "duty": "₩0", "dutyDate": "", "logistics": "₩245,856", "settleSum": "₩245,856", "unsettled": "₩0", "note": ""}, {"no": "10", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-0820", "method": "특송 (당일오전)", "sendDate": "25-8-20", "arrDate": "25-8-23", "client": "삼성바이오에피스", "tracking": "1ZH95K67D338627507", "product": "샘플) 1. SB5B SAFETY PFS 1 PACK C/S 무지 외 7종 ( 상세거래명세서 참고)", "qty": "7", "pkg": "BOX", "weight": "89.10", "estWeight": "89.10", "actWeight": "?", "destName": "Topa Institute Torenlaan 10 2215 RW Voorhout The Netherlands", "destMgr": "Evert-Jan Kluivers", "feeEst": "₩1,443,450", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩1,442,662", "feeSum": "₩1,442,662", "settleDate": "25-8-25", "duty": "₩0", "dutyDate": "", "logistics": "₩1,442,662", "settleSum": "₩1,442,662", "unsettled": "₩0", "note": ""}, {"no": "11", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-0829", "method": "특송 (당일오전)", "sendDate": "25-8-28", "arrDate": "25-9-1", "client": "삼성바이오에피스", "tracking": "1ZH95K67D921408694", "product": "[CARTON] Technical Drawing - 000260000 - 2,496 외 6종 ( 상세 거래 명세서 참고)", "qty": "7", "pkg": "BOX", "weight": "90.10", "estWeight": "90.10", "actWeight": "?", "destName": "Topa Institute Torenlaan 10 2215 RW Voorhout The Netherlands", "destMgr": "Evert-Jan Kluivers", "feeEst": "₩1,377,170", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩1,390,970", "feeSum": "₩1,390,970", "settleDate": "25-8-25", "duty": "₩0", "dutyDate": "", "logistics": "₩1,390,970", "settleSum": "₩1,390,970", "unsettled": "₩0", "note": ""}, {"no": "12", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-1016", "method": "특송(당일)", "sendDate": "25-10-16", "arrDate": "25-10-20", "client": "삼성바이오에피스", "tracking": "1ZH95K67D93715037", "product": "SB5B 40mg PFP CARTON + TRAY", "qty": "7", "pkg": "BOX", "weight": "43.00", "estWeight": "43.00", "actWeight": "", "destName": "Topa Institute Torenlaan 10 2215 RW Voorhout The Netherlands_ Brigitte Zwart", "destMgr": "Brigitte Zwart", "feeEst": "₩1,350,000", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩1,328,850", "feeSum": "₩1,328,850", "settleDate": "25-11-17", "duty": "₩0", "dutyDate": "", "logistics": "₩1,328,850", "settleSum": "₩1,328,850", "unsettled": "₩0", "note": ""}, {"no": "13", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-1030", "method": "특송(당일)", "sendDate": "25-10-30", "arrDate": "25-10-31", "client": "삼성바이오에피스", "tracking": "1ZH95K67044504226", "product": "아필리부주 40mg 설명서", "qty": "21", "pkg": "BOX", "weight": "17.00", "estWeight": "348.00", "actWeight": "", "destName": "Sharp Packaging Solutions - 7339 Industrial Blvd", "destMgr": "Jeremy Hart", "feeEst": "₩4,753,084", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩4,629,834", "feeSum": "₩4,629,834", "settleDate": "25-11-17", "duty": "₩0", "dutyDate": "", "logistics": "₩4,629,834", "settleSum": "₩4,629,834", "unsettled": "₩0", "note": ""}, {"no": "14", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-1112", "method": "특송(당일)", "sendDate": "25-11-12", "arrDate": "25-11-15", "client": "삼성바이오에피스", "tracking": "1ZH95K67D336177846", "product": "샘플)SB2 - 이중지라벨", "qty": "1", "pkg": "BOX", "weight": "6.20", "estWeight": "6.20", "actWeight": "", "destName": "PCI Pharma Services 4545 Assembly Dr Rockford, IL 61109", "destMgr": "Cole Dunn", "feeEst": "₩154,959", "vatYN": "₩0", "inspectFee": "", "feeFinal": "₩192,793", "feeSum": "₩192,793", "settleDate": "25-12-15", "duty": "₩0", "dutyDate": "", "logistics": "₩192,793", "settleSum": "₩192,793", "unsettled": "₩0", "note": ""}, {"no": "15", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-1219", "method": "특송(당일)", "sendDate": "25-12-19", "arrDate": "25-12-22", "client": "삼성바이오에피스", "tracking": "1ZH95K67DG21077651", "product": "샘플)SB17 PFS 카톤-일본용 외 2종", "qty": "15", "pkg": "BOX", "weight": "9.30", "estWeight": "9.30", "actWeight": "", "destName": "Kyoto Industry Freight Co. 34-9 Kawaguchi Takahara, Yawata-shi, Kyoto-fu 613-0851 Japan", "destMgr": "Mr. MITSHUHIRO AMITANI", "feeEst": "₩1,075,723", "vatYN": "관세 부과", "inspectFee": "₩174,418", "feeFinal": "₩1,023,833", "feeSum": "₩1,198,251", "settleDate": "26-1-26", "duty": "₩174,418", "dutyDate": "26-1-15", "logistics": "₩1,023,833", "settleSum": "₩1,198,251", "unsettled": "₩0", "note": "일본 관세 부과"}, {"no": "16", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-0209", "method": "특송(당일)", "sendDate": "26-2-9", "arrDate": "26-2-13", "client": "삼성바이오에피스", "tracking": "1ZH95K67D909945387", "product": "샘플)SB16 라벨", "qty": "1", "pkg": "BOX", "weight": "1.20", "estWeight": "1.20", "actWeight": "", "destName": "Grunenthal: Fieldwork Farmaceutici Formenti S.p.A. Via Di Vittorio 2 - 21040 Origgio (VA) – Italia", "destMgr": "Mauro.Sponchiado", "feeEst": "₩113,767", "vatYN": "관세 부과", "inspectFee": "₩159,670", "feeFinal": "₩113,767", "feeSum": "₩273,437", "settleDate": "26-3-25", "duty": "₩159,670", "dutyDate": "26-3-16", "logistics": "₩113,767", "settleSum": "₩273,437", "unsettled": "₩0", "note": "이탈리아 관세 부과"}, {"no": "17", "carrier": "UPS", "custNo": "H95K67", "invNo": "SB-0611", "method": "특송(일반)", "sendDate": "26-6-11", "arrDate": "26-6-16", "client": "삼성바이오에피스", "tracking": "1ZH95K67DG35542809", "product": "샘플)CARTON BOX", "qty": "7", "pkg": "BOX", "weight": "21.00", "estWeight": "21.00", "actWeight": "", "destName": "Grunenthal: Fieldwork Farmaceutici Formenti S.p.A. Via Di Vittorio 2 - 21040 Origgio (VA) – Italia", "destMgr": "Mauro.Sponchiado", "feeEst": "₩1,164,575", "vatYN": "관세 부과", "inspectFee": "₩196,660", "feeFinal": "₩1,164,575", "feeSum": "₩1,361,235", "settleDate": "26-7-27", "duty": "₩196,660", "dutyDate": "26-7-27", "logistics": "₩1,164,575", "settleSum": "₩1,361,235", "unsettled": "₩0", "note": ""}, {"no": "18", "carrier": "UPS", "custNo": "H95K68", "invNo": "SB-0617", "method": "특송(일반)", "sendDate": "26-6-17", "arrDate": "26-6-20", "client": "삼성바이오에피스", "tracking": "1ZH95K67DG35542810", "product": "샘플)CARTON BOX", "qty": "13", "pkg": "BOX", "weight": "39.00", "estWeight": "39.00", "actWeight": "", "destName": "Grunenthal: Fieldwork Farmaceutici Formenti S.p.A. Via Di Vittorio 2 - 21041 Origgio (VA) – Italia", "destMgr": "Mauro.Sponchiado", "feeEst": "₩2,653,736", "vatYN": "관세 부과", "inspectFee": "₩165,010", "feeFinal": "₩2,653,736", "feeSum": "₩2,818,746", "settleDate": "", "duty": "₩0", "dutyDate": "26-7-27", "logistics": "₩2,653,736", "settleSum": "₩2,653,736", "unsettled": "₩165,010", "note": ""}];
+const STMT = {"asOf": "기준일: 2026. 08. 06 현재", "recs": [{"no": "1", "items": ["샘플)SB15 PFS dose mark 라벨(0.4mm) -1차발송"], "boxQty": "1박스", "date": "24.10.08", "est": "₩151,847", "confirmed": "₩252,189", "paid": "₩252,189", "unpaid": "₩0", "payDate": "24.11.15", "note": "통관검사비 면제"}, {"no": "2", "items": ["샘플)SB15 PFS dose mark 라벨(0.4mm) -2차발송"], "boxQty": "1박스", "date": "24.10.15", "est": "₩89,742", "confirmed": "", "paid": "", "unpaid": "", "payDate": "", "note": "통관검사비 면제"}, {"no": "3", "items": ["SB15 라벨 - 상업 SKU"], "boxQty": "6박스", "date": "24.11.15", "est": "?", "confirmed": "₩141,917", "paid": "₩141,917", "unpaid": "₩0", "payDate": "24.12.16", "note": "통관검사비 면제"}, {"no": "4", "items": ["샘플)SB2 FDP Vial 설명서 - 무지", "샘플)SB2 FDP 무지 카톤"], "boxQty": "1박스", "date": "25.08.08", "est": "₩400,000", "confirmed": "₩3,079,488", "paid": "₩3,079,488", "unpaid": "₩0", "payDate": "25.09.25", "note": "통관검사비 면제"}, {"no": "5", "items": ["샘플)SB5B Safety PFS 1 pack C/S 무지", "샘플)SB5B Safety PFS 2 pack C/S 무지", "샘플)SB5B Safety PFS 6 pack C/S 무지", "샘플)SB5B Safety PFS 1 pack 트레이 무지", "샘플)SB5B Safety PFS 2/6 pack 트레이 무지", "샘플)SB5B PFP 1 pack 트레이 무지", "샘플)SB5B PFP 2/6 pack 트레이 무지", "샘플)SB5B PFP 1/2 pack C/S 무지", "샘플)SB5B PFP 6 pack C/S 무지"], "boxQty": "7박스", "date": "25.08.20", "est": "₩1,443,450", "confirmed": "", "paid": "", "unpaid": "", "payDate": "", "note": "통관검사비 면제"}, {"no": "6", "items": ["[Carton]Technical Drawing-000260000-2,496", "[Carton]Technical Drawing-000260000-2,496", "[Carton]Technical Drawing-00317266", "[Carton]Technical Drawing-000260005", "[Tray]Technical Drawing-000260007", "[Tray]Technical Drawing-000260009", "[Tray]Technical Drawing-000317268"], "boxQty": "7박스", "date": "25.08.28", "est": "₩1,377,170", "confirmed": "", "paid": "", "unpaid": "", "payDate": "", "note": "통관검사비 면제"}, {"no": "7", "items": ["샘플)SB5B 40mg PFP (Neopak,Hypak공용) 카톤", "샘플)SB5B 40mg PFP (Neopak,Hypak공용) 트레이", "샘플)SB5B 40mg PFP (Neopak,Hypak공용) 설명서"], "boxQty": "7박스", "date": "25.10.16", "est": "₩1,350,000", "confirmed": "₩5,958,684", "paid": "₩5,958,684", "unpaid": "₩0", "payDate": "25.11.17", "note": "통관검사비 면제"}, {"no": "8", "items": ["아필리부주 40mg 설명서-SB15"], "boxQty": "21박스", "date": "25.10.30", "est": "₩4,753,084", "confirmed": "", "paid": "", "unpaid": "", "payDate": "", "note": ""}, {"no": "9", "items": ["샘플)SB2 - 이중지라벨"], "boxQty": "1박스", "date": "25.11.12", "est": "₩154,959", "confirmed": "₩192,793", "paid": "₩192,793", "unpaid": "₩0", "payDate": "25.12.15", "note": "통관검사비 면제"}, {"no": "10", "items": ["샘플)SB17 PFS 카톤-일본용", "샘플)SB17 PFS 설명서-일본용", "샘플)SB17 PFS 트레이-일본용"], "boxQty": "15박스", "date": "25.12.19", "est": "₩1,075,723", "confirmed": "₩1,023,833", "paid": "₩1,023,833", "unpaid": "₩0", "payDate": "26.01.15", "note": ""}, {"no": "", "items": ["추가 관세 부과"], "boxQty": "", "date": "", "est": "", "confirmed": "₩174,418", "paid": "₩174,418", "unpaid": "₩0", "payDate": "26.01.26", "note": "관세(일본)"}, {"no": "", "items": ["추가 관세 부과"], "boxQty": "", "date": "", "est": "", "confirmed": "₩13,953", "paid": "₩13,953", "unpaid": "₩0", "payDate": "26.02.13", "note": ""}, {"no": "11", "items": ["샘플)SB16 라벨-이탈리아"], "boxQty": "1박스", "date": "26.02.09", "est": "₩113,767", "confirmed": "₩113,767", "paid": "₩113,767", "unpaid": "₩0", "payDate": "26.03.16", "note": ""}, {"no": "", "items": ["추가 관세 부과"], "boxQty": "", "date": "", "est": "", "confirmed": "₩159,670", "paid": "₩159,670", "unpaid": "₩0", "payDate": "26.03.25", "note": "관세(이탈리아)"}, {"no": "12", "items": ["샘플)SB16 2ml 트레이-이탈리아"], "boxQty": "7박스", "date": "26.06.11", "est": "₩1,164,575", "confirmed": "₩3,818,311", "paid": "₩3,818,311", "unpaid": "₩0", "payDate": "26.07.27", "note": ""}, {"no": "13", "items": ["샘플)SB16 2ml 트레이-이탈리아"], "boxQty": "13박스", "date": "26.06.17", "est": "", "confirmed": "", "paid": "", "unpaid": "", "payDate": "", "note": ""}, {"no": "14", "items": ["추가 관세 부과"], "boxQty": "", "date": "", "est": "", "confirmed": "₩196,660", "paid": "₩196,660", "unpaid": "₩0", "payDate": "26.07.27", "note": "관세(이탈리아)"}, {"no": "15", "items": ["추가 관세 부과"], "boxQty": "", "date": "", "est": "", "confirmed": "₩165,010", "paid": "₩0", "unpaid": "₩165,010", "payDate": "입금해야함", "note": "관세(이탈리아)- 26/8/10 입금예정"}]};
+const RECON = [{"text": "24.11.04 유나이티드파슬서비스코리아 = 발행 된 공급가 252,189 / 부가세 0 - 24.11.15 입금완료", "inv": "202420550764", "memo": "", "red": false}, {"text": "24.12.04 유나이티드파슬서비스코리아 = 발행 된 공급가 141,917 / 부가세 1,300 - 24.12.16 입금완료", "inv": "202420611486", "memo": "", "red": false}, {"text": "25.09.04 유나이티드파슬서비스코리아 = 발행 된 공급가 3,079,488 / 부가세 0 - 25.09.25 입금완료", "inv": "202520498532", "memo": "", "red": false}, {"text": "25.11.04 유나이티드파슬서비스코리아 = 발행 된 공급가 5,958,684 / 부가세 0 - 25.11.17 입금완료", "inv": "202520625469", "memo": "", "red": false}, {"text": "25.12.04 유나이티드파슬서비스코리아 = 발행 된 공급가 192,793 / 부가세 0 - 25.12.15 입금완료", "inv": "202520688596", "memo": "", "red": false}, {"text": "26.01.02 유나이티드파슬서비스코리아 = 발행 된 공급가 1,023,833 / 부가세 0 - 26.01.15 입금완료", "inv": "202620013952", "memo": "", "red": false}, {"text": "26.02.02 유나이티드파슬서비스코리아 = 발행 된 공급가 13,953 / 부가세 0 - 26.02.13 입금완료", "inv": "202620080295", "memo": "", "red": false}, {"text": "26.03.04 유나이티드파슬서비스코리아 = 발행 된 공급가 113,767 / 부가세 0 - 26.03.16 입금완료", "inv": "202620165924", "memo": "", "red": false}, {"text": "26.04.01 유나이티드파슬서비스코리아 = 발행 된 공급가 12,774 / 부가세 0", "inv": "202620212139", "memo": "관세환급 (지로 나왔는데 입금 안하고 폐기함)", "red": true}, {"text": "26.04.20 유나이티드파슬서비스코리아 = 발행 된 공급가 -12,774 / 부가세 0", "inv": "202620212139", "memo": "", "red": true}, {"text": "26.07.02 유나이티드파슬서비스코리아 = 발행 된 공급가 3,818,311 / 부가세 0 - 26.07.27 입금완료", "inv": "202602453027", "memo": "", "red": false}];
 const $ = id => document.getElementById(id);
 document.getElementById('asOf').textContent='2026-06-11';
 
@@ -230,7 +296,7 @@ function renderTable(){
   $('tbody').innerHTML=rows.map(r=>{
     const c=country(r.destName); const unpaid=won(r.unsettled);
     const docs=['INV','PACK','명세서','운송장'].map(d=>`<span class="docchip" title="다음 단계 연결">${d}</span>`).join('');
-    return `<tr>
+    return `<tr class="det-row" data-no="${r.no}" title="클릭 시 송장번호 등 상세 내용 보기">
       <td>${r.no}</td><td>${label(r)}</td><td>${r.sendDate||'-'}</td><td>${r.arrDate||'-'}</td><td>${flag(c)} ${c}</td>
       <td title="${(r.product||'').replace(/"/g,'')}">${(r.product||'-').slice(0,22)}${(r.product||'').length>22?'…':''}</td>
       <td>${r.qty||''} ${r.pkg||''}</td><td>${r.weight||'-'}</td><td>${r.feeFinal||r.feeSum||'-'}</td>
@@ -258,6 +324,13 @@ function openStatement(){
       <td class="r ${won2(r.unpaid)>0?'red':''}">${esc(r.unpaid)||'-'}</td>
       <td class="c">${esc(r.payDate)||'-'}</td>
       <td class="l sm">${esc(r.note)||''}</td></tr>`).join('');
+  const recon=(typeof RECON!=='undefined'&&RECON)||[];
+  const reconHtml=recon.map(x=>`<div class="rc-row${x.red?' red':''}">
+      <span class="rc-mk">■</span>
+      <span class="rc-tx">${esc(x.text)}</span>
+      <span class="rc-inv">청구번호 UPS Invoice Number: <b>${esc(x.inv)}</b></span>
+      ${x.memo?`<span class="rc-memo">${esc(x.memo)}</span>`:''}
+    </div>`).join('');
   const html=`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
 <title>삼성에피스 상세거래명세서</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
@@ -283,6 +356,19 @@ function openStatement(){
   tfoot td{border:1px solid #E1E4EC;padding:9px 8px;font-weight:800;background:#EEF2FF;color:#0A1758;text-align:right;}
   tfoot td.lbl{text-align:center;}
   .note{margin-top:14px;font-size:10.5px;color:#777;line-height:1.7;}
+  .recon{margin-top:20px;border-top:2px solid #1428A0;padding-top:12px;}
+  .recon h2{margin:0 0 10px;font-size:14px;font-weight:800;color:#0A1758;}
+  .rc-row{display:grid;grid-template-columns:16px 1fr 320px;gap:8px;align-items:baseline;padding:5px 6px;border-bottom:1px solid #EDEFF4;font-size:11px;color:#222;}
+  .rc-row:nth-child(even){background:#F7F9FC;}
+  .rc-mk{color:#1428A0;font-size:9px;}
+  .rc-tx{line-height:1.5;}
+  .rc-inv{font-size:10.5px;color:#333;white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .rc-inv b{color:#0A1758;letter-spacing:.02em;}
+  .rc-memo{grid-column:2 / -1;font-size:10px;color:#D6294B;font-weight:700;padding-top:2px;}
+  .recon .rc-row.red .rc-tx,.recon .rc-row.red .rc-inv{color:#D6294B;}
+  .recon .rc-row.red .rc-inv b{color:#D6294B;}
+  .recon .rc-mk{align-self:center;}
+  @media (max-width:640px){.rc-row{grid-template-columns:16px 1fr;}.rc-inv{grid-column:2;}}
   .sign{margin-top:26px;display:flex;justify-content:flex-end;gap:40px;font-size:12px;color:#333;}
   .sign .box{text-align:center;} .sign .ln{margin-top:34px;border-top:1px solid #999;width:150px;padding-top:5px;}
   .toolbar{max-width:1000px;margin:10px auto 0;text-align:right;}
@@ -308,6 +394,11 @@ function openStatement(){
     <tfoot><tr><td class="lbl" colspan="5">합 계</td><td>₩${sumConf.toLocaleString('ko-KR')}</td><td>₩${sumPaid.toLocaleString('ko-KR')}</td><td>₩${sumUnpaid.toLocaleString('ko-KR')}</td><td colspan="2"></td></tr></tfoot>
   </table>
   <div class="note">※ 본 명세서는 UPS 국제특송 발송 내역을 기준으로 작성되었습니다. 금액은 원(₩) 기준이며, 확정금액은 세금계산서 발행 기준입니다. '?' 또는 공란은 확정 전 항목입니다.</div>
+  <div class="recon">
+    <h2>UPS 청구 내역 · 입금 대사</h2>
+    <div class="note" style="margin-top:0;margin-bottom:8px;">※ 통관검사비(미국현지)는 비고란 참고</div>
+    ${reconHtml}
+  </div>
   <div class="sign"><div class="box">담당<div class="ln">(주)삼화당피앤티</div></div><div class="box">확인<div class="ln">삼성바이오에피스</div></div></div>
 </div></body></html>`;
   const w=window.open('','_blank');
@@ -325,7 +416,69 @@ $('themeBtn').addEventListener('click', ()=>{
 $('stmtBtn').addEventListener('click', openStatement);
 $('q').addEventListener('input', renderTable);
 
-renderKPI(); renderTable(); renderCharts();
+/* ===== 발송 건별 상세 팝업 (행 클릭 → 송장번호 포함 상세) ===== */
+function openDetail(no){
+  const r=UPS.find(x=>String(x.no)===String(no)); if(!r) return;
+  const c=country(r.destName);
+  const val=v=>{ const s=(v==null?'':String(v)).trim(); return s!==''? s : '-'; };
+  const F=(k,v,full)=>`<div class="det-f${full?' full':''}"><span class="k">${k}</span><span class="v">${val(v)}</span></div>`;
+  $('detTitle').textContent='No.'+r.no+' · '+label(r);
+  $('detBody').innerHTML=
+    '<div class="det-track"><span class="k">송장번호 (Tracking No.)</span><span class="v">'+val(r.tracking)+'</span></div>'+
+    '<div class="det-grid">'+
+      F('특송회사', r.carrier)+
+      F('고객번호', r.custNo)+
+      F('INVOICE No.', label(r))+
+      F('운송방법', r.method)+
+      F('발송일', r.sendDate)+
+      F('실제 도착일(현지)', r.arrDate)+
+      F('거래처', r.client)+
+      F('도착국', flag(c)+' '+c)+
+      F('제품 상세내용', r.product, true)+
+      F('수량', ((r.qty||'')+' '+(r.pkg||'')).trim())+
+      F('중량(개별/총중량)', r.weight)+
+      F('추정중량(통관전)', r.estWeight)+
+      F('실제중량(통관후)', r.actWeight)+
+      F('도착지 상세', r.destName, true)+
+      F('담당자', r.destMgr)+
+      F('요금(통관전 추정)', r.feeEst)+
+      F('부가세 적용여부', r.vatYN)+
+      F('통관검사비', r.inspectFee)+
+      F('확정요금', r.feeFinal)+
+      F('합계', r.feeSum)+
+      F('정산일자', r.settleDate)+
+      F('통관(관세)', r.duty)+
+      F('관세 입금일', r.dutyDate)+
+      F('물류비', r.logistics)+
+      F('정산 합계', r.settleSum)+
+      F('미정산 금액(누적)', r.unsettled)+
+      F('비고', r.note, true)+
+    '</div>';
+  $('detModal').classList.add('open');
+}
+function closeDetail(){ $('detModal').classList.remove('open'); }
+$('tbody').addEventListener('click', e=>{ const tr=e.target.closest('tr.det-row'); if(tr) openDetail(tr.dataset.no); });
+$('detClose').addEventListener('click', closeDetail);
+$('detModal').addEventListener('click', e=>{ if(e.target===$('detModal')) closeDetail(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDetail(); });
+
+/* ===== 대시보드 접속 비밀번호 게이트 ===== */
+const DASH_PW='0000';
+let dashReady=false;
+function unlockDash(){
+  const v=($('gatePw').value||'').trim();
+  if(v===DASH_PW){
+    document.body.classList.remove('locked');
+    $('gateErr').textContent='';
+    if(!dashReady){ renderKPI(); renderTable(); renderCharts(); dashReady=true; }
+  } else {
+    $('gateErr').textContent='비밀번호가 올바르지 않습니다.';
+    $('gatePw').value=''; $('gatePw').focus();
+  }
+}
+$('gateBtn').addEventListener('click', unlockDash);
+$('gatePw').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); unlockDash(); }});
+$('gatePw').focus();
 </script>
 </body>
 </html>
