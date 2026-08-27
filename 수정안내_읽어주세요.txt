@@ -1,0 +1,19 @@
+■ 카톡 미리보기 수정 업데이트 (HP-IN-MH4) ■
+
+변경 내용
+ 1) 카톡 카드에서 이미지 아래에 뜨던 제목/설명 '문구'를 제거했습니다.
+    (og:title / og:description 을 비움 → 이제 카드가 이미지 위주로 크게 보임)
+    ※ 맨 아래 도메인(kinof2018-create.github.io) 한 줄은 카톡이 자동으로
+      붙이는 부분이라 제거가 불가능합니다.
+ 2) 파란 이미지 안의 글자(제목·본문 등)를 더 크게 키워 잘 보이도록 했습니다.
+
+설치: 이 ZIP을 HP-IN-MH4 폴더에서 '압축 풀기'(덮어쓰기) → GitHub Desktop → Push
+      → 1~2분 뒤 자동 반영. 카톡은 캐시가 있으니
+      developers.kakao.com/tool/clear/og 에
+      https://kinof2018-create.github.io/HP-IN-MH4/  넣고 [초기화] 후 다시 붙여넣기.
+
+포함 파일
+ index.html                         (og 제목/설명 비움 - 덮어쓰기)
+ og/generate.py                     (글자 확대 + 문구 비우기 로직)
+ share/미리보기_만들기.html          (편집도구 - 확대 반영)
+ share/og-image.png                 (새로 생성된 큰 글자 이미지)

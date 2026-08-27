@@ -84,20 +84,20 @@ def draw_image(cat, title, body):
     logo=make_white_logo(); lh=104*SS; lw=int(logo.size[0]*lh/logo.size[1])
     L=logo.resize((lw,lh),Image.LANCZOS); img.paste(L,(80*SS,74*SS),L)
     d.rounded_rectangle([84*SS,198*SS,150*SS,214*SS],radius=8*SS,fill="#4ADE80")
-    d.text((166*SS,188*SS),"클라우드 통합 대시보드 업데이트",font=F(34*SS),fill=(205,214,240))
-    # 카테고리 칩 + 제목
+    d.text((166*SS,186*SS),"클라우드 통합 대시보드 업데이트",font=F(44*SS),fill=(205,214,240))
+    # 카테고리 칩 + 제목 (글자 확대)
     col=CAT_COLOR.get(cat,"#5A5F6E")
-    cw=int(d.textlength(cat,font=F(24*SS)))+44*SS
-    d.rounded_rectangle([84*SS,250*SS,84*SS+cw,290*SS],radius=20*SS,fill=col)
-    d.text((84*SS+22*SS,256*SS),cat,font=F(24*SS),fill="#FFFFFF")
-    d.text((84*SS+cw+16*SS,252*SS),title,font=F(34*SS),fill="#FFFFFF")
-    # 본문 (아래로 갈수록 페이드)
-    y=320*SS
+    cw=int(d.textlength(cat,font=F(30*SS)))+46*SS
+    d.rounded_rectangle([84*SS,248*SS,84*SS+cw,304*SS],radius=26*SS,fill=col)
+    d.text((84*SS+24*SS,256*SS),cat,font=F(30*SS),fill="#FFFFFF")
+    d.text((84*SS+cw+18*SS,252*SS),title,font=F(44*SS),fill="#FFFFFF")
+    # 본문 (아래로 갈수록 페이드) — 글자 확대
+    y=326*SS
     for i,ln in enumerate(body[:5]):
         shade=[255,(235,240,252),(225,232,248),(210,218,240),(196,206,232)][min(i,4)]
         fill=(255,255,255) if shade==255 else shade
-        d.text((84*SS,y),ln,font=F(30*SS),fill=fill)
-        y+=52*SS
+        d.text((84*SS,y),ln,font=F(40*SS),fill=fill)
+        y+=62*SS
     # 페이드 음영
     arr=np.asarray(img).astype(np.float32)
     y0,y1=300*SS,566*SS
@@ -112,8 +112,10 @@ def draw_image(cat, title, body):
 def update_index(title, body):
     if not os.path.exists(INDEX): return
     s=open(INDEX,encoding="utf-8").read()
-    og_title = html.escape("📢 [삼화당피앤티] "+title, quote=True)
-    og_desc  = html.escape(" ".join(body[:2])[:120], quote=True)
+    # 카톡 카드에서 이미지 아래에 뜨는 제목/설명 문구를 없애기 위해 비워 둔다
+    # (모든 정보는 위의 이미지 안에 크게 표시됨 · 도메인 줄은 카톡이 자동 표시하여 제거 불가)
+    og_title = ""
+    og_desc  = ""
     # ★ 이미지 캐시 무력화: 이미지가 바뀌면 og:image 주소도 바뀌도록 내용 해시를 ?v= 로 붙임
     ver = hashlib.md5(open(OUT,'rb').read()).hexdigest()[:10]
     mimg = re.search(r'<meta property="og:image" content="([^"]*)"', s)

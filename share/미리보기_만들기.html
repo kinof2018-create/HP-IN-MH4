@@ -93,21 +93,21 @@ function draw(){
   ctx.textBaseline='top';
   // accent bar + brand
   ctx.fillStyle='#4ADE80';rr(84,198,66,16,8);ctx.fill();
-  ctx.fillStyle='rgb(205,214,240)';ctx.font='700 34px Pretendard, "Malgun Gothic", sans-serif';
-  ctx.fillText('클라우드 통합 대시보드 업데이트',166,186);
-  // chip + title
-  ctx.font='800 24px Pretendard, "Malgun Gothic", sans-serif';
-  const cw=ctx.measureText(cat).width+44;
-  ctx.fillStyle=CATCOL[cat];rr(84,250,cw,40,20);ctx.fill();
-  ctx.fillStyle='#fff';ctx.fillText(cat,84+22,257);
-  ctx.font='800 34px Pretendard, "Malgun Gothic", sans-serif';
-  ctx.fillText(document.getElementById('title').value,84+cw+16,252);
-  // body
+  ctx.fillStyle='rgb(205,214,240)';ctx.font='700 44px Pretendard, "Malgun Gothic", sans-serif';
+  ctx.fillText('클라우드 통합 대시보드 업데이트',166,182);
+  // chip + title (글자 확대)
+  ctx.font='800 30px Pretendard, "Malgun Gothic", sans-serif';
+  const cw=ctx.measureText(cat).width+46;
+  ctx.fillStyle=CATCOL[cat];rr(84,248,cw,56,26);ctx.fill();
+  ctx.fillStyle='#fff';ctx.fillText(cat,84+24,262);
+  ctx.font='800 44px Pretendard, "Malgun Gothic", sans-serif';
+  ctx.fillText(document.getElementById('title').value,84+cw+18,258);
+  // body (글자 확대)
   const shades=['#FFFFFF','rgb(235,240,252)','rgb(225,232,248)','rgb(210,218,240)','rgb(196,206,232)'];
   const lines=document.getElementById('body').value.split('\n').filter(l=>l.trim()!=='').slice(0,5);
-  ctx.font='700 30px Pretendard, "Malgun Gothic", sans-serif';
-  let y=320;
-  lines.forEach((ln,i)=>{ctx.fillStyle=shades[Math.min(i,4)];ctx.fillText(ln,84,y);y+=52;});
+  ctx.font='700 40px Pretendard, "Malgun Gothic", sans-serif';
+  let y=326;
+  lines.forEach((ln,i)=>{ctx.fillStyle=shades[Math.min(i,4)];ctx.fillText(ln,84,y);y+=62;});
   // fade overlay (아래로 갈수록 흐려짐)
   const y0=300,y1=566; const cTop=bgcol(y0),cBot=bgcol(y1);
   const g=ctx.createLinearGradient(0,y0,0,y1);
