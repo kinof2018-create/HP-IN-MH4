@@ -1161,9 +1161,10 @@ function shortKW(s, n){ s=String(s==null?'':s).trim(); if(!s) return ''; return 
 function renderSummaryStrip(rows){
   SUM_INDEX = {};
   let sid = 0;
-  // 최근 수리(완료) 3건 — 날짜 최신순
+  // 최근 수리(완료) 3건 — 수리완료일자 최신순(완료일 없으면 접수일자로 보완)
+  const doneTime = r => (r.doneDateObj?.getTime()) || (r.dateObj?.getTime()) || 0;
   const done = rows.filter(r=> r.status==='완료')
-    .sort((a,b)=>(b.dateObj?.getTime()||0)-(a.dateObj?.getTime()||0)).slice(0,3);
+    .sort((a,b)=> doneTime(b)-doneTime(a)).slice(0,3);
   // 미비(미완료) 전부 — 날짜 최신순
   const open = rows.filter(r=> r.status && r.status!=='완료')
     .sort((a,b)=>(b.dateObj?.getTime()||0)-(a.dateObj?.getTime()||0));
@@ -1177,8 +1178,12 @@ function renderSummaryStrip(rows){
     const detail = (cls==='open') ? shortKW(r.symptom || r.action, 16) : shortKW(r.action || r.symptom, 16);
     const kws = [r.zone, r.taskType, detail].filter(Boolean)
       .map(k=>`<span class="kw">${esc(k)}</span>`).join('');
+    // 완료 카드는 접수일자와 수리완료일자를 함께 표시, 미비 카드는 접수일자만 표시
+    const dateLine = (cls==='done')
+      ? `접수 ${esc(displayDate(r))} · 완료 ${esc(displayDone(r))}`
+      : `${esc(displayDate(r))}`;
     return `<div class="sum-card ${cls}" data-key="${id}" tabindex="0" role="button">
-      <div class="sc-top"><span class="sc-date">${esc(displayDate(r))}</span>${statusTag(r.status)}</div>
+      <div class="sc-top"><span class="sc-date">${dateLine}</span>${statusTag(r.status)}</div>
       <div class="sc-target">${esc(r.target)||'(설비명 없음)'}</div>
       <div class="sc-kw">${kws}</div>
       <div class="sum-hint">클릭하면 상세 보기 ▸</div>
