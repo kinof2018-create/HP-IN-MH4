@@ -1,0 +1,23 @@
+■ HP-IN-MH4 (클라우드 통합 대시보드) 카톡 미리보기 설치 안내 ■
+
+이 ZIP을 'HP-IN-MH4' 저장소 폴더 안에서 '압축 풀기'만 하면
+아래 파일들이 제자리에 들어갑니다(기존 index.html 은 덮어쓰기 됨).
+
+  index.html                              (OG 메타태그가 추가된 버전 - 덮어쓰기)
+  og/generate.py                          (미리보기 이미지 생성기)
+  og/logo-source.png                      (로고 원본)
+  share/미리보기_만들기.html               (문구 편집 도구)
+  share/미리보기문구.txt                    (미리보기 문구 - 이 파일을 바꾸면 카드가 바뀜)
+  share/og-image.png                      (미리보기 이미지 - 자동 생성됨)
+  .github/workflows/og-preview.yml        (Push 시 자동 생성 GitHub Action)
+
+────────────────────────────────
+사용 순서
+1. 이 ZIP을 HP-IN-MH4 폴더에서 압축 풀기 (덮어쓰기 예 선택)
+2. GitHub Desktop → Commit → Push
+3. 1~2분 뒤 GitHub가 이미지·제목·설명을 자동 생성
+4. 카톡은 캐시가 있으니 developers.kakao.com/tool/clear/og 에
+   https://kinof2018-create.github.io/HP-IN-MH4/  를 넣고 [초기화] 후 단톡방에 붙여넣기
+
+문구를 바꾸려면: share/미리보기_만들기.html 열어 편집 →
+[미리보기 내용 저장]으로 share/미리보기문구.txt 덮어쓰기 → Push
