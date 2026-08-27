@@ -49,6 +49,11 @@ body.light .toolbar input[type=text]{background:#fff;}
 body.light .toolbar select{background:#fff;}
 body.light .toolbar select option{background:#fff;color:#111;}
 body.light .toolbar input[type=date]{background:#fff;color-scheme:light;}
+/* 라이트 모드: 흰 배경 위 입력 글자가 흰색이라 안 보이던 문제 → 어두운 글자색 지정 */
+body.light .toolbar input[type=text],
+body.light .toolbar select,
+body.light .toolbar input[type=date]{color:#12183a;}
+body.light .toolbar input[type=text]::placeholder{color:#9AA0AE;}
 body.light .progress{background:rgba(16,24,40,0.10);}
 body.light .doc-badge.off{background:rgba(16,24,40,0.04);color:rgba(16,24,40,0.32);}
 body.light .table-scroll::-webkit-scrollbar-thumb, body.light .tbl-topscroll::-webkit-scrollbar-thumb{background:rgba(16,24,40,0.22);}
@@ -235,6 +240,16 @@ tbody tr:hover{background:rgba(255,255,255,0.05);}
   .toolbar input[type=date]{flex:1 1 40%;min-width:0;}
   .toolbar .count{margin-left:0;flex-basis:100%;}
   table{min-width:900px;}
+  /* ── 상세조회 표를 시설관리 탭과 동일하게 ──
+     내부 세로스크롤(70vh)·고정헤더(sticky)를 없애 페이지가 세로로만 스크롤되게 하고,
+     표는 자기 박스 안에서만 가로 스크롤 → 모바일에서 화면이 좌우로 흔들리지 않고 고정된 느낌 */
+  .table-scroll{max-height:none;overflow-y:visible;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  #detailFrozen{position:static;}
+  #detailSection thead th{position:static;top:auto;}
+  .tbl-topscroll{display:none;}
+  /* 페이지 자체는 가로로 밀리지 않도록 고정(가로 스크롤은 표 박스 안에서만) */
+  html,body{overflow-x:hidden;}
+  .container{overflow-x:hidden;max-width:100%;}
 }
 @media (max-width:400px){
   .topbar .brand h1{font-size:18px;}
