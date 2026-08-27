@@ -15,16 +15,7 @@
 <meta property="og:site_name" content="(주)삼화당피앤티 클라우드 통합 대시보드" />
 <meta property="og:title" content="" />
 <meta property="og:description" content="" />
-<<<<<<< HEAD
 <meta property="og:image" content="https://kinof2018-create.github.io/HP-IN-MH4/share/og-image.png" />
-=======
-<meta property="og:image" content="https://kinof2018-create.github.io/HP-IN-MH4/share/og-image.png?v=2994992566" />
-=======
-<meta property="og:title" content="" />
-<meta property="og:description" content="" />
-<meta property="og:image" content="https://kinof2018-create.github.io/HP-IN-MH4/share/og-image.png?v=b6f5229b13" />
->>>>>>> fe0a7b36c4a98cb051da97e1e48e7e18e4723e98
->>>>>>> 007330c2068e89e12242664de80f8adf4d8c769d
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:url" content="https://kinof2018-create.github.io/HP-IN-MH4/" />
@@ -96,12 +87,31 @@
   }
   .booting.hidden{display:none;}
 
+  /* ── 모바일(휴대폰) 최적화: 상단바를 2줄로 — (1줄) 로고+잠금설정, (2줄) 가로 스크롤 탭 ── */
   @media (max-width:720px){
     :root{--nav-h:104px;}
-    .navbar{flex-wrap:wrap;align-content:center;gap:10px 14px;padding:8px 14px;}
+    .navbar{flex-wrap:wrap;align-content:flex-start;gap:8px 10px;padding:9px 12px;}
+    .nav-brand{order:1;flex:1 1 0;min-width:0;gap:9px;}
+    .nav-brand .mk{width:34px;height:34px;font-size:18px;}
+    .nav-brand .tt{min-width:0;}
+    .nav-brand .tt b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .nav-brand .tt span{display:none;}          /* 영문 부제는 휴대폰에서 숨김(공간 확보) */
+    .admin-btn{order:2;flex:none;padding:8px 12px;font-size:11.5px;}
     .nav-hint{display:none;}
-    .nav-tabs{width:100%;margin-left:0;}
-    .tab{flex:1;justify-content:center;padding:9px 10px;font-size:12.5px;}
+    /* 탭: 한 줄에 가로로 스크롤(스와이프) — 라벨이 잘리지 않고 다 보이도록 */
+    .nav-tabs{order:3;width:100%;margin-left:0;flex:0 0 auto;
+      flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;
+      gap:6px;padding:2px 2px 5px;scrollbar-width:none;scroll-snap-type:x proximity;}
+    .nav-tabs::-webkit-scrollbar{display:none;}
+    .tab{flex:0 0 auto;justify-content:center;padding:8px 13px;font-size:12.5px;cursor:pointer;
+      scroll-snap-align:start;}
+    .tab .lb{overflow:visible;text-overflow:clip;}
+  }
+  /* 아주 좁은 화면(소형 폰)에서 로고 문구가 넘치지 않도록 살짝 더 축소 */
+  @media (max-width:380px){
+    .nav-brand .tt b{font-size:13px;}
+    .admin-btn{padding:8px 10px;font-size:11px;}
+    .tab{padding:8px 11px;font-size:12px;}
   }
 
   /* ── 탭 잠금(비밀번호) UI ── */
