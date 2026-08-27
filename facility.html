@@ -387,6 +387,28 @@ td.num{font-variant-numeric:tabular-nums;text-align:right;}
   <!-- Alert -->
   <div id="alert" class="alert"></div>
 
+  <!-- [상단 이동] 상세 유지보수 이력 (조회) — 검색하면 결과가 이 자리에서 바로 한번에 보입니다 -->
+  <section class="panel table-panel" style="margin-top:14px;">
+    <h2>상세 유지보수 이력</h2>
+    <p class="q">미완료·임시조치 건은 강조 표시됩니다. 검색·필터로 원하는 이력을 찾아보세요.</p>
+    <div class="table-tools">
+      <input type="text" id="search" class="input" placeholder="🔍 설비명 · 현상 · 원인 · 작업자 검색…" />
+      <span class="status-chip"><span id="rowCount">0</span>건 표시</span>
+    </div>
+    <div class="tbl-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>접수일자</th><th>수리완료일자</th><th>구분</th><th>구역</th><th>대상설비명</th><th>관리번호</th>
+            <th>발생현상</th><th>원인</th><th>조치내용</th>
+            <th style="text-align:right">소요비용</th><th>처리주체</th><th>작업자</th><th>진행상태</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
   <!-- [1.5] 상단 요약: 최근 수리 이력(3) / 미비 항목(전체) -->
   <section class="summary-strip" id="summaryStrip">
     <div class="sum-col">
@@ -439,28 +461,6 @@ td.num{font-variant-numeric:tabular-nums;text-align:right;}
       <h2>반복 원인 TOP 5</h2>
       <p class="q">근본적으로 반복되는 고장 원인은?</p>
       <div class="chart-box"><canvas id="chartCause"></canvas></div>
-    </div>
-  </section>
-
-  <!-- [7] Table -->
-  <section class="panel table-panel">
-    <h2>상세 유지보수 이력</h2>
-    <p class="q">미완료·임시조치 건은 강조 표시됩니다. 검색·필터로 원하는 이력을 찾아보세요.</p>
-    <div class="table-tools">
-      <input type="text" id="search" class="input" placeholder="🔍 설비명 · 현상 · 원인 · 작업자 검색…" />
-      <span class="status-chip"><span id="rowCount">0</span>건 표시</span>
-    </div>
-    <div class="tbl-scroll">
-      <table>
-        <thead>
-          <tr>
-            <th>접수일자</th><th>수리완료일자</th><th>구분</th><th>구역</th><th>대상설비명</th><th>관리번호</th>
-            <th>발생현상</th><th>원인</th><th>조치내용</th>
-            <th style="text-align:right">소요비용</th><th>처리주체</th><th>작업자</th><th>진행상태</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
     </div>
   </section>
 
