@@ -209,6 +209,37 @@ tbody tr:hover{background:rgba(255,255,255,0.05);}
 
 @media (max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr);} .grid-2{grid-template-columns:1fr;} .grid-3{grid-template-columns:1fr;} .grid-ar{grid-template-columns:1fr;}}
 @media (max-width:640px){.kpi-grid{grid-template-columns:1fr 1fr;} table{min-width:900px;}}
+/* ── 모바일(휴대폰) 최적화 ── 데스크탑(≥721px)은 그대로 두고 휴대폰 화면만 재구성 */
+@media (max-width:720px){
+  .container{padding:16px 12px 48px;}
+  /* 헤더(hero) 축소 — 제목/여백/부제/배지 크기 다운 */
+  .topbar{padding:16px 15px;gap:12px;margin-bottom:16px;}
+  .topbar .brand h1{font-size:20px;line-height:1.22;}
+  .topbar .brand .eyebrow{font-size:10px;letter-spacing:.12em;}
+  .topbar .brand .sub{font-size:11.5px;line-height:1.45;}
+  .topbar .meta{gap:7px;width:100%;}
+  .pill,.theme-pill{padding:7px 11px;font-size:11px;}
+  /* KPI 카드 2열 + 숫자/여백 축소 */
+  .kpi-grid{grid-template-columns:1fr 1fr;gap:10px;}
+  .kpi-card{padding:14px 13px 12px;}
+  .kpi-card .value{font-size:19px;}
+  .kpi-card .label{font-size:11px;}
+  /* 섹션 제목 축소 */
+  .section{margin-bottom:20px;}
+  .section-head h2{font-size:16px;}
+  .section-head h2 .idx{width:22px;height:22px;}
+  /* 상세조회 검색 툴바: 검색창은 전체폭, 나머지는 두 칸씩 줄바꿈되어 보기 편하게 */
+  .toolbar{gap:8px;}
+  .toolbar input[type=text]{flex:1 1 100%;width:100%;}
+  .toolbar select{flex:1 1 42%;min-width:0;}
+  .toolbar input[type=date]{flex:1 1 40%;min-width:0;}
+  .toolbar .count{margin-left:0;flex-basis:100%;}
+  table{min-width:900px;}
+}
+@media (max-width:400px){
+  .topbar .brand h1{font-size:18px;}
+  .kpi-card .value{font-size:18px;}
+}
 </style>
 </head>
 <body class="light">
@@ -229,6 +260,47 @@ tbody tr:hover{background:rgba(255,255,255,0.05);}
     </div>
   </header>
   <input type="file" id="excelFileInput" accept=".xlsx,.xlsm" style="display:none;">
+
+  <!-- [상단 이동] 입출고·미수금 상세 조회 — 검색하면 결과가 이 자리에서 바로 보입니다 -->
+  <section class="section" id="detailSection">
+    <div class="section-head">
+      <h2><span class="idx">5</span>입출고 · 미수금 상세 조회</h2>
+      <span class="desc">LOT / INVOICE 단위 전체 거래 내역 검색</span>
+    </div>
+    <div class="panel">
+      <div class="table-scroll" id="detailScroll">
+      <div class="detail-frozen" id="detailFrozen">
+      <div class="toolbar">
+        <input type="text" id="searchInput" placeholder="LOT NO / INVOICE NO 검색">
+        <select id="yearFilter"><option value="">전체 연도</option></select>
+        <select id="statusFilter">
+          <option value="">전체 상태</option>
+          <option value="완료">회수완료</option>
+          <option value="미수">미수</option>
+        </select>
+        <span class="range-label">출하일 기간</span>
+        <input type="date" id="dateFrom">
+        <span class="range-label">~</span>
+        <input type="date" id="dateTo">
+        <span class="count"><span id="rowCount">0</span>건 표시 중</span>
+      </div>
+      <div class="tbl-topscroll" id="tblTopScroll"><div id="tblTopScrollInner"></div></div>
+      </div>
+      <table>
+          <thead>
+            <tr>
+              <th>No</th><th>출하일</th><th>선적날짜</th><th>LOT NO</th><th>INVOICE NO</th>
+              <th style="text-align:center">선적서류</th>
+              <th>출하수량</th><th>재고누적</th><th>매입단가(₩)</th><th>매출단가($)</th><th>매출액($)</th>
+              <th>기준환율(선적일 기준)</th><th>매출액(₩)</th><th>수익률</th><th>미수총액($)</th>
+              <th>입금일</th><th>입금액($)</th><th>미수잔액($)</th><th>상태</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 
   <!-- KPI STRIP -->
   <section class="section">
@@ -316,47 +388,6 @@ tbody tr:hover{background:rgba(255,255,255,0.05);}
     </div>
     <div class="panel">
       <div class="chart-wrap"><canvas id="chartYearly"></canvas></div>
-    </div>
-  </section>
-
-  <!-- SECTION E : 상세 조회 -->
-  <section class="section" id="detailSection">
-    <div class="section-head">
-      <h2><span class="idx">5</span>입출고 · 미수금 상세 조회</h2>
-      <span class="desc">LOT / INVOICE 단위 전체 거래 내역 검색</span>
-    </div>
-    <div class="panel">
-      <div class="table-scroll" id="detailScroll">
-      <div class="detail-frozen" id="detailFrozen">
-      <div class="toolbar">
-        <input type="text" id="searchInput" placeholder="LOT NO / INVOICE NO 검색">
-        <select id="yearFilter"><option value="">전체 연도</option></select>
-        <select id="statusFilter">
-          <option value="">전체 상태</option>
-          <option value="완료">회수완료</option>
-          <option value="미수">미수</option>
-        </select>
-        <span class="range-label">출하일 기간</span>
-        <input type="date" id="dateFrom">
-        <span class="range-label">~</span>
-        <input type="date" id="dateTo">
-        <span class="count"><span id="rowCount">0</span>건 표시 중</span>
-      </div>
-      <div class="tbl-topscroll" id="tblTopScroll"><div id="tblTopScrollInner"></div></div>
-      </div>
-      <table>
-          <thead>
-            <tr>
-              <th>No</th><th>출하일</th><th>선적날짜</th><th>LOT NO</th><th>INVOICE NO</th>
-              <th style="text-align:center">선적서류</th>
-              <th>출하수량</th><th>재고누적</th><th>매입단가(₩)</th><th>매출단가($)</th><th>매출액($)</th>
-              <th>기준환율(선적일 기준)</th><th>매출액(₩)</th><th>수익률</th><th>미수총액($)</th>
-              <th>입금일</th><th>입금액($)</th><th>미수잔액($)</th><th>상태</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-      </div>
     </div>
   </section>
 
