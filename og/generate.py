@@ -84,20 +84,20 @@ def draw_image(cat, title, body):
     logo=make_white_logo(); lh=104*SS; lw=int(logo.size[0]*lh/logo.size[1])
     L=logo.resize((lw,lh),Image.LANCZOS); img.paste(L,(80*SS,74*SS),L)
     d.rounded_rectangle([84*SS,198*SS,150*SS,214*SS],radius=8*SS,fill="#4ADE80")
-    d.text((166*SS,186*SS),"클라우드 통합 대시보드 업데이트",font=F(44*SS),fill=(205,214,240))
-    # 카테고리 칩 + 제목 (글자 확대)
+    d.text((166*SS,182*SS),"클라우드 통합 대시보드 업데이트",font=F(48*SS),fill=(205,214,240))
+    # 카테고리 칩 + 제목 (글자 더 확대)
     col=CAT_COLOR.get(cat,"#5A5F6E")
-    cw=int(d.textlength(cat,font=F(30*SS)))+46*SS
-    d.rounded_rectangle([84*SS,248*SS,84*SS+cw,304*SS],radius=26*SS,fill=col)
-    d.text((84*SS+24*SS,256*SS),cat,font=F(30*SS),fill="#FFFFFF")
-    d.text((84*SS+cw+18*SS,252*SS),title,font=F(44*SS),fill="#FFFFFF")
-    # 본문 (아래로 갈수록 페이드) — 글자 확대
-    y=326*SS
+    cw=int(d.textlength(cat,font=F(33*SS)))+48*SS
+    d.rounded_rectangle([84*SS,244*SS,84*SS+cw,308*SS],radius=28*SS,fill=col)
+    d.text((84*SS+24*SS,254*SS),cat,font=F(33*SS),fill="#FFFFFF")
+    d.text((84*SS+cw+18*SS,248*SS),title,font=F(48*SS),fill="#FFFFFF")
+    # 본문 (아래로 갈수록 페이드) — 글자 더 확대
+    y=322*SS
     for i,ln in enumerate(body[:5]):
         shade=[255,(235,240,252),(225,232,248),(210,218,240),(196,206,232)][min(i,4)]
         fill=(255,255,255) if shade==255 else shade
-        d.text((84*SS,y),ln,font=F(40*SS),fill=fill)
-        y+=62*SS
+        d.text((84*SS,y),ln,font=F(44*SS),fill=fill)
+        y+=64*SS
     # 페이드 음영
     arr=np.asarray(img).astype(np.float32)
     y0,y1=300*SS,566*SS
@@ -110,22 +110,19 @@ def draw_image(cat, title, body):
     img.save(OUT,"PNG")
 
 def update_index(title, body):
+    # 카톡 카드에서 이미지 아래에 뜨는 '제목/설명 문구'는 항상 비워 둔다.
+    #  (모든 정보는 위의 이미지 안에 크게 표시됨 · 맨 아래 도메인 줄은 카톡이 자동 표시하여 제거 불가)
+    # ★ 재발 방지: og:image 주소를 매번 바꾸지 않는다(고정). 그래야 자동생성이 index.html 을
+    #   건드리지 않아, 자동 커밋과 사용자 Push 사이의 '병합 충돌'이 생기지 않는다.
+    #   → 이미 비어 있으면 파일을 다시 쓰지 않는다(변경 없음 = 커밋/충돌 없음).
     if not os.path.exists(INDEX): return
-    s=open(INDEX,encoding="utf-8").read()
-    # 카톡 카드에서 이미지 아래에 뜨는 제목/설명 문구를 없애기 위해 비워 둔다
-    # (모든 정보는 위의 이미지 안에 크게 표시됨 · 도메인 줄은 카톡이 자동 표시하여 제거 불가)
-    og_title = ""
-    og_desc  = ""
-    # ★ 이미지 캐시 무력화: 이미지가 바뀌면 og:image 주소도 바뀌도록 내용 해시를 ?v= 로 붙임
-    ver = hashlib.md5(open(OUT,'rb').read()).hexdigest()[:10]
-    mimg = re.search(r'<meta property="og:image" content="([^"]*)"', s)
-    if mimg:
-        base = mimg.group(1).split('?')[0]
-        newimg = html.escape(base+'?v='+ver, quote=True)
-        s=re.sub(r'(<meta property="og:image" content=")[^"]*(")', lambda m:m.group(1)+newimg+m.group(2), s, count=1)
-    s=re.sub(r'(<meta property="og:title" content=")[^"]*(")',      lambda m:m.group(1)+og_title+m.group(2), s, count=1)
-    s=re.sub(r'(<meta property="og:description" content=")[^"]*(")',lambda m:m.group(1)+og_desc +m.group(2), s, count=1)
-    open(INDEX,"w",encoding="utf-8").write(s)
+    s = open(INDEX, encoding="utf-8").read()
+    orig = s
+    # 중복이 있어도 모든 og:title / og:description 을 빈 값으로 만든다(안전)
+    s = re.sub(r'(<meta property="og:title" content=")[^"]*(")',       r'\1\2', s)
+    s = re.sub(r'(<meta property="og:description" content=")[^"]*(")', r'\1\2', s)
+    if s != orig:
+        open(INDEX, "w", encoding="utf-8").write(s)
 
 if __name__ == "__main__":
     cat,title,body = parse_txt()
