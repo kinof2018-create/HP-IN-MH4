@@ -454,7 +454,7 @@ td.num{font-variant-numeric:tabular-nums;text-align:right;}
       <table>
         <thead>
           <tr>
-            <th>일자</th><th>구분</th><th>구역</th><th>대상설비명</th><th>관리번호</th>
+            <th>접수일자</th><th>수리완료일자</th><th>구분</th><th>구역</th><th>대상설비명</th><th>관리번호</th>
             <th>발생현상</th><th>원인</th><th>조치내용</th>
             <th style="text-align:right">소요비용</th><th>처리주체</th><th>작업자</th><th>진행상태</th>
           </tr>
@@ -563,6 +563,17 @@ function displayDate(r){
   }
   return raw;
 }
+// 수리완료일자 표시용 (displayDate 와 동일 규칙, 값 없으면 '–')
+function displayDone(r){
+  const raw = (r.doneDateRaw==null ? '' : String(r.doneDateRaw)).trim();
+  if(!raw) return '–';
+  const isSerial = /^\d+(\.\d+)?$/.test(raw);
+  if(isSerial && r.doneDateObj){
+    const d = r.doneDateObj;
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
+  return raw;
+}
 // 헤더명 유연 매핑
 function pick(row, keys){
   for(const k of Object.keys(row)){
@@ -586,8 +597,10 @@ function normalize(rows){
   const taskKey = kindKeys[1] || null;   // 두 번째 '구분' = 작업유형
 
   return rows.map(r=>{
-    const dateRaw = pick(r,['일자','날짜','date','Date']);
+    const dateRaw = pick(r,['접수일자','접수일','일자','날짜','date','Date']);
     const dt = parseDate(dateRaw);
+    const doneRaw = pick(r,['수리완료일자','수리완료','완료일자','완료일']);
+    const doneDt = parseDate(doneRaw);
     const vendor = String(pick(r,['수행업체','업체']) || '').trim();
     const isOut = vendor.includes('외주');
     const kind = String(r[kindKey] || '').trim();
@@ -602,6 +615,7 @@ function normalize(rows){
     return {
       dateRaw: dateRaw==null?'':String(dateRaw),
       ym: dt?dt.ym:'', monthLabel: dt?dt.label:'', dateObj: dt?dt.d:null,
+      doneDateRaw: doneRaw==null?'':String(doneRaw), doneDateObj: doneDt?doneDt.d:null,
       kind,                                   // 설비/장비/시설
       zone: String(pick(r,['구역']) || '').trim(),
       target: String(pick(r,['대상설비명','설비명','대상']) || '').trim(),
@@ -784,12 +798,13 @@ function vendorTag(r){
 function renderTable(rows){
   const tb=$('tbody');
   $('rowCount').textContent=rows.length;
-  if(!rows.length){ tb.innerHTML=`<tr><td colspan="12" class="empty">표시할 데이터가 없습니다.</td></tr>`; return; }
+  if(!rows.length){ tb.innerHTML=`<tr><td colspan="13" class="empty">표시할 데이터가 없습니다.</td></tr>`; return; }
   const sorted=[...rows].sort((a,b)=>(b.dateObj?.getTime()||0)-(a.dateObj?.getTime()||0));
   tb.innerHTML=sorted.map((r,i)=>{
     const flag = r.status && r.status!=='완료';
     return `<tr class="clk ${flag?'flag':''}" data-idx="${i}" tabindex="0" role="button" title="클릭하면 상세 수리 이력을 봅니다">
       <td>${displayDate(r)}</td>
+      <td>${displayDone(r)}</td>
       <td>${r.kind||'–'}</td>
       <td>${r.zone||'–'}</td>
       <td>${r.target||'–'}</td>
@@ -1052,7 +1067,8 @@ function openOpenModal(){
           ${statusTag(r.status)}
         </div>
         <div class="oi-grid">
-          <div class="oi-field"><span class="k">일자</span><span class="v">${esc(displayDate(r))}</span></div>
+          <div class="oi-field"><span class="k">접수일자</span><span class="v">${esc(displayDate(r))}</span></div>
+          <div class="oi-field"><span class="k">수리완료일자</span><span class="v">${esc(displayDone(r))}</span></div>
           <div class="oi-field"><span class="k">구역</span><span class="v">${esc(r.zone)||'–'}</span></div>
           <div class="oi-field"><span class="k">발생현상</span><span class="v">${esc(r.symptom)||'–'}</span></div>
           <div class="oi-field"><span class="k">원인</span><span class="v">${esc(r.cause)||'–'}</span></div>
@@ -1195,7 +1211,8 @@ function openDetailModal(r){
       ${statusTag(r.status)}
     </div>
     <div class="oi-grid">
-      <div class="oi-field"><span class="k">일자</span><span class="v">${esc(displayDate(r))}</span></div>
+      <div class="oi-field"><span class="k">접수일자</span><span class="v">${esc(displayDate(r))}</span></div>
+      <div class="oi-field"><span class="k">수리완료일자</span><span class="v">${esc(displayDone(r))}</span></div>
       <div class="oi-field"><span class="k">구분</span><span class="v">${esc(r.kind)||'–'}</span></div>
       <div class="oi-field"><span class="k">구역</span><span class="v">${esc(r.zone)||'–'}</span></div>
       <div class="oi-field"><span class="k">작업유형</span><span class="v">${esc(r.taskType)||'–'}</span></div>
