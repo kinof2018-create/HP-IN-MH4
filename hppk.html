@@ -847,7 +847,10 @@ function buildFullTableJS(rows){
 }
 
 function buildKPIJS(summary, fxSeries, lotCount, firstDate, lastDate){
-  const po_cum_final=summary.po_cum, in_cum_final=summary.in_cum, ship_cum_final=summary.ship_cum, stock_final=summary.stock_cum;
+  const po_cum_final=summary.po_cum, in_cum_final=summary.in_cum, ship_cum_final=summary.ship_cum;
+  /* 현재 재고량은 엑셀의 '재고' 열 값(수식 미갱신으로 값이 남아있는 경우가 있음)을 그대로 쓰지 않고,
+     카드 정의( "입고 − 출하 = 현재고" )대로 입고누적 − 출하누적으로 직접 계산한다. */
+  const stock_final = (in_cum_final||0) - (ship_cum_final||0);
   const fulfill_rate = po_cum_final? Math.round((in_cum_final/po_cum_final*100)*10)/10 : 0;
   const ship_rate = in_cum_final? Math.round((ship_cum_final/in_cum_final*100)*10)/10 : 0;
   const buy_total=summary.buy_cum, sell_total=summary.sell_cum, profit_total=summary.profit_cum;
