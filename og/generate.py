@@ -110,22 +110,14 @@ def draw_image(cat, title, body):
     img.save(OUT,"PNG")
 
 def update_index(title, body):
-    # 카톡 카드에서 이미지 아래에 뜨는 '제목/설명 문구'는 항상 비워 둔다.
-    #  (모든 정보는 위의 이미지 안에 크게 표시됨 · 맨 아래 도메인 줄은 카톡이 자동 표시하여 제거 불가)
-    # ★ 재발 방지: og:image 주소를 매번 바꾸지 않는다(고정). 그래야 자동생성이 index.html 을
-    #   건드리지 않아, 자동 커밋과 사용자 Push 사이의 '병합 충돌'이 생기지 않는다.
-    #   → 이미 비어 있으면 파일을 다시 쓰지 않는다(변경 없음 = 커밋/충돌 없음).
-    if not os.path.exists(INDEX): return
-    s = open(INDEX, encoding="utf-8").read()
-    orig = s
-    # 중복이 있어도 모든 og:title / og:description 을 빈 값으로 만든다(안전)
-    s = re.sub(r'(<meta property="og:title" content=")[^"]*(")',       r'\1\2', s)
-    s = re.sub(r'(<meta property="og:description" content=")[^"]*(")', r'\1\2', s)
-    if s != orig:
-        open(INDEX, "w", encoding="utf-8").write(s)
+    # index.html 의 og 태그(제목/설명/이미지주소)는 사람이 직접 관리한다.
+    #  → 자동생성은 '이미지(og-image.png)'만 다시 만들고, index.html 은 절대 건드리지 않는다.
+    #  (그래야 자동 커밋과 사용자 Push 사이의 병합 충돌이 생기지 않고,
+    #   카톡 제목을 없애려고 넣어둔 공백문자(og:title)가 지워지지 않는다.)
+    return
 
 if __name__ == "__main__":
     cat,title,body = parse_txt()
     draw_image(cat,title,body)
-    update_index(title,body)
+    update_index(title,body)   # no-op (index.html 미변경)
     print("OG 미리보기 생성 완료:", title)
