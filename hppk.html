@@ -225,7 +225,7 @@ tbody tr:hover{background:rgba(255,255,255,0.05);}
       <span class="pill"><span class="dot"></span>기준일 <span id="asOfDate">-</span></span>
       <span class="pill">데이터 구간 <span id="dateRange">-</span></span>
       <span class="pill">총 LOT <span id="lotCount">-</span>건</span>
-      <span class="pill" id="linkPill" onclick="connectExcel()" style="cursor:pointer;" title="같은 폴더의 엑셀 파일을 선택하면 데이터가 자동으로 연동됩니다">🔗 엑셀 미연동 · 클릭하여 연결</span>
+      <span class="pill" id="linkPill" onclick="connectExcel()" style="cursor:pointer;" title="웹(GitHub Pages)에서는 저장소의 원본 엑셀을 자동으로 불러옵니다. 클릭하면 즉시 새로고침합니다.">🔗 엑셀 연동 준비 중…</span>
     </div>
   </header>
   <input type="file" id="excelFileInput" accept=".xlsx,.xlsm" style="display:none;">
@@ -364,7 +364,7 @@ tbody tr:hover{background:rgba(255,255,255,0.05);}
     <b>데이터 출처</b> : 삼화당피앤디 HPPK 입출고 내역_웹 (엑셀, 시트 "입출고 미수금내역(상세자료)", 1행~80행, 총 76건 거래·56개 출하 LOT) · <b>산출 기준일</b> 2026-07-13 ·
     <b>참고</b> 72번 발주일자 원본 표기 오류("25/1//2")는 인접 선적일(2025-01-16) 기준으로 2025-01-02로 보정하여 표시함. 재고량·매입/매출/수익 누적값은 원본 시트의 누적계 열 값을 그대로 사용했으며, 미수 청구액·입금액 누적치는 거래건별 값을 합산하여 산출(80행 합계행과 일치 확인 완료).<br>
     <b>원본 엑셀 파일 경로</b> (윈도우 탐색기 주소창에 붙여넣기 또는 아래 링크 클릭 시 파일 위치로 이동) : <a href="file:///C:/Users/ktkim/AppData/Roaming/Claude/local-agent-mode-sessions/7fd5cbc0-bea1-474d-8a3e-035c6c0dda30/bbae52d6-368e-4db9-9d99-aaac8568d13a/local_fa378693-7912-4cff-8514-6510a658c7a0/outputs/삼화당피앤디_HPPK_입출고내역_웹.xlsx" style="color:var(--color-info-fg);word-break:break-all;">C:\Users\ktkim\AppData\Roaming\Claude\local-agent-mode-sessions\7fd5cbc0-bea1-474d-8a3e-035c6c0dda30\bbae52d6-368e-4db9-9d99-aaac8568d13a\local_fa378693-7912-4cff-8514-6510a658c7a0\outputs\삼화당피앤디_HPPK_입출고내역_웹.xlsx</a> (본 대시보드 HTML과 동일 폴더에 원본 사본을 함께 저장함)<br>
-    <b>실시간 연동</b> : 상단 "🔗 엑셀 미연동" 배지를 클릭해 같은 폴더의 엑셀 파일을 선택하면, 이후 그 파일이 수정될 때마다(약 20초 주기 자동 새로고침, 또는 배지 재클릭 시 즉시) 위 화면 전체 수치가 엑셀 최신 내용으로 다시 계산되어 표시됩니다. Chrome/Edge 브라우저에서 지원됩니다.
+    <b>실시간 자동 연동</b> : 웹(GitHub Pages)에서 열면 저장소 같은 폴더의 원본 엑셀(<code>삼화당피앤티_HPPK_ 입출고 미수금 내역_웹버전.xlsx</code>)을 <b>자동으로 불러와</b> 화면 전체 수치를 계산합니다. 엑셀을 수정한 뒤 <b>GitHub Desktop 에서 Commit → Push</b> 하면, 새로고침 시(또는 60초 주기 자동 감시로) 별도 연결 조작 없이 최신 내용이 그대로 반영됩니다. 상단 "🔗" 배지를 클릭하면 즉시 다시 불러옵니다. (엑셀 파일명은 반드시 위와 동일해야 하며, HTML과 같은 폴더에 두어야 합니다.)
   </div>
 
 </div>
@@ -970,6 +970,8 @@ function startAutoRefresh(){
 }
 
 async function connectExcel(){
+  /* 웹(GitHub Pages)에서는 파일 선택 없이 서버의 원본 엑셀을 즉시 다시 불러온다. */
+  if(location.protocol!=='file:'){ await fetchExcelFromServer(); return; }
   if('showOpenFilePicker' in window){
     try{
       const [handle] = await window.showOpenFilePicker({
@@ -999,11 +1001,68 @@ document.getElementById('excelFileInput').addEventListener('change', function(e)
   }
 });
 
-/* ---------------- 최초 로드 (내장 데이터) ---------------- */
+/* ================= GitHub Pages 실시간 자동 연동 =================
+   저장소(같은 폴더)에 올라간 원본 엑셀을 브라우저가 자동으로 읽어 화면을 갱신한다.
+   → 엑셀을 수정한 뒤 GitHub Desktop 에서 Push 하면, 새로고침 시(또는 자동 감시 주기마다)
+     별도 "연결" 조작 없이 최신 데이터가 그대로 반영된다. (시설관리 탭과 동일 방식) */
+const HPPK_XLSX_URL = './' + encodeURIComponent('삼화당피앤티_HPPK_ 입출고 미수금 내역_웹버전.xlsx');
+const HPPK_IS_FILE  = (location.protocol === 'file:');   // 로컬 파일로 직접 열었는지
+const HPPK_WATCH_MS = 60000;   // 변경 감시 주기(60초)
+let   hppkLastMod   = null;     // 서버 파일 Last-Modified (변경 감지용)
+let   hppkWatchTimer= null;
+
+async function fetchExcelFromServer(){
+  if(typeof XLSX==='undefined'){ setLinkStatus('error'); return false; }
+  setLinkStatus('loading');
+  try{
+    const res = await fetch(HPPK_XLSX_URL + '?t=' + Date.now(), {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    hppkLastMod = res.headers.get('Last-Modified') || hppkLastMod;
+    const buf = await res.arrayBuffer();
+    const wb  = XLSX.read(new Uint8Array(buf), {type:'array'});
+    const newRaw = parseWorkbookToRaw(wb);
+    RAW = newRaw; KPI = RAW.kpi; YEARLY = RAW.yearly; FULL = RAW.full_table;
+    renderAll();
+    setLinkStatus('connected', '자동 연동');
+    return true;
+  }catch(err){
+    console.error('엑셀 서버 자동 연동 실패', err);
+    setLinkStatus('error');
+    return false;
+  }
+}
+
+/* 큰 파일을 매번 통째로 내려받지 않도록, 먼저 Last-Modified 만 확인하고
+   값이 바뀌었을 때(=Push 로 새 엑셀이 올라왔을 때)만 실제로 다시 내려받아 갱신한다. */
+async function checkExcelUpdate(){
+  try{
+    const res = await fetch(HPPK_XLSX_URL + '?t=' + Date.now(), {method:'HEAD', cache:'no-store'});
+    if(!res.ok) return;
+    const lm = res.headers.get('Last-Modified');
+    if(lm && hppkLastMod && lm !== hppkLastMod){ await fetchExcelFromServer(); }
+    else if(lm && !hppkLastMod){ hppkLastMod = lm; }
+  }catch(err){ /* 조용히 무시 */ }
+}
+
+function startExcelWatch(){
+  if(hppkWatchTimer) clearInterval(hppkWatchTimer);
+  hppkWatchTimer = setInterval(checkExcelUpdate, HPPK_WATCH_MS);
+}
+
+/* ---------------- 최초 로드 ---------------- */
+/* 1) 내장 데이터로 즉시 1차 렌더(빠른 첫 화면) */
 RAW = JSON.parse(document.getElementById('hppk-data').textContent);
 KPI = RAW.kpi; YEARLY = RAW.yearly; FULL = RAW.full_table;
 renderAll();
 loadDocIndex();   // 저장소 DOC 폴더에서 선적서류 목록을 읽어 배지 활성화
+
+/* 2) 웹(GitHub Pages 등)에서 열렸으면 원본 엑셀을 자동으로 불러와 최신값으로 덮어쓰고, 이후 자동 감시.
+      로컬 파일로 직접 열었을 때는(브라우저 보안상 같은 폴더 자동 읽기 불가) 수동 연결 안내를 표시. */
+if(!HPPK_IS_FILE){
+  fetchExcelFromServer().then(function(ok){ if(ok) startExcelWatch(); });
+}else{
+  setLinkStatus('');   // '🔗 엑셀 미연동 · 클릭하여 연결'
+}
 
 /* 라이트/다크 토글 (기본 다크) */
 document.getElementById('themeBtn').addEventListener('click', function(){
