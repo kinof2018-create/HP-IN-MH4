@@ -85,27 +85,55 @@ def draw_image(cat, title, body):
     L=logo.resize((lw,lh),Image.LANCZOS); img.paste(L,(80*SS,74*SS),L)
     d.rounded_rectangle([84*SS,198*SS,150*SS,214*SS],radius=8*SS,fill="#4ADE80")
     d.text((166*SS,182*SS),"클라우드 통합 대시보드 업데이트",font=F(48*SS),fill=(205,214,240))
-    # 카테고리 칩 + 제목 (글자 더 확대)
-    col=CAT_COLOR.get(cat,"#5A5F6E")
-    cw=int(d.textlength(cat,font=F(33*SS)))+48*SS
-    d.rounded_rectangle([84*SS,244*SS,84*SS+cw,308*SS],radius=28*SS,fill=col)
-    d.text((84*SS+24*SS,254*SS),cat,font=F(33*SS),fill="#FFFFFF")
-    d.text((84*SS+cw+18*SS,248*SS),title,font=F(48*SS),fill="#FFFFFF")
-    # 본문 (아래로 갈수록 페이드) — 글자 더 확대
-    y=322*SS
-    for i,ln in enumerate(body[:5]):
-        shade=[255,(235,240,252),(225,232,248),(210,218,240),(196,206,232)][min(i,4)]
-        fill=(255,255,255) if shade==255 else shade
-        d.text((84*SS,y),ln,font=F(44*SS),fill=fill)
-        y+=64*SS
-    # 페이드 음영
-    arr=np.asarray(img).astype(np.float32)
-    y0,y1=300*SS,566*SS
-    for yy in range(y0,y1):
-        f=min(1.0,((yy-y0)/(y1-y0))**1.35*1.05)
-        c=np.array(bgcol(yy),dtype=np.float32)
-        arr[yy]=arr[yy]*(1-f)+c*f
-    img=Image.fromarray(np.clip(arr,0,255).astype(np.uint8),"RGB")
+    # ── 제목 + 본문 ──
+    #  · 카테고리 칩 없음(요청)  · 긴 줄은 자동 줄바꿈(끝이 잘리지 않음)
+    #  · 페이드 없음(하단 내용까지 모두 보임)  · 전체 텍스트 블록을 세로 중앙 배치
+    LM = 84*SS                 # 좌측 여백
+    MAXW = W - LM - 96*SS       # 우측 여백(우상단 원 장식을 피해 안전 폭 확보)
+    def wrap_lines(text, font):
+        out=[]
+        for para in str(text or "").split("\n"):
+            cur=""
+            for w in para.split(" "):
+                trial=(cur+" "+w).strip()
+                if not cur or d.textlength(trial,font=font)<=MAXW:
+                    if not cur or d.textlength(trial,font=font)<=MAXW:
+                        cur=trial
+                    else:
+                        out.append(cur); cur=w
+                else:
+                    out.append(cur); cur=w
+                # 한 단어(공백 없는 긴 문자열)가 폭을 넘으면 글자 단위로 분해
+                if d.textlength(cur,font=font)>MAXW:
+                    piece=""
+                    for ch in cur:
+                        if not piece or d.textlength(piece+ch,font=font)<=MAXW:
+                            piece+=ch
+                        else:
+                            out.append(piece); piece=ch
+                    cur=piece
+            out.append(cur)
+        return out
+    # 내용이 길어도 카드(630) 안에 모두 들어오도록 줄바꿈 후 높이를 재어 폰트를 자동 축소
+    top_area, bot_area = 248*SS, 606*SS
+    avail = bot_area - top_area
+    tsz, bsz = 44, 36
+    tf=bf=None; tlines=blines=[]; tlh=blh=gap=0; total=0
+    for _ in range(11):
+        tf=F(tsz*SS); bf=F(bsz*SS)
+        tlh=int(tsz*1.30*SS); blh=int(bsz*1.34*SS); gap=int(14*SS)
+        tlines=wrap_lines(title, tf)
+        blines=[]
+        for ln in body[:8]: blines+=wrap_lines(ln, bf)
+        total=len(tlines)*tlh + (gap if blines else 0) + len(blines)*blh
+        if total<=avail or tsz<=22: break
+        tsz-=2; bsz-=2
+    y = top_area + max(0, (avail-total)//2)
+    for ln in tlines:
+        d.text((LM,y), ln, font=tf, fill="#FFFFFF"); y+=tlh
+    if blines: y+=gap
+    for ln in blines:
+        d.text((LM,y), ln, font=bf, fill=(223,231,247)); y+=blh
     img=img.resize((1200,630),Image.LANCZOS).filter(ImageFilter.UnsharpMask(radius=1.4,percent=115,threshold=2))
     img.save(OUT,"PNG")
 
