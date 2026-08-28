@@ -1323,14 +1323,14 @@ function showIssuePopups(){
     .sort((a,b)=> issueSortKey(b)-issueSortKey(a))
     .slice(0,2);
   box.innerHTML = _popIssues.map((r,i)=>{
-    const evid=(r.issueEvid||'').trim();
+    const nfile=getIssueFiles(r).length;
     return `<div class="issue-pop">
       <div class="ip-top"><span class="ip-tag">🚨 특정이슈</span><span class="ip-date">발생 ${esc(issueStartText(r))}</span>
         <button class="ip-x" data-act="close" data-i="${i}" title="닫기">✕</button></div>
       <div><span class="ip-target">${esc(r.target)||'(설비명 없음)'}</span>${r.mgmt?`<span class="ip-mgmt">${esc(r.mgmt)}</span>`:''}</div>
       <div class="ip-text">${esc(r.issueText)||'(내용 없음)'}</div>
       <div class="ip-btns">
-        ${evid?`<button class="ip-b evid" data-act="evid" data-i="${i}">📎 증빙자료 보기</button>`:''}
+        ${nfile?`<button class="ip-b evid" data-act="evid" data-i="${i}">📎 증빙자료 보기 (${nfile})</button>`:''}
         <button class="ip-b more" data-act="more">🚨 상세 내역</button>
       </div>
     </div>`;
@@ -1339,11 +1339,41 @@ function showIssuePopups(){
     el.addEventListener('click',()=>{
       const act=el.getAttribute('data-act'), i=+el.getAttribute('data-i');
       if(act==='close'){ dismissedIssues.add(issueKey(_popIssues[i])); showIssuePopups(); }
-      else if(act==='evid'){ openEvidence(_popIssues[i].issueEvid, _popIssues[i]); }
+      else if(act==='evid'){ openEvidence(_popIssues[i]); }
       else if(act==='more'){ openIssueHistory(); }
     });
   });
   refreshIssueBtn();
+}
+// ── 증빙자료 폴더 자동탐색(HPPK DOC 폴더와 동일 방식) ──
+//   저장소  특정이슈증빙/<관리번호>/  폴더에 파일을 올리고 Push하면 자동으로 연결·표시됨.
+const GH_OWNER='kinof2018-create', GH_REPO='HP-IN-MH4', GH_BRANCH='main', ISSUE_EVID_BASE='특정이슈증빙';
+let ISSUE_EVID_INDEX=null;   // { 정규화된관리번호: [ {name,path}, ... ] }
+function evidFolderKey(s){ return String(s==null?'':s).toUpperCase().replace(/[\s_\-]/g,''); }
+async function loadIssueEvidIndex(){
+  const api='https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/git/trees/'+GH_BRANCH+'?recursive=1';
+  const idx={};
+  try{
+    const res=await fetch(api,{headers:{'Accept':'application/vnd.github+json'}});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    (data.tree||[]).forEach(function(node){
+      if(node.type!=='blob') return;
+      const p=node.path||''; const parts=p.split('/');
+      if(parts.length<3) return;
+      if(parts[0]!==ISSUE_EVID_BASE) return;                       // 특정이슈증빙/ 하위만
+      const file=parts[parts.length-1];
+      if(/^\.gitkeep$/i.test(file)) return;
+      if(/(읽어주세요|여기에|안내|readme)/i.test(file)) return;    // 안내용 텍스트는 제외
+      const key=evidFolderKey(parts[1]);
+      (idx[key]=idx[key]||[]).push({name:file, path:p});
+    });
+    ISSUE_EVID_INDEX=idx;
+  }catch(err){
+    console.warn('특정이슈 증빙자료 목록을 불러오지 못했습니다:', err&&err.message);
+    ISSUE_EVID_INDEX={};   // 실패해도 나머지는 정상 동작
+  }
+  showIssuePopups();       // 인덱스 반영해 팝업/버튼 다시 그림
 }
 // 증빙자료 URL 해석: http(s)면 그대로, 아니면 저장소 상대경로
 function resolveEvidUrl(v){
@@ -1358,16 +1388,31 @@ function evidKind(u){
   if(ext==='pdf') return 'pdf';
   return 'link';
 }
-// 증빙자료 팝업(이미지/PDF 미리보기, 최대 2개)
-function openEvidence(val, r){
-  const files=String(val||'').split(/[\n;|,]+/).map(s=>s.trim()).filter(Boolean).slice(0,2);
-  const body=$('evidBody'); const title=$('evidTitle');
-  if(title) title.textContent='📎 증빙자료'+(r&&r.target?(' · '+r.target):'');
-  if(!files.length){ body.innerHTML='<div class="ih-empty">첨부된 증빙자료가 없습니다.</div>'; }
-  else{
+// 한 이슈(행)의 증빙파일 목록 = 폴더 자동탐색(관리번호) + 엑셀 증빙자료 칸(직접 경로/URL)
+function getIssueFiles(r){
+  const out=[];
+  if(ISSUE_EVID_INDEX && r.mgmt){
+    (ISSUE_EVID_INDEX[evidFolderKey(r.mgmt)]||[]).forEach(f=>{
+      out.push({name:f.name, url:'./'+f.path.split('/').map(encodeURIComponent).join('/')});
+    });
+  }
+  String(r.issueEvid||'').split(/[\n;|,]+/).map(s=>s.trim()).filter(Boolean).forEach(f=>{
+    out.push({name:f.split('/').pop(), url:resolveEvidUrl(f)});
+  });
+  const seen=new Set();
+  return out.filter(x=> x.url && !seen.has(x.url) && seen.add(x.url));
+}
+function hasIssueFiles(r){ return getIssueFiles(r).length>0; }
+// 증빙자료 팝업(이미지/PDF 미리보기)
+function openEvidence(r){
+  const files=getIssueFiles(r);
+  const body=$('evidBody'), title=$('evidTitle');
+  if(title) title.textContent='📎 증빙자료'+(r&&r.target?(' · '+r.target):'')+(r&&r.mgmt?(' ('+r.mgmt+')'):'');
+  if(!files.length){
+    body.innerHTML='<div class="ih-empty">첨부된 증빙자료가 없습니다.<br>저장소 <b>특정이슈증빙/'+esc((r&&r.mgmt)||'관리번호')+'/</b> 폴더에 파일을 올리고 Push하면 자동으로 표시됩니다.</div>';
+  }else{
     body.innerHTML='<div class="evid-grid '+(files.length>1?'two':'')+'">'+files.map(f=>{
-      const u=resolveEvidUrl(f), kind=evidKind(u);
-      const head='<div class="ec-h">'+esc(f)+'</div>';
+      const u=f.url, kind=evidKind(u), head='<div class="ec-h">'+esc(f.name)+'</div>';
       let inner='';
       if(kind==='img') inner='<img src="'+esc(u)+'" alt="증빙자료">';
       else if(kind==='pdf') inner='<iframe src="'+esc(u)+'"></iframe>';
@@ -1385,7 +1430,7 @@ function openIssueHistory(){
     body.innerHTML='<div class="ih-empty">기록된 특정이슈가 없습니다.<br>엑셀에 「특정 이슈 내용 · 특정이슈 발생일」 등을 입력하면 여기에 최신순으로 표시됩니다.</div>';
   }else{
     body.innerHTML=_histList.map((r,i)=>{
-      const active=isActiveIssue(r), endT=issueEndText(r), evid=(r.issueEvid||'').trim();
+      const active=isActiveIssue(r), endT=issueEndText(r), nfile=getIssueFiles(r).length;
       return `<div class="ih-item ${active?'':'closed'}">
         <div class="ih-top">
           <span class="ih-badge ${active?'on':'off'}">${active?'🔴 진행중':'✅ 종료'}</span>
@@ -1396,11 +1441,11 @@ function openIssueHistory(){
         <div class="ih-text">${esc(r.issueText)||'(내용 없음)'}</div>
         ${r.issueHist?`<div class="ih-meta"><span><b>발생이력:</b> ${esc(r.issueHist)}</span></div>`:''}
         <div class="ih-meta" style="margin-top:6px"><span><b>구역:</b> ${esc(r.zone)||'–'}</span><span><b>작업자:</b> ${esc(r.worker)||'–'}</span><span><b>처리주체:</b> ${esc(r.vendor)||'–'}</span></div>
-        ${evid?`<button class="ih-evid" data-hi="${i}">📎 증빙자료 보기</button>`:''}
+        ${nfile?`<button class="ih-evid" data-hi="${i}">📎 증빙자료 보기 (${nfile})</button>`:''}
       </div>`;
     }).join('');
     body.querySelectorAll('[data-hi]').forEach(el=>{
-      el.addEventListener('click',()=>{ const r=_histList[+el.getAttribute('data-hi')]; openEvidence(r.issueEvid, r); });
+      el.addEventListener('click',()=>{ openEvidence(_histList[+el.getAttribute('data-hi')]); });
     });
   }
   $('issueHistModal').classList.add('show');
@@ -1412,6 +1457,7 @@ $('issueHistModal').addEventListener('click', e=>{ if(e.target===$('issueHistMod
 $('evidClose').addEventListener('click', ()=> $('evidModal').classList.remove('show'));
 $('evidModal').addEventListener('click', e=>{ if(e.target===$('evidModal')) $('evidModal').classList.remove('show'); });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ $('issueHistModal').classList.remove('show'); $('evidModal').classList.remove('show'); } });
+loadIssueEvidIndex();   // 저장소 특정이슈증빙/ 폴더의 파일을 읽어 자동 연결
 
 // 단일 이력 상세 모달 열기
 function openDetailModal(r){
