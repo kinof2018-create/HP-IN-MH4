@@ -351,6 +351,54 @@ td.num{font-variant-numeric:tabular-nums;text-align:right;}
   .kpi-grid{grid-template-columns:1fr;}
   .wrap{padding:20px 14px 48px;}
 }
+/* ═══════════ 특정이슈(별도 알림) ═══════════ */
+.issue-btn{border-color:rgba(214,41,75,0.5);}
+.issue-btn.has-active{background:#D6294B;color:#fff;border-color:#D6294B;box-shadow:0 4px 12px rgba(214,41,75,0.35);}
+.issue-btn.has-active b{color:#fff;}
+.issue-btn b{font-weight:900;}
+.issue-popups{position:fixed;top:78px;right:18px;z-index:1200;display:flex;flex-direction:column;gap:12px;
+  width:min(360px,calc(100vw - 32px));pointer-events:none;}
+.issue-pop{pointer-events:auto;background:var(--bg-elevated);color:var(--text-primary);
+  border:1px solid var(--border-default);border-left:5px solid #D6294B;border-radius:14px;
+  box-shadow:0 18px 40px rgba(16,24,40,0.22);padding:13px 15px 14px;animation:issuePopIn .22s ease;}
+@keyframes issuePopIn{from{opacity:0;transform:translateY(-8px) scale(.98);}to{opacity:1;transform:none;}}
+.issue-pop .ip-top{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.issue-pop .ip-tag{font-size:.66rem;font-weight:800;color:#fff;background:#D6294B;border-radius:9999px;padding:3px 9px;}
+.issue-pop .ip-date{font-size:.7rem;font-weight:700;color:var(--text-tertiary);}
+.issue-pop .ip-x{margin-left:auto;cursor:pointer;border:0;background:transparent;color:var(--text-tertiary);font-size:1rem;line-height:1;padding:2px 4px;border-radius:6px;}
+.issue-pop .ip-x:hover{background:var(--bg-subtle);color:var(--text-primary);}
+.issue-pop .ip-target{font-size:.92rem;font-weight:800;color:var(--text-primary);line-height:1.3;}
+.issue-pop .ip-mgmt{font-size:.7rem;font-weight:700;color:var(--text-tertiary);margin-left:6px;}
+.issue-pop .ip-text{font-size:.82rem;font-weight:600;color:var(--text-secondary);line-height:1.5;margin:6px 0 10px;}
+.issue-pop .ip-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.issue-pop .ip-b{cursor:pointer;border:0;border-radius:9px;padding:8px 12px;font:800 .76rem/1 var(--font);}
+.issue-pop .ip-b.evid{background:var(--color-primary-500);color:#fff;}
+.issue-pop .ip-b.evid:hover{background:var(--color-primary-400);}
+.issue-pop .ip-b.more{background:var(--bg-subtle);color:var(--text-secondary);}
+.issue-pop .ip-b.more:hover{background:var(--border-default);}
+/* 이슈 이력 목록 */
+.ih-item{border:1px solid var(--border-default);border-left:4px solid #D6294B;border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--bg-elevated);}
+.ih-item.closed{border-left-color:#0E9F5E;opacity:.9;}
+.ih-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;}
+.ih-badge{font-size:.66rem;font-weight:800;border-radius:9999px;padding:3px 10px;}
+.ih-badge.on{background:#FDE7EC;color:#D6294B;} .ih-badge.off{background:#E4F7EC;color:#0E9F5E;}
+.ih-date{font-size:.72rem;font-weight:700;color:var(--text-tertiary);}
+.ih-target{font-size:.9rem;font-weight:800;color:var(--text-primary);}
+.ih-text{font-size:.82rem;color:var(--text-secondary);line-height:1.55;margin:2px 0 8px;white-space:pre-wrap;}
+.ih-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:.74rem;color:var(--text-tertiary);}
+.ih-meta b{color:var(--text-secondary);}
+.ih-evid{cursor:pointer;border:0;border-radius:8px;padding:6px 11px;font:800 .74rem/1 var(--font);background:var(--color-primary-500);color:#fff;margin-top:8px;}
+.ih-evid:hover{background:var(--color-primary-400);}
+.ih-empty{padding:26px;text-align:center;color:var(--text-tertiary);font-size:.86rem;font-weight:600;}
+/* 증빙자료 뷰어 */
+.evid-grid{display:grid;grid-template-columns:1fr;gap:14px;}
+.evid-grid.two{grid-template-columns:1fr 1fr;}
+@media(max-width:720px){.evid-grid.two{grid-template-columns:1fr;}}
+.evid-cell{border:1px solid var(--border-default);border-radius:12px;overflow:hidden;background:var(--bg-subtle);}
+.evid-cell .ec-h{font-size:.74rem;font-weight:700;color:var(--text-secondary);padding:8px 12px;border-bottom:1px solid var(--border-subtle);word-break:break-all;}
+.evid-cell img{width:100%;display:block;background:#fff;}
+.evid-cell iframe{width:100%;height:70vh;border:0;background:#fff;}
+.evid-cell .ec-link{display:block;padding:16px;font-size:.84rem;color:var(--color-primary-500);font-weight:700;text-decoration:none;word-break:break-all;}
 </style>
 </head>
 <body>
@@ -371,6 +419,7 @@ td.num{font-variant-numeric:tabular-nums;text-align:right;}
       <select id="filterStatus" class="sel"><option value="">전체 상태</option></select>
       <select id="filterVendor" class="sel"><option value="">전체 처리주체</option></select>
       <span id="statusChip" class="status-chip"><span id="statusDot" class="dot"></span><span id="statusText">로딩 중…</span></span>
+      <button id="issueBtn" class="theme-btn issue-btn" title="특정이슈 발생 이력(최신일자순 조회)">🚨 특정이슈 <b id="issueCnt">0</b></button>
       <button id="themeBtn" class="theme-btn" title="라이트/다크 전환">🌙 <span id="themeLabel">다크</span></button>
     </div>
   </header>
@@ -497,6 +546,32 @@ td.num{font-variant-numeric:tabular-nums;text-align:right;}
   </div>
 </div>
 
+<!-- ── 특정이슈: 화면 우측 자동 알림 팝업(최대 2개) ── -->
+<div id="issuePopups" class="issue-popups"></div>
+
+<!-- ── 특정이슈 발생 이력(최신일자순) 모달 ── -->
+<div class="modal-overlay" id="issueHistModal">
+  <div class="modal" id="issueHistBox" role="dialog" aria-modal="true" style="height:auto;max-height:calc(100vh - 100px);max-width:min(880px,96vw);">
+    <div class="modal-head neutral">
+      <h2>🚨 특정이슈 발생 이력 <span style="font-size:.72rem;font-weight:700;color:var(--text-tertiary)">— 최신일자순</span></h2>
+      <span class="cnt" id="issueHistCnt">0건</span>
+      <button class="modal-close" id="issueHistClose" aria-label="닫기">✕</button>
+    </div>
+    <div class="modal-body" id="issueHistBody"></div>
+  </div>
+</div>
+
+<!-- ── 특정이슈 증빙자료 팝업(이미지·PDF 미리보기) ── -->
+<div class="modal-overlay" id="evidModal">
+  <div class="modal" id="evidBox" role="dialog" aria-modal="true" style="height:auto;max-height:calc(100vh - 70px);max-width:min(1120px,97vw);">
+    <div class="modal-head neutral">
+      <h2 id="evidTitle">📎 증빙자료</h2>
+      <button class="modal-close" id="evidClose" aria-label="닫기">✕</button>
+    </div>
+    <div class="modal-body" id="evidBody"></div>
+  </div>
+</div>
+
 <script>
 /* ═══════════════════════════════════════════
    데이터 경로 (상대경로 고정 — 전체 URL 금지)
@@ -601,6 +676,11 @@ function normalize(rows){
     const dt = parseDate(dateRaw);
     const doneRaw = pick(r,['수리완료일자','수리완료','완료일자','완료일']);
     const doneDt = parseDate(doneRaw);
+    // ── 특정이슈(별도 알림) 관련 컬럼 ──
+    const issueStartRaw = pick(r,['특정이슈발생일']);
+    const issueStartDt  = parseDate(issueStartRaw);
+    const issueEndRaw   = pick(r,['특정이슈발생종료일','특정이슈종료일']);
+    const issueEndDt    = parseDate(issueEndRaw);
     const vendor = String(pick(r,['수행업체','업체']) || '').trim();
     const isOut = vendor.includes('외주');
     const kind = String(r[kindKey] || '').trim();
@@ -630,6 +710,14 @@ function normalize(rows){
       worker: String(pick(r,['작업자']) || '').trim(),
       status: String(pick(r,['진행상태','상태']) || '').trim(),
       note: String(pick(r,['비고']) || '').trim(),
+      // ── 특정이슈 필드 ──
+      issueText:  String(pick(r,['특정이슈내용','특정이슈사항']) || '').trim(),
+      issueEvid:  String(pick(r,['특정이슈증빙자료','특정이슈증빙']) || '').trim(),
+      issueHist:  String(pick(r,['특정이슈발생이력']) || '').trim(),
+      issueStartRaw: issueStartRaw==null?'':String(issueStartRaw).trim(),
+      issueStartDt:  issueStartDt?issueStartDt.d:null,
+      issueEndRaw:   issueEndRaw==null?'':String(issueEndRaw).trim(),
+      issueEndDt:    issueEndDt?issueEndDt.d:null,
     };
   }).filter(r=> r.target || r.zone || r.symptom);  // 빈 행 제거
 }
@@ -834,6 +922,7 @@ function renderAll(){
   renderSummaryStrip(rows);
   renderCharts(rows);
   renderTable(rows);
+  refreshIssueBtn();
 }
 
 /* ═══════════════ 워크북 파싱 (공용) ═══════════════ */
@@ -917,6 +1006,7 @@ function handleWorkbook(wb){
   hideAlert();
   fillFilters();
   renderAll();
+  showIssuePopups();   // 특정이슈 진행 중이면 우측에 자동 팝업
   // file 모드에서 데이터가 뜨면 로더 접기
   if(isFile){ $('loader').classList.remove('show'); }
 }
@@ -1203,6 +1293,125 @@ function renderSummaryStrip(rows){
     el.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); go(); } });
   });
 }
+
+/* ═══════════════ 특정이슈(별도 알림) ═══════════════ */
+const dismissedIssues = new Set();     // 이번 접속에서 사용자가 닫은 이슈
+let _popIssues = [], _histList = [];
+function issueKey(r){ return (r.target||'')+'|'+(r.issueStartRaw||'')+'|'+(r.issueText||''); }
+function fmtIssueDate(raw, dObj){
+  raw=(raw==null?'':String(raw)).trim(); if(!raw) return '';
+  if(/^\d+(\.\d+)?$/.test(raw) && dObj){ const d=dObj; return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+  return raw;
+}
+function issueStartText(r){ return fmtIssueDate(r.issueStartRaw, r.issueStartDt) || '–'; }
+function issueEndText(r){ return fmtIssueDate(r.issueEndRaw, r.issueEndDt); }
+function getIssues(){ return (RAW||[]).filter(r=> (r.issueText&&r.issueText.trim()) || (r.issueStartRaw&&r.issueStartRaw.trim())); }
+function isActiveIssue(r){ return !!( (r.issueText&&r.issueText.trim()) && (r.issueStartRaw&&r.issueStartRaw.trim()) && !(r.issueEndRaw&&r.issueEndRaw.trim()) ); }
+function issueSortKey(r){ return r.issueStartDt? r.issueStartDt.getTime() : 0; }
+
+// 헤더 '특정이슈' 버튼(진행 중 개수) 갱신
+function refreshIssueBtn(){
+  const n=getIssues().filter(isActiveIssue).length;
+  const c=$('issueCnt'); if(c) c.textContent=n;
+  const b=$('issueBtn'); if(b) b.classList.toggle('has-active', n>0);
+}
+// 화면 우측 자동 팝업 — 진행 중 이슈 최대 2개(발생일 최신순), 닫은 것 제외
+function showIssuePopups(){
+  const box=$('issuePopups'); if(!box) return;
+  _popIssues = getIssues().filter(isActiveIssue)
+    .filter(r=> !dismissedIssues.has(issueKey(r)))
+    .sort((a,b)=> issueSortKey(b)-issueSortKey(a))
+    .slice(0,2);
+  box.innerHTML = _popIssues.map((r,i)=>{
+    const evid=(r.issueEvid||'').trim();
+    return `<div class="issue-pop">
+      <div class="ip-top"><span class="ip-tag">🚨 특정이슈</span><span class="ip-date">발생 ${esc(issueStartText(r))}</span>
+        <button class="ip-x" data-act="close" data-i="${i}" title="닫기">✕</button></div>
+      <div><span class="ip-target">${esc(r.target)||'(설비명 없음)'}</span>${r.mgmt?`<span class="ip-mgmt">${esc(r.mgmt)}</span>`:''}</div>
+      <div class="ip-text">${esc(r.issueText)||'(내용 없음)'}</div>
+      <div class="ip-btns">
+        ${evid?`<button class="ip-b evid" data-act="evid" data-i="${i}">📎 증빙자료 보기</button>`:''}
+        <button class="ip-b more" data-act="more">🚨 상세 내역</button>
+      </div>
+    </div>`;
+  }).join('');
+  box.querySelectorAll('[data-act]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const act=el.getAttribute('data-act'), i=+el.getAttribute('data-i');
+      if(act==='close'){ dismissedIssues.add(issueKey(_popIssues[i])); showIssuePopups(); }
+      else if(act==='evid'){ openEvidence(_popIssues[i].issueEvid, _popIssues[i]); }
+      else if(act==='more'){ openIssueHistory(); }
+    });
+  });
+  refreshIssueBtn();
+}
+// 증빙자료 URL 해석: http(s)면 그대로, 아니면 저장소 상대경로
+function resolveEvidUrl(v){
+  v=String(v||'').trim(); if(!v) return '';
+  if(/^https?:\/\//i.test(v)) return v;
+  v=v.replace(/^\.?\//,'');
+  return './'+v.split('/').map(encodeURIComponent).join('/');
+}
+function evidKind(u){
+  const ext=(u.split('?')[0].split('.').pop()||'').toLowerCase();
+  if(['jpg','jpeg','png','gif','webp','bmp','svg'].includes(ext)) return 'img';
+  if(ext==='pdf') return 'pdf';
+  return 'link';
+}
+// 증빙자료 팝업(이미지/PDF 미리보기, 최대 2개)
+function openEvidence(val, r){
+  const files=String(val||'').split(/[\n;|,]+/).map(s=>s.trim()).filter(Boolean).slice(0,2);
+  const body=$('evidBody'); const title=$('evidTitle');
+  if(title) title.textContent='📎 증빙자료'+(r&&r.target?(' · '+r.target):'');
+  if(!files.length){ body.innerHTML='<div class="ih-empty">첨부된 증빙자료가 없습니다.</div>'; }
+  else{
+    body.innerHTML='<div class="evid-grid '+(files.length>1?'two':'')+'">'+files.map(f=>{
+      const u=resolveEvidUrl(f), kind=evidKind(u);
+      const head='<div class="ec-h">'+esc(f)+'</div>';
+      let inner='';
+      if(kind==='img') inner='<img src="'+esc(u)+'" alt="증빙자료">';
+      else if(kind==='pdf') inner='<iframe src="'+esc(u)+'"></iframe>';
+      return '<div class="evid-cell">'+head+inner+'<a class="ec-link" href="'+esc(u)+'" target="_blank" rel="noopener">🔗 새 탭에서 열기 / 다운로드</a></div>';
+    }).join('')+'</div>';
+  }
+  $('evidModal').classList.add('show');
+}
+// 특정이슈 발생 이력 — 최신일자순 전체 목록
+function openIssueHistory(){
+  _histList = getIssues().slice().sort((a,b)=> issueSortKey(b)-issueSortKey(a));
+  const body=$('issueHistBody'), cnt=$('issueHistCnt');
+  if(cnt) cnt.textContent=_histList.length+'건';
+  if(!_histList.length){
+    body.innerHTML='<div class="ih-empty">기록된 특정이슈가 없습니다.<br>엑셀에 「특정 이슈 내용 · 특정이슈 발생일」 등을 입력하면 여기에 최신순으로 표시됩니다.</div>';
+  }else{
+    body.innerHTML=_histList.map((r,i)=>{
+      const active=isActiveIssue(r), endT=issueEndText(r), evid=(r.issueEvid||'').trim();
+      return `<div class="ih-item ${active?'':'closed'}">
+        <div class="ih-top">
+          <span class="ih-badge ${active?'on':'off'}">${active?'🔴 진행중':'✅ 종료'}</span>
+          <span class="ih-target">${esc(r.target)||'(설비명 없음)'}</span>
+          ${r.mgmt?`<span class="ih-date">${esc(r.mgmt)}</span>`:''}
+          <span class="ih-date" style="margin-left:auto">발생 ${esc(issueStartText(r))}${endT?(' · 종료 '+esc(endT)):''}</span>
+        </div>
+        <div class="ih-text">${esc(r.issueText)||'(내용 없음)'}</div>
+        ${r.issueHist?`<div class="ih-meta"><span><b>발생이력:</b> ${esc(r.issueHist)}</span></div>`:''}
+        <div class="ih-meta" style="margin-top:6px"><span><b>구역:</b> ${esc(r.zone)||'–'}</span><span><b>작업자:</b> ${esc(r.worker)||'–'}</span><span><b>처리주체:</b> ${esc(r.vendor)||'–'}</span></div>
+        ${evid?`<button class="ih-evid" data-hi="${i}">📎 증빙자료 보기</button>`:''}
+      </div>`;
+    }).join('');
+    body.querySelectorAll('[data-hi]').forEach(el=>{
+      el.addEventListener('click',()=>{ const r=_histList[+el.getAttribute('data-hi')]; openEvidence(r.issueEvid, r); });
+    });
+  }
+  $('issueHistModal').classList.add('show');
+}
+// 배선
+$('issueBtn').addEventListener('click', openIssueHistory);
+$('issueHistClose').addEventListener('click', ()=> $('issueHistModal').classList.remove('show'));
+$('issueHistModal').addEventListener('click', e=>{ if(e.target===$('issueHistModal')) $('issueHistModal').classList.remove('show'); });
+$('evidClose').addEventListener('click', ()=> $('evidModal').classList.remove('show'));
+$('evidModal').addEventListener('click', e=>{ if(e.target===$('evidModal')) $('evidModal').classList.remove('show'); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ $('issueHistModal').classList.remove('show'); $('evidModal').classList.remove('show'); } });
 
 // 단일 이력 상세 모달 열기
 function openDetailModal(r){
